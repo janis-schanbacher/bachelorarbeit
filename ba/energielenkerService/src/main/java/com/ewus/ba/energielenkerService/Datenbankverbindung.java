@@ -29,7 +29,7 @@ public class Datenbankverbindung {
       // System.out.println(connectionCommand);
       try {
          this.connection = DriverManager.getConnection(connectionCommand);
-         // System.out.println("Connected: " + this.connection.toString());
+         System.out.println("Connected to DB: " + this.connection.toString());
       } catch (SQLException e) {
          Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
       }
