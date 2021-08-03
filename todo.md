@@ -10,3 +10,52 @@ TODO:
 
 - Testing, orientiert an kbe projekt
 - rückgabetypen und static für umgeschriebene Methoden überprüfen
+- Move commits from Master to development
+
+
+- klären ob configs in EL oder in separater db gespeichert werden sollen. Falls in EL, als 1 bool feld pro analyse oder liste.
+  - alternativ in db  ewus_assets > auswertungs_configs
+
+
+in analysis controller write equivalent to fillKiObjects
+    - dafür geschicktes Kommunikationsformat wählen, wahrscheinlich json. Alternativ möglihkeit ElObject in AnalysisObjects zu überführen.
+    - OkHttpLibrary überall verwenden, und möglichst code duplikate vermeiden
+
+
+## Nachtabsenkung
+Regelparameter_Soll_Werte, Zeitprogram Heizkreis
+- Aktiv/nicht aktiv
+
+- KI Wert 
+
+## \Anlagengrößé anpassen:
+- Auslastung datenpunkt bei Eneffco. Dann was is mittlere auslastung
+  - Mittelwert über letztes halebs Jahr
+
+
+## Vor und RL Temperatur:
+- Eneffco Datenpunkt Rücklauftemperatur angucken
+  - Damit eneffco
+  - Rohdatenpunnkte: Code: .RL, z.b. STO.001.WMZ.RL.1
+  - .1 in meisten fällen, manchmal 2,3,10,11
+  - Ich soll den Datenpunkt nehmen. Also z.b. ACO.001.WEZ.WMZ.RL.1
+    - denn manchmal z.b. andere Einheiten in RohDP,...  
+- Temperaturdifferenz
+- Entweder überall berechneten Datenpunkt in Eneffco hinzufügen. (Oder selber berechnen.)
+
+
+## Nutzungsgrad
+- Datenpunkt aus Eneffco. Abh. von höhe Nutzungsgrad Aussage treffen
+- - Datenpunkt: ACO.001.WEZ.ETA.1 (Nutzungsgrad pro zeitpunkt)
+  - Daraus mittel holen
+- bei Datenpunkten wird etwas berechnet wenn ich ihn abhole. 
+- Timeinterval: wenn ich für nen Tag abrufe, gibt eneffco mir den mittelwert als tageswert
+  - Man kann nichts dazwischen nehmen. Welche optionen es gibt siehe /timeinterval
+  - also z.b. wenn ich 5 tage will 5x tag
+
+
+Deployment: erstmal nur systeno
+
+125 
+
+
