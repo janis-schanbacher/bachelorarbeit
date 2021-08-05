@@ -21,15 +21,17 @@ public class Facility {
     
    
     private int wmzEneffco; // Einsparzaehlerprotokoll> 190 WMZ Eneffco (letzte Stelle im DP Code)
-    // vorlauf, aussentemperatur, volumenstrom and leistung are eneffco object ids
-    private String vorlauf; // Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.WMZ.VL.[wmzEneffco]
+    // vorlaufId, aussentemperatur, volumenstromId and leistungId are eneffco object ids
+    private String vorlaufId; // Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.WMZ.VL.[wmzEneffco]
                             // z.b. "4a3a0973-2fc4-47b6-aaf7-1ddd52bc94af"
-    private String ruecklauf; // Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.WMZ.RL.[wmzEneffco]
-    private String volumenstrom;// Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.WMZ.VS.[wmzEneffco]
-    private String leistung; // Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.WMZ.L.[wmzEneffco]
-    private String versorgungstyp; // EL>Liegenschaft> 030 Versorgungstyp
+    private String ruecklaufId; // Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.WMZ.RL.[wmzEneffco]
+    private String volumenstromId;// Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.WMZ.VS.[wmzEneffco]
+    private String leistungId; // Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.WMZ.L.[wmzEneffco]
+    private String aussentemperaturId; // Eneffco Datenpunkt Tabelle: [aussentemperaturCode]}
+    private String nutzungsgrad; // Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.ETA.[wmzEneffco]
+    
     private String aussentemperaturCode; // EL>Liegenschaft> 038 zugeordnete Außentemperatur
-    private String aussentemperatur; // Eneffco Datenpunkt Tabelle: [aussentemperaturCode]}
+    private String versorgungstyp; // EL>Liegenschaft> 030 Versorgungstyp
     private boolean tww; // if(wmzEneffco != 1) false
                          // else if (versorgungstyp.toLowerCase().contains("tww")) true
                          // else false
@@ -77,20 +79,20 @@ public class Facility {
         this.wmzEneffco = wmzEneffco;
     }
 
-    public String getVorlauf() {
-        return vorlauf;
+    public String getVorlaufId() {
+        return vorlaufId;
     }
 
-    public void setVorlauf(String vorlauf) {
-        this.vorlauf = vorlauf;
+    public void setVorlaufId(String vorlaufId) {
+        this.vorlaufId = vorlaufId;
     }
 
-    public String getRuecklauf() {
-        return ruecklauf;
+    public String getRuecklaufId() {
+        return ruecklaufId;
     }
 
-    public void setRuecklauf(String ruecklauf) {
-        this.ruecklauf = ruecklauf;
+    public void setRuecklaufId(String ruecklaufId) {
+        this.ruecklaufId = ruecklaufId;
     }
 
     public String getAussentemperaturCode() {
@@ -101,28 +103,36 @@ public class Facility {
         this.aussentemperaturCode = aussentemperaturCode;
     }
 
-    public String getAussentemperatur() {
-        return aussentemperatur;
+    public String getAussentemperaturId() {
+        return aussentemperaturId;
     }
 
-    public void setAussentemperatur(String aussentemperatur) {
-        this.aussentemperatur = aussentemperatur;
+    public void setAussentemperaturId(String aussentemperaturId) {
+        this.aussentemperaturId = aussentemperaturId;
     }
 
-    public String getVolumenstrom() {
-        return volumenstrom;
+    public String getNutzungsgradId() {
+        return nutzungsgrad;
     }
 
-    public void setVolumenstrom(String volumenstrom) {
-        this.volumenstrom = volumenstrom;
+    public void setNutzungsgradId(String nutzungsgrad) {
+        this.nutzungsgrad = nutzungsgrad;
     }
 
-    public String getLeistung() {
-        return leistung;
+    public String getVolumenstromId() {
+        return volumenstromId;
     }
 
-    public void setLeistung(String leistung) {
-        this.leistung = leistung;
+    public void setVolumenstromId(String volumenstromId) {
+        this.volumenstromId = volumenstromId;
+    }
+
+    public String getLeistungId() {
+        return leistungId;
+    }
+
+    public void setLeistungId(String leistungId) {
+        this.leistungId = leistungId;
     }
 
     public boolean getTww() {
@@ -309,15 +319,15 @@ public class Facility {
         // Abfrage-Parameter from und to ...
         str.append("wmzEneffco: " + wmzEneffco + "\n"); // Einsparzaehlerprotokoll> 190 WMZ Eneffco (letzte Stelle im DP
                                                         // Code)
-        // vorlauf, aussentemperatur, volumenstrom and leistung are eneffco object ids
-        str.append("vorlauf: " + vorlauf + "\n"); // Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.WMZ.VL.[wmzEneffco]
+        // vorlaufId, aussentemperatur, volumenstromId and leistungId are eneffco object ids
+        str.append("vorlaufId: " + vorlaufId + "\n"); // Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.WMZ.VL.[wmzEneffco]
         // z.b. "4a3a0973-2fc4-47b6-aaf7-1ddd52bc94af"
-        str.append("ruecklauf: " + ruecklauf + "\n"); // Eneffco Datenpunkt Tabelle:
+        str.append("ruecklaufId: " + ruecklaufId + "\n"); // Eneffco Datenpunkt Tabelle:
                                                       // [Anlagencode].WEZ.WMZ.RL.[wmzEneffco]
         str.append("aussentemperaturCode: " + aussentemperaturCode + "\n");
-        str.append("aussentemperatur: " + aussentemperatur + "\n"); // EL>Liegenschaft> 038 zugeordnete Außentemperatur
-        str.append("volumenstrom: " + volumenstrom + "\n");// Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.WMZ.VS.
-        str.append("leistung: " + leistung + "\n"); // Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.WMZ.L.[wmzEneffco]
+        str.append("aussentemperaturId: " + aussentemperaturId + "\n"); // EL>Liegenschaft> 038 zugeordnete Außentemperatur
+        str.append("volumenstromId: " + volumenstromId + "\n");// Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.WMZ.VS.
+        str.append("leistungId: " + leistungId + "\n"); // Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.WMZ.L.[wmzEneffco]
         str.append("versorgungstyp: " + versorgungstyp + "\n"); // EL>Liegenschaft> 030 Versorgungstyp
         str.append("tww: " + tww + "\n"); // if(wmzEneffco != 1) false
         // else if (versorgungstyp.toLowerCase().contains("tww")) true

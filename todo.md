@@ -31,6 +31,8 @@ Regelparameter_Soll_Werte, Zeitprogram Heizkreis
 ## \Anlagengrößé anpassen:
 - Auslastung datenpunkt bei Eneffco. Dann was is mittlere auslastung
   - Mittelwert über letztes halebs Jahr
+  - (ist: leistung / maximalleistung der Anlage)
+  - Dann mittlere Auslastung der Wintermonate (Dez, Jan, Feb). 
 
 
 ## Vor und RL Temperatur:
@@ -40,9 +42,15 @@ Regelparameter_Soll_Werte, Zeitprogram Heizkreis
   - .1 in meisten fällen, manchmal 2,3,10,11
   - Ich soll den Datenpunkt nehmen. Also z.b. ACO.001.WEZ.WMZ.RL.1
     - denn manchmal z.b. andere Einheiten in RohDP,...  
-- Temperaturdifferenz
+- Wenn Brennwertkessel nicht unter 55grad... Betrachten?
+  - EL>Anlagentechnik>011 Brennwertkessel 1
+  - EL>Anlagentechnik>021 Brennwertkessel 1
+  - wenn nichts drin steht: Rücklauftemperatur zu niedrig. Kesseltyp ist nicht bekannt..
+- Temperaturdifferenz --> dafü® neuer Datenpunkt in Eneffco
+  - --> Text: pumpenreglung einstellen. Hydraulischer Abgleich,...
 - Entweder überall berechneten Datenpunkt in Eneffco hinzufügen. (Oder selber berechnen.)
-
+- Evt. noch Vorlauftemperatur
+  - z.b. Differenz: Soll-Heizkurven-Temperatur und tatsächlicher maximaler Vorlauf-Temperatur. Wenn z.b. 5% drüber: weicht ab, ist zu groß
 
 ## Nutzungsgrad
 - Datenpunkt aus Eneffco. Abh. von höhe Nutzungsgrad Aussage treffen
@@ -56,6 +64,14 @@ Regelparameter_Soll_Werte, Zeitprogram Heizkreis
 
 Deployment: erstmal nur systeno
 
-125 
+## Sommerabschaltung / Heizgrenze
+
+125 ****
 
 
+****
+
+- Extrag Feld in Energielenker für Anlagen. Wenn werte fehlen, soll dort reingeschrieben werden was fehlt. 
+- Wertebereiche und zugehörige Textbausteine in Datenbank, da rantasten wichtig ist.  
+-
+##

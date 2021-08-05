@@ -36,7 +36,6 @@ import com.ewus.ba.energielenkerEneffcoService.model.Facility;
 import com.ewus.ba.energielenkerEneffcoService.EneffcoUtils;
 import com.ewus.ba.energielenkerEneffcoService.EnergielenkerUtils;
 
-
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -45,31 +44,62 @@ import okhttp3.Response;
 @RestController
 @RequestMapping(value = "/energielenker")
 public class EnergielenkerController {
-    private static Connection dbConnection = new Datenbankverbindung().getConnection();
+	private static Connection dbConnection = new Datenbankverbindung().getConnection();
 
-    // TODO: pass codes and only fill those. Reusie filter logic from ACO
-    @GetMapping("/fill-el-objects")
-    @ResponseBody
-    public static ArrayList<Facility> fillFacilities(@RequestBody String codesJson) {
-        System.out.println(codesJson);
-        // TODO: use library to parse json array
-        String[] codesArray = codesJson.strip().replace("[", "").replace("]", "").split(",");
-        System.out.println(Arrays.toString(codesArray));
-        System.out.println("fillFacilities()");
-        EnergielenkerUtils.loginEnergielenker();
+	// TODO: pass codes and only fill those. Reusie filter logic from ACO
+	@GetMapping("/fill-facilities")
+	@ResponseBody
+	public static ArrayList<Facility> fillFacilities(@RequestBody String codesJson) {
+		System.out.println(codesJson);
+		// TODO: use library to parse json array
+		String[] codesArray = codesJson.strip().replace("[", "").replace("]", "").split(",");
+		System.out.println(Arrays.toString(codesArray));
+		System.out.println("fillFacilities()");
+		EnergielenkerUtils.loginEnergielenker();
 		ArrayList<Facility> facilities = new ArrayList<Facility>();
 		ArrayList<Facility> facilitiesFiltered = new ArrayList<Facility>();
+
+		final boolean MOCK_FILL_FACILITIES = true;
+
+		if (MOCK_FILL_FACILITIES) {
+			ArrayList<Facility> facilitiesMock = new ArrayList<Facility>();
+			Facility facilityMock = new Facility();
+			facilityMock.setCode("ACO.002");
+			facilityMock.setWmzEneffco(1);
+			facilityMock.setVorlaufId("b1a35f44-abe1-4afc-82eb-372889775b29");
+			facilityMock.setRuecklaufId("a20772af-076f-421e-9c64-a78b1ce5017b");
+			facilityMock.setVolumenstromId("607f72ce-7172-40f3-a1de-c0305f3b482f");
+			facilityMock.setLeistungId("ee669174-10db-4e40-9b67-6b88a15707ee");
+			facilityMock.setAussentemperaturId("0e1cb31b-52b7-4732-848a-f87a29afab49");
+			facilityMock.setAussentemperaturCode("433_T");
+			facilityMock.setVersorgungstyp("TWW + Heizung");
+			facilityMock.setTww(true);
+			facilityMock.setHeizgrenze("2918");
+			facilityMock.setHeizgrenzePumpe("2919");
+			facilityMock.setSteigung("2929");
+			facilityMock.setMinimumAussentemp("2930");
+			facilityMock.setEinsparzaehlerobjektid("27249");
+			facilityMock.setLiegenschaftObjektId("25355");
+			facilityMock.setNutzungsgradId("ab7407da-f066-40e6-a975-6288ffa5ddb3");
+			facilitiesMock.add(facilityMock);
+
+			// TODO: move to proper location
+			for (int i = 0; i < facilitiesMock.size(); i++) {
+				EneffcoUtils.readEneffcoDatapoint(facilitiesMock.get(i).getNutzungsgradId());
+			}
+			return facilitiesMock;
+		}
 
 		facilities = EnergielenkerUtils.getESZenergielenkerTableEinsparzaehler(dbConnection, facilities);
 
 		try {
 			for (int i = 0; i < facilities.size(); i++) {
 				// objects
-				facilities.get(i).setCode(EnergielenkerUtils.getAnlagencode(dbConnection,
-						facilities.get(i).getEinsparzaehlerobjektid()));
-                // Filter all facilities with codes passed in codesJson 
-                String codeToCheck = facilities.get(i).getCode().toLowerCase();
-                if(Arrays.stream(codesArray).anyMatch(s -> s != null && s.toLowerCase().contains(codeToCheck))) {
+				facilities.get(i).setCode(
+						EnergielenkerUtils.getAnlagencode(dbConnection, facilities.get(i).getEinsparzaehlerobjektid()));
+				// Filter all facilities with codes passed in codesJson
+				String codeToCheck = facilities.get(i).getCode().toLowerCase();
+				if (Arrays.stream(codesArray).anyMatch(s -> s != null && s.toLowerCase().contains(codeToCheck))) {
 					facilitiesFiltered.add(facilities.get(i));
 				}
 			}
@@ -83,15 +113,16 @@ public class EnergielenkerController {
 					EneffcoUtils.fetchEneffcoIds(dbConnection, facilitiesFiltered.get(i));
 				} catch (Exception e) {
 					System.err.println("Error fillFacilities: " + facilitiesFiltered.get(i).getCode());
-					Utils.LOGGER.log(Level.WARNING, "Error fillFacilities at: " + facilitiesFiltered.get(i).getCode() + "\n",
-							"errors.log");
+					Utils.LOGGER.log(Level.WARNING,
+							"Error fillFacilities at: " + facilitiesFiltered.get(i).getCode() + "\n", "errors.log");
 					Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
 				}
 			}
 		} catch (Exception e) {
 			Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
 		}
-        // System.out.println(facilitiesFiltered.get(0).toString());
+
+		// System.out.println(facilitiesFiltered.get(0).toString());
 		return facilitiesFiltered;
 		// return facilities;
 	}
