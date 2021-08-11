@@ -49,78 +49,16 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 @RestController
-@RequestMapping(value = "/")
+// @RequestMapping(value = "/")
 public class EnergielenkerController {
 	private static Connection dbConnection = new Datenbankverbindung().getConnection();
-
-	final static int TIMEINTERVAL_15M = 900;
-	final static int TIMEINTERVAL_WEEK = 86407;
-
-	// TODO: move to analysis service
-	// TODO: Bestimmung From, To
-	public static String analyseFacilitySize(Facility facility) {
-		List<JSONObject> values = EneffcoUtils.readEneffcoDatapointValues(facility.getAuslastungKgrId(),
-				java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).minus(400, ChronoUnit.DAYS)
-						.toString(), // todo: change to more days
-				java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).toString(), TIMEINTERVAL_15M,
-				false);
-
-		float avgNutzungsgrad = getAverageValue(values);
-		String textFragment = avgNutzungsgrad > 80 ? ""
-				: "Heizkessel ist überdimensioniert, Durchschnittliche Auslastung " + avgNutzungsgrad
-						+ "%. Mögliche Maßnahmen: Brenner einstellen; andere Düse verbauen (geringere Heizleistung) oder Neubau";
-		System.out.println("Avg. Nutzungsgrad zw. -10 und -14 Grad: " + getAverageValue(values));
-		System.out.println(textFragment);
-		return textFragment;
-	}
-
-	// TODO: move to analysis service
-	// TODO: Bestimmung From, To
-	public static String analyseDeltaTemperature(Facility facility) {
-		int currentYear = LocalDate.now().getYear();
-		String from = LocalDateTime.of(currentYear - 1, Month.DECEMBER, 1, 0, 0, 0).atZone(ZoneId.of("Europe/Berlin"))
-				.toInstant().toString();
-		String to = LocalDateTime.of(currentYear, Month.FEBRUARY, 28, 23, 59, 59).atZone(ZoneId.of("Europe/Berlin"))
-				.toInstant().toString();
-
-		List<JSONObject> values = EneffcoUtils.readEneffcoDatapointValues(facility.getDeltaTemeratureId(), from, to,
-				TIMEINTERVAL_15M, false);
-
-		float avgDeltaTemperature = getAverageValue(values);
-		System.out.println("Avg. Temperaturdifferenz: " + getAverageValue(values));
-		String textFragment = "";
-		if (!facility.getTww()) { // TODO: Check. hat brennwertkessel
-			if (avgDeltaTemperature < 15) {
-				// TODO Die Temperaturspreizung ist mit/um xK zu gering. Fragen ob entsprechend
-				// ändern
-				textFragment = "Die Temperaturspreizung ist mit " + avgDeltaTemperature
-						+ "K zu gering. Maßnahmen: Heizkurve einstellen, Absenkung VL-Temp., Verringerung der Wasserumlaufmenge.";
-			}
-		} else {
-			if (avgDeltaTemperature < 10) {
-				// TODO Die Temperaturspreizung ist mit/um xK zu gering. Fragen ob entsprechend
-				// ändern
-				textFragment = "Die Temperaturspreizung ist zu gering. Maßnahmen: Heizkurve einstellen, Absenkung VL-Temp., Verringerung der Wasserumlaufmenge.";
-			}
-		}
-
-		System.out.println(textFragment);
-		return textFragment;
-	}
-
-	// TODO move
-	public static float getAverageValue(List<JSONObject> values) {
-		float sum = 0;
-		for (int i = 0; i < values.size(); i++) {
-			sum += values.get(i).getFloat("Value");
-		}
-		return sum / values.size();
-	}
 
 	// TODO: pass codes and only fill those. Reusie filter logic from ACO
 	@GetMapping("/fill-facilities")
 	@ResponseBody
 	public static ArrayList<Facility> fillFacilities(@RequestBody String codesJson) {
+		// public static ArrayList<Facility> fillFacilities(@RequestBody String
+		// codesJson) {
 		System.out.println(codesJson);
 		// TODO: use library to parse json array
 		String[] codesArray = codesJson.strip().replace("[", "").replace("]", "").split(",");
@@ -158,11 +96,13 @@ public class EnergielenkerController {
 
 			// TODO: move rest of block to proper location
 
-			for (int i = 0; i < facilitiesMock.size(); i++) {
-				System.out.println(analyseFacilitySize(facilitiesMock.get(i)));
-				System.out.println(analyseDeltaTemperature(facilitiesMock.get(i)));
-				System.out.println("Done with " + facilitiesMock.get(i).getCode());
-			}
+			// for (int i = 0; i < facilitiesMock.size(); i++) {
+			// System.out.println(AnalysisController.analyseFacilitySize(facilitiesMock.get(i)));
+			// System.out.println(AnalysisController.analyseDeltaTemperature(facilitiesMock.get(i)));
+			// System.out.println("Done with " + facilitiesMock.get(i).getCode());
+			// }
+
+			System.out.println("Leaving fillFacilities()");
 			return facilitiesMock;
 		}
 

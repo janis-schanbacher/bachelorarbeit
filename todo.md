@@ -94,12 +94,15 @@ Deployment: erstmal nur systeno
 
 ## Flexible Grenzwert definitionen
 Datenbank tabelle Textbaustein_Zuordnungen
-  - code (ID, oder id aus min und max)
+  - Id
+  - (code (ID, oder id aus min und max)
     - Basiswert code,
     - ergänzt um eine Silbe. mit Andreas/TObias absprechen / nach standard schema
-    - Wertebereichabschnitt_Id
+    - Wertebereichabschnitt_Id)
+  - Analyse Id
   - Min
   - Max
+  - evt Min/Max für kompleeres ersetzen mit Bedingung in einheitlichem format
   - Textbaustein
 
 ## Analyseeinstellungen
@@ -112,8 +115,9 @@ Anlagenanalyse_Konfigurationen
 ## Analysen
 - ID
 - Beschreibung
-- Zugehörige textbaustein-zuordnungen (als ID zusammengesetzter Textbaustein_Zuordnungen.Code bzw. ...Fremdschlüssel(Min, Max))
-- (Bei bedarf können wie )
+- Zugehörige textbaustein-zuordnungen (als ID zusammengesetzter Textbaustein_Zuordnungen.Id) 
+  - evt weglassen, da über select * from textbaustein_zuordnungen where analyseId = Analyse.id; möglich
+
 ## Analyse-Request
 - Body: Anlagencodes
 - URL: TODO
