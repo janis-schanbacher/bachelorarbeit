@@ -25,6 +25,11 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.time.temporal.ChronoUnit;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -44,9 +49,73 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 @RestController
-@RequestMapping(value = "/energielenker")
+@RequestMapping(value = "/")
 public class EnergielenkerController {
 	private static Connection dbConnection = new Datenbankverbindung().getConnection();
+
+	final static int TIMEINTERVAL_15M = 900;
+	final static int TIMEINTERVAL_WEEK = 86407;
+
+	// TODO: move to analysis service
+	// TODO: Bestimmung From, To
+	public static String analyseFacilitySize(Facility facility) {
+		List<JSONObject> values = EneffcoUtils.readEneffcoDatapointValues(facility.getAuslastungKgrId(),
+				java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).minus(400, ChronoUnit.DAYS)
+						.toString(), // todo: change to more days
+				java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).toString(), TIMEINTERVAL_15M,
+				false);
+
+		float avgNutzungsgrad = getAverageValue(values);
+		String textFragment = avgNutzungsgrad > 80 ? ""
+				: "Heizkessel ist überdimensioniert, Durchschnittliche Auslastung " + avgNutzungsgrad
+						+ "%. Mögliche Maßnahmen: Brenner einstellen; andere Düse verbauen (geringere Heizleistung) oder Neubau";
+		System.out.println("Avg. Nutzungsgrad zw. -10 und -14 Grad: " + getAverageValue(values));
+		System.out.println(textFragment);
+		return textFragment;
+	}
+
+	// TODO: move to analysis service
+	// TODO: Bestimmung From, To
+	public static String analyseDeltaTemperature(Facility facility) {
+		int currentYear = LocalDate.now().getYear();
+		String from = LocalDateTime.of(currentYear - 1, Month.DECEMBER, 1, 0, 0, 0).atZone(ZoneId.of("Europe/Berlin"))
+				.toInstant().toString();
+		String to = LocalDateTime.of(currentYear, Month.FEBRUARY, 28, 23, 59, 59).atZone(ZoneId.of("Europe/Berlin"))
+				.toInstant().toString();
+
+		List<JSONObject> values = EneffcoUtils.readEneffcoDatapointValues(facility.getDeltaTemeratureId(), from, to,
+				TIMEINTERVAL_15M, false);
+
+		float avgDeltaTemperature = getAverageValue(values);
+		System.out.println("Avg. Temperaturdifferenz: " + getAverageValue(values));
+		String textFragment = "";
+		if (!facility.getTww()) { // TODO: Check. hat brennwertkessel
+			if (avgDeltaTemperature < 15) {
+				// TODO Die Temperaturspreizung ist mit/um xK zu gering. Fragen ob entsprechend
+				// ändern
+				textFragment = "Die Temperaturspreizung ist mit " + avgDeltaTemperature
+						+ "K zu gering. Maßnahmen: Heizkurve einstellen, Absenkung VL-Temp., Verringerung der Wasserumlaufmenge.";
+			}
+		} else {
+			if (avgDeltaTemperature < 10) {
+				// TODO Die Temperaturspreizung ist mit/um xK zu gering. Fragen ob entsprechend
+				// ändern
+				textFragment = "Die Temperaturspreizung ist zu gering. Maßnahmen: Heizkurve einstellen, Absenkung VL-Temp., Verringerung der Wasserumlaufmenge.";
+			}
+		}
+
+		System.out.println(textFragment);
+		return textFragment;
+	}
+
+	// TODO move
+	public static float getAverageValue(List<JSONObject> values) {
+		float sum = 0;
+		for (int i = 0; i < values.size(); i++) {
+			sum += values.get(i).getFloat("Value");
+		}
+		return sum / values.size();
+	}
 
 	// TODO: pass codes and only fill those. Reusie filter logic from ACO
 	@GetMapping("/fill-facilities")
@@ -73,6 +142,9 @@ public class EnergielenkerController {
 			facilityMock.setVolumenstromId("607f72ce-7172-40f3-a1de-c0305f3b482f");
 			facilityMock.setLeistungId("ee669174-10db-4e40-9b67-6b88a15707ee");
 			facilityMock.setAussentemperaturId("0e1cb31b-52b7-4732-848a-f87a29afab49");
+			facilityMock.setNutzungsgradId("ab7407da-f066-40e6-a975-6288ffa5ddb3");
+			facilityMock.setAuslastungKgrId("cd56cb68-f551-4eac-8db2-4ed8d1ac011f");
+			facilityMock.setDeltaTemeratureId("3db141b3-5414-4dea-b696-51e89c74494e");
 			facilityMock.setAussentemperaturCode("433_T");
 			facilityMock.setVersorgungstyp("TWW + Heizung");
 			facilityMock.setTww(true);
@@ -82,21 +154,13 @@ public class EnergielenkerController {
 			facilityMock.setMinimumAussentemp("2930");
 			facilityMock.setEinsparzaehlerobjektid("27249");
 			facilityMock.setLiegenschaftObjektId("25355");
-			facilityMock.setNutzungsgradId("ab7407da-f066-40e6-a975-6288ffa5ddb3");
 			facilitiesMock.add(facilityMock);
 
 			// TODO: move rest of block to proper location
 
-			final int TIMEINTERVAL_WEEK = 86407;
 			for (int i = 0; i < facilitiesMock.size(); i++) {
-				List<JSONObject> values = EneffcoUtils.readEneffcoDatapointValues(
-						facilitiesMock.get(i).getNutzungsgradId(),
-						java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).minus(90, ChronoUnit.DAYS)
-								.toString(), // todo: change to more days
-						java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).toString(),
-						TIMEINTERVAL_WEEK, false);
-
-				System.out.println(values);
+				System.out.println(analyseFacilitySize(facilitiesMock.get(i)));
+				System.out.println(analyseDeltaTemperature(facilitiesMock.get(i)));
 				System.out.println("Done with " + facilitiesMock.get(i).getCode());
 			}
 			return facilitiesMock;

@@ -4,7 +4,7 @@
 //     // - Add Variables for EL-ids (Felder der Textbausteine)
 //     private String nighttimeFrom; // Einsparzaehlerprotokoll> 040 Nachtabsenkung Start; z.b. "01:30",
 //     private String nighttimeTo; // Einsparzaehlerprotokoll> 041 Nachtabsenkung Ende; z.b. "02:30"
-    
+
 package com.ewus.ba.energielenkerEneffcoService.model;
 
 import java.time.LocalDate;
@@ -18,18 +18,20 @@ public class Facility {
     private String code; // Code der Anlage, z.b. STO_001
     private int nachtabsenkungAbfrageintervall; // Einsparzaehlerprotokoll > 200 Nachtabsenkung Abfrageintervall (Tage)
     private int nachtabsenkungAbfragezeitraum; // Einsparzaehlerprotokoll > 201 Nachtabsenkung Abfragezeitraum (Tage)
-    
-   
+
     private int wmzEneffco; // Einsparzaehlerprotokoll> 190 WMZ Eneffco (letzte Stelle im DP Code)
-    // vorlaufId, aussentemperatur, volumenstromId and leistungId are eneffco object ids
+    // vorlaufId, aussentemperatur, volumenstromId and leistungId are eneffco object
+    // ids
     private String vorlaufId; // Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.WMZ.VL.[wmzEneffco]
-                            // z.b. "4a3a0973-2fc4-47b6-aaf7-1ddd52bc94af"
+                              // z.b. "4a3a0973-2fc4-47b6-aaf7-1ddd52bc94af"
     private String ruecklaufId; // Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.WMZ.RL.[wmzEneffco]
     private String volumenstromId;// Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.WMZ.VS.[wmzEneffco]
     private String leistungId; // Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.WMZ.L.[wmzEneffco]
     private String aussentemperaturId; // Eneffco Datenpunkt Tabelle: [aussentemperaturCode]}
-    private String nutzungsgrad; // Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.ETA.[wmzEneffco]
-    
+    private String nutzungsgradId; // Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.ETA.[wmzEneffco]
+    private String auslastungKgrId; // Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.AUS.KGR.[wmzEneffco]
+    private String deltaTemperatureId; // Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.WMZ.DT.[wmzEneffco]
+
     private String aussentemperaturCode; // EL>Liegenschaft> 038 zugeordnete Außentemperatur
     private String versorgungstyp; // EL>Liegenschaft> 030 Versorgungstyp
     private boolean tww; // if(wmzEneffco != 1) false
@@ -112,11 +114,27 @@ public class Facility {
     }
 
     public String getNutzungsgradId() {
-        return nutzungsgrad;
+        return nutzungsgradId;
     }
 
-    public void setNutzungsgradId(String nutzungsgrad) {
-        this.nutzungsgrad = nutzungsgrad;
+    public void setNutzungsgradId(String nutzungsgradId) {
+        this.nutzungsgradId = nutzungsgradId;
+    }
+
+    public String getAuslastungKgrId() {
+        return auslastungKgrId;
+    }
+
+    public void setAuslastungKgrId(String auslastungKgrId) {
+        this.auslastungKgrId = auslastungKgrId;
+    }
+
+    public String getDeltaTemeratureId() {
+        return deltaTemperatureId;
+    }
+
+    public void setDeltaTemeratureId(String deltaTemperatureId) {
+        this.deltaTemperatureId = deltaTemperatureId;
     }
 
     public String getVolumenstromId() {
@@ -319,15 +337,19 @@ public class Facility {
         // Abfrage-Parameter from und to ...
         str.append("wmzEneffco: " + wmzEneffco + "\n"); // Einsparzaehlerprotokoll> 190 WMZ Eneffco (letzte Stelle im DP
                                                         // Code)
-        // vorlaufId, aussentemperatur, volumenstromId and leistungId are eneffco object ids
-        str.append("vorlaufId: " + vorlaufId + "\n"); // Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.WMZ.VL.[wmzEneffco]
+        // vorlaufId, aussentemperatur, volumenstromId and leistungId are eneffco object
+        // ids
+        str.append("vorlaufId: " + vorlaufId + "\n"); // Eneffco Datenpunkt Tabelle:
+                                                      // [Anlagencode].WEZ.WMZ.VL.[wmzEneffco]
         // z.b. "4a3a0973-2fc4-47b6-aaf7-1ddd52bc94af"
         str.append("ruecklaufId: " + ruecklaufId + "\n"); // Eneffco Datenpunkt Tabelle:
-                                                      // [Anlagencode].WEZ.WMZ.RL.[wmzEneffco]
+        // [Anlagencode].WEZ.WMZ.RL.[wmzEneffco]
         str.append("aussentemperaturCode: " + aussentemperaturCode + "\n");
-        str.append("aussentemperaturId: " + aussentemperaturId + "\n"); // EL>Liegenschaft> 038 zugeordnete Außentemperatur
+        str.append("aussentemperaturId: " + aussentemperaturId + "\n"); // EL>Liegenschaft> 038 zugeordnete
+                                                                        // Außentemperatur
         str.append("volumenstromId: " + volumenstromId + "\n");// Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.WMZ.VS.
-        str.append("leistungId: " + leistungId + "\n"); // Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.WMZ.L.[wmzEneffco]
+        str.append("leistungId: " + leistungId + "\n"); // Eneffco Datenpunkt Tabelle:
+                                                        // [Anlagencode].WEZ.WMZ.L.[wmzEneffco]
         str.append("versorgungstyp: " + versorgungstyp + "\n"); // EL>Liegenschaft> 030 Versorgungstyp
         str.append("tww: " + tww + "\n"); // if(wmzEneffco != 1) false
         // else if (versorgungstyp.toLowerCase().contains("tww")) true
@@ -371,4 +393,3 @@ public class Facility {
         return str.toString();
     }
 }
-

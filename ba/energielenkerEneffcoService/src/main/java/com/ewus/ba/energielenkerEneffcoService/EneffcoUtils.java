@@ -71,16 +71,23 @@ public class EneffcoUtils {
             facility.setVolumenstromId(getEneffcoId(c, facility.getCode() + ".WEZ.WMZ.VS." + facility.getWmzEneffco()));
             facility.setLeistungId(getEneffcoId(c, facility.getCode() + ".WEZ.WMZ.L." + facility.getWmzEneffco()));
             facility.setNutzungsgradId(getEneffcoId(c, facility.getCode() + ".WEZ.ETA." + facility.getWmzEneffco()));
+            facility.setAuslastungKgrId(
+                    getEneffcoId(c, facility.getCode() + ".WEZ.AUS.KGR." + facility.getWmzEneffco()));
+            facility.setDeltaTemeratureId(
+                    getEneffcoId(c, facility.getCode() + ".WEZ.WMZ.DT." + facility.getWmzEneffco()));
+
             // System.out.println("Getting aussentemperatur based on code: " +
             // facility.getAussentemperaturCode() + "...\n");
             facility.setAussentemperaturId(getEneffcoId(c, facility.getAussentemperaturCode()));
             System.out.println("## Eneffco ids: " + facility.getCode());
-            System.out.println("Vorlauf: " + facility.getVorlaufId());
-            System.out.println("Ruecklauf: " + facility.getRuecklaufId());
-            System.out.println("Volumenstrom: " + facility.getVolumenstromId());
-            System.out.println("Leistung: " + facility.getLeistungId());
-            System.out.println("Aussentemperatur: " + facility.getAussentemperaturId());
-            System.out.println("Nutzungsgrad: " + facility.getNutzungsgradId());
+            System.out.println("VorlaufId: " + facility.getVorlaufId());
+            System.out.println("RuecklaufId: " + facility.getRuecklaufId());
+            System.out.println("VolumenstromId: " + facility.getVolumenstromId());
+            System.out.println("LeistungId: " + facility.getLeistungId());
+            System.out.println("AussentemperaturId: " + facility.getAussentemperaturId());
+            System.out.println("NutzungsgradId: " + facility.getNutzungsgradId());
+            System.out.println("AuslastungKgrId: " + facility.getAuslastungKgrId());
+            System.out.println("getDeltaTemeratureId: " + facility.getDeltaTemeratureId());
 
         } catch (Exception e) {
             // System.err.println("# Error fetchEneffcoIds: " + facility.getCode());
