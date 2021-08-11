@@ -6,7 +6,6 @@ TODO:
 - AnalyseObjectController replace example from https://www.javaguides.net/2019/01/spring-boot-microsoft-sql-server-jpa-hibernate-crud-restful-api-tutorial.html
 - Exception handling (abschnitt 10): https://www.javaguides.net/2019/01/spring-boot-microsoft-sql-server-jpa-hibernate-crud-restful-api-tutorial.html  
 - Share Data between EL-MS, EneffcoMS and AnalyseMS
-- replace usage of okhttp3
 
 - Testing, orientiert an kbe projekt
 - rückgabetypen und static für umgeschriebene Methoden überprüfen
@@ -19,7 +18,8 @@ TODO:
 
 in analysis controller write equivalent to fillKiObjects
     - dafür geschicktes Kommunikationsformat wählen, wahrscheinlich json. Alternativ möglihkeit ElObject in AnalysisObjects zu überführen.
-    - OkHttpLibrary überall verwenden, und möglichst code duplikate vermeiden
+    - OkHttpLibrary überall verwenden, und möglichst code duplikate vermeiden 
+      - https://hc.apache.org/httpclient-legacy/performance.html  EIN CLIENT PRO SERVICE/Klasse nicht pro request
 
 
 ## Nachtabsenkung
@@ -33,6 +33,7 @@ Regelparameter_Soll_Werte, Zeitprogram Heizkreis
   - Mittelwert über letztes halebs Jahr
   - (ist: leistung / maximalleistung der Anlage)
   - Dann mittlere Auslastung der Wintermonate (Dez, Jan, Feb). 
+  - 
 
 
 ## Vor und RL Temperatur:
@@ -66,12 +67,70 @@ Deployment: erstmal nur systeno
 
 ## Sommerabschaltung / Heizgrenze
 
-125 ****
-
-
-****
 
 - Extrag Feld in Energielenker für Anlagen. Wenn werte fehlen, soll dort reingeschrieben werden was fehlt. 
 - Wertebereiche und zugehörige Textbausteine in Datenbank, da rantasten wichtig ist.  
 -
-##
+## Fragen:
+- Mittel Nutzungsgrad: Über welchen Zeitraum den Nutzungsgrad betrachten? (start-/endzeitpunkt. zb. letzte 3/12 Monate?)
+- Zeitraum VL
+- 
+
+
+
+# Umsetzung
+
+- fetch all ids from db
+- fetch all configurations
+- get only those values that are in configuration
+
+
+
+
+# Fragen
+- Auslastng datenpunkt code
+
+
+
+## Flexible Grenzwert definitionen
+Datenbank tabelle Textbaustein_Zuordnungen
+  - code (ID, oder id aus min und max)
+    - Basiswert code,
+    - ergänzt um eine Silbe. mit Andreas/TObias absprechen / nach standard schema
+    - Wertebereichabschnitt_Id
+  - Min
+  - Max
+  - Textbaustein
+
+## Analyseeinstellungen
+Anlagenanalyse_Konfigurationen
+- Anlagencode
+- Analyse ID
+- Aktiv:bool
+- LogId
+
+## Analysen
+- ID
+- Beschreibung
+- Zugehörige textbaustein-zuordnungen (als ID zusammengesetzter Textbaustein_Zuordnungen.Code bzw. ...Fremdschlüssel(Min, Max))
+- (Bei bedarf können wie )
+## Analyse-Request
+- Body: Anlagencodes
+- URL: TODO
+- 
+### Ergebniss caching / logging
+- Berechnete Ergebnisse werden in Tabelle gespeichert:
+  - Auswertungs_Ergebnisse
+    - Anlagencode
+    - AnalyseId
+    - Wert
+    - Zeitpunkt
+    - Status: Liste logs
+      - Akzeptiert/Bearbeitet/Abgelehnt
+      - Datum
+      - Benutzer
+    - LogID
+
+
+# Frontend 
+- 

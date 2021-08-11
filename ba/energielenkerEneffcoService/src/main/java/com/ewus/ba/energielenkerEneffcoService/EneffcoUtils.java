@@ -9,13 +9,25 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 import org.apache.commons.io.IOUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.MediaType;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okhttp3.HttpUrl;
+import okhttp3.Call;
+import okhttp3.Callback;
+
 import com.ewus.ba.energielenkerEneffcoService.model.Facility;
 
 // TODO: telete if not necessary. Otherwise rename MS, f.i.. to dataService. wär aber schön wenns ausschließlich energielenker
@@ -26,6 +38,8 @@ public class EneffcoUtils {
 
     public static String ENEFFCO_BASE_URL = "https://ewus.eneffco.de/api/v1.0";
 
+    private static final OkHttpClient client = new OkHttpClient().newBuilder().connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS).build();
     // public static void setEneffcoToken() {
     // tokenEneffco = "Basic " + Config.readProperty("config.properties",
     // "tokenEneffco");
@@ -152,6 +166,46 @@ public class EneffcoUtils {
         } catch (Exception e) {
             Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
             return "";
+        }
+    }
+
+    // TODO: use HttpUrl.Builder und .addQueryParameter("from", from)
+    public static List<JSONObject> readEneffcoDatapointValues(String datapointId, String from, String to,
+            int timeInterval, boolean includeNanValues) {
+        System.out.println("readEneffcoDatapointValues: datapointId: " + datapointId + ", from: " + from + ", to: " + to
+                + ", timeInterval: " + timeInterval + ", includeNanValues: " + includeNanValues);
+
+        HttpUrl.Builder httpBuilder = HttpUrl.parse(ENEFFCO_BASE_URL + "/datapoint/" + datapointId + "/value")
+                .newBuilder();
+        httpBuilder.addQueryParameter("from", from);
+        httpBuilder.addQueryParameter("to", to);
+        httpBuilder.addQueryParameter("timeInterval", String.valueOf(timeInterval));
+        httpBuilder.addQueryParameter("includeNanValues", String.valueOf(includeNanValues));
+
+        Request request = new Request.Builder().url(httpBuilder.build()).addHeader("Authorization", tokenEneffco)
+                .build();
+        Response response = null;
+        try {
+            response = client.newCall(request).execute();
+
+            if (response.code() == 400 || response.code() == 500) {
+                System.out.println("Response get enfeffco datapoint values: " + response.code());
+                System.out.println(response);
+                return null;
+            }
+
+            String responseBody = response.body().string();
+            JSONArray jArray = new JSONArray(responseBody);
+            List<JSONObject> jObjects = new ArrayList<>();
+
+            for (int i = 0; i < jArray.length(); i++) {
+                jObjects.add(jArray.getJSONObject(i));
+            }
+            return jObjects;
+
+        } catch (Exception e) {
+            Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+            return null;
         }
     }
 

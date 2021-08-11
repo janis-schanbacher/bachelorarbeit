@@ -20,9 +20,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.logging.Level;
+import java.time.temporal.ChronoUnit;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -83,9 +85,19 @@ public class EnergielenkerController {
 			facilityMock.setNutzungsgradId("ab7407da-f066-40e6-a975-6288ffa5ddb3");
 			facilitiesMock.add(facilityMock);
 
-			// TODO: move to proper location
+			// TODO: move rest of block to proper location
+
+			final int TIMEINTERVAL_WEEK = 86407;
 			for (int i = 0; i < facilitiesMock.size(); i++) {
-				EneffcoUtils.readEneffcoDatapoint(facilitiesMock.get(i).getNutzungsgradId());
+				List<JSONObject> values = EneffcoUtils.readEneffcoDatapointValues(
+						facilitiesMock.get(i).getNutzungsgradId(),
+						java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).minus(90, ChronoUnit.DAYS)
+								.toString(), // todo: change to more days
+						java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).toString(),
+						TIMEINTERVAL_WEEK, false);
+
+				System.out.println(values);
+				System.out.println("Done with " + facilitiesMock.get(i).getCode());
 			}
 			return facilitiesMock;
 		}
