@@ -39,6 +39,8 @@ import okhttp3.Response;
 import okhttp3.HttpUrl;
 import okhttp3.Call;
 import okhttp3.Callback;
+
+import org.apache.commons.configuration.SystemConfiguration;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -74,6 +76,7 @@ public class AnalysisController {
             textFragments.add(analyseFacilitySize(facility));
             textFragments.add(analyseDeltaTemperature(facility));
             textFragments.add(analyseUtilizationRate(facility));
+            textFragments.add(analyseReturnTemperature(facility));
             // TODO: add code to textFragements.
             // TODO: maybe following schema: response: ["ACO.001" : ["text..". "text2.."],
             // "ACO.002" : [...], oder als JSONObject mit Array für jeden Code
@@ -88,8 +91,8 @@ public class AnalysisController {
     // TODO: Bestimmung From, To
     public static String analyseFacilitySize(Facility facility) {
         List<JSONObject> values = EneffcoUtils.readEneffcoDatapointValues(facility.getAuslastungKgrId(),
-                java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).minus(400, ChronoUnit.DAYS)
-                        .toString(), // todo: change to more days
+                java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).minus(365, ChronoUnit.DAYS)
+                        .toString(), // TODO: change amount of days
                 java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).toString(), TIMEINTERVAL_15M,
                 false);
 
@@ -187,6 +190,49 @@ public class AnalysisController {
         return textFragment;
     }
 
+    // TODO: move to analysis service
+    public static String analyseReturnTemperature(Facility facility) {
+        int currentYear = LocalDate.now().getYear();
+        int currentMonth = LocalDate.now().getMonthValue();
+        int currentDay = LocalDate.now().getDayOfMonth();
+        String from, to;
+        if (currentMonth <= 2) { // First months of year
+            from = LocalDateTime.of(currentYear - 1, Month.DECEMBER, 1, 0, 0, 0).atZone(ZoneId.of("Europe/Berlin"))
+                    .toInstant().toString();
+            to = java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).toString();
+        } else if (currentMonth >= 12 && currentDay > 14) { // at least 2 weeks in timesspan
+            from = LocalDateTime.of(currentYear, Month.DECEMBER, 1, 0, 0, 0).atZone(ZoneId.of("Europe/Berlin"))
+                    .toInstant().toString();
+            to = java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).toString();
+
+        } else {
+            from = LocalDateTime.of(currentYear - 1, Month.DECEMBER, 1, 0, 0, 0).atZone(ZoneId.of("Europe/Berlin"))
+                    .toInstant().toString();
+            to = LocalDateTime.of(currentYear, Month.FEBRUARY, 28, 23, 59, 59).atZone(ZoneId.of("Europe/Berlin"))
+                    .toInstant().toString();
+        }
+
+        List<JSONObject> values = EneffcoUtils.readEneffcoDatapointValues(facility.getRuecklaufId(), from, to,
+                TIMEINTERVAL_DAY, false);
+
+        // TODO: fetch grenzwert and TextFragement from db
+        final double LIMIT_PORTION_ACCEPTED_MIN = 95.0 / 100;
+        final double LIMIT_RETURN_TEMPERATURE = 55;
+        double portionOfValuesMarginBelowLimit = getPortionOfValuesMargin(values, LIMIT_RETURN_TEMPERATURE);
+
+        String textFragment = "";
+        // TODO: check 90% vs 95%/. Absichern, dass gut: alle werte von .RL.WMZ
+        // betrachten, zählen wenn unter 55, prozentsatz bilden.Wenn Kein
+        // Brennwertkessel kein Textbaustein
+        if (portionOfValuesMarginBelowLimit < LIMIT_PORTION_ACCEPTED_MIN) {
+            textFragment = "Brennwerteffekt wird nicht ausreichend genutzt. Maßnahmen: Heizkurve einstellen, Absenkung VL-Temp., Verringerung der Wasserumlaufmenge";
+        }
+
+        System.out.println("portionOfValuesMarginBelowLimit Eneffco: " + portionOfValuesMarginBelowLimit);
+        System.out.println(textFragment);
+        return textFragment;
+    }
+
     // TODO move
     public static float getAverageValue(List<JSONObject> values) {
         float sum = 0;
@@ -194,6 +240,15 @@ public class AnalysisController {
             sum += values.get(i).getFloat("Value");
         }
         return sum / values.size();
+    }
+
+    public static double getPortionOfValuesMargin(List<JSONObject> values, double limit) {
+        int acceptedValuesCount = 0;
+        System.out.println("limit: " + limit);
+        for (int i = 0; i < values.size(); i++) {
+            acceptedValuesCount += (values.get(i).getFloat("Value") < limit) ? 1 : 0;
+        }
+        return (double) acceptedValuesCount / values.size();
     }
 
 }
