@@ -33,10 +33,15 @@ public class Facility {
     private String deltaTemperatureId; // Eneffco Datenpunkt Tabelle: [Anlagencode].WEZ.WMZ.DT.[wmzEneffco]
 
     private String aussentemperaturCode; // EL>Liegenschaft> 038 zugeordnete Außentemperatur
+    private boolean brennwertkessel; // EL>Anlagentechnik> 011 Brennwertkessel
+    // TODO 021 Brennwertkessel berücksichtigen, wahrsch. iabh wmzEneffco
+
     private String versorgungstyp; // EL>Liegenschaft> 030 Versorgungstyp
     private boolean tww; // if(wmzEneffco != 1) false
                          // else if (versorgungstyp.toLowerCase().contains("tww")) true
                          // else false
+
+    private double utilizationRatePreviousWeek; // ESZ > 103 Nutzungsgrad Vorwoche
     private String nighttimeFrom; // Einsparzaehlerprotokoll> 040 Nachtabsenkung Start; z.b. "01:30",
     private String nighttimeTo; // Einsparzaehlerprotokoll> 041 Nachtabsenkung Ende; z.b. "02:30"
     // results
@@ -105,6 +110,14 @@ public class Facility {
         this.aussentemperaturCode = aussentemperaturCode;
     }
 
+    public boolean getBrennwertkessel() {
+        return brennwertkessel;
+    }
+
+    public void setBrennwertkessel(boolean brennwertkessel) {
+        this.brennwertkessel = brennwertkessel;
+    }
+
     public String getAussentemperaturId() {
         return aussentemperaturId;
     }
@@ -167,6 +180,14 @@ public class Facility {
 
     public void setNighttimeFrom(String nighttimeFrom) {
         this.nighttimeFrom = nighttimeFrom;
+    }
+
+    public double getUtilizationRatePreviousWeek() {
+        return utilizationRatePreviousWeek;
+    }
+
+    public void setUtilizationRatePreviousWeek(double utilizationRatePreviousWeek) {
+        this.utilizationRatePreviousWeek = utilizationRatePreviousWeek;
     }
 
     public String getNighttimeTo() {

@@ -137,4 +137,17 @@ Anlagenanalyse_Konfigurationen
 
 
 # Frontend 
+
+
+## 05 Anlagengröße
+- ANlagengröße 15min tkt!!
+- (nutzungsgra) TImeinterval 1 Tag. WEgen verschiebeungen. der wird berechnet aus brennwertT/gaswertT. Wenn zu klein werden falsche werte miteinander dividiert
+- EL Atribut  
+- hier ist zeitraum egal, weil die werte nur von zeitpunkten mit -14<t<-10
 - 
+## 00 Nutzungsgrad
+- Wenn mit wasser über EL
+- EL versuchen zu berechnen, wenn nichts rauskommt über eneffco.
+  - ESZ>103 NUtzungsgrad vorwoche
+
+- grenwert konfigurationen ausblick über webanwendung

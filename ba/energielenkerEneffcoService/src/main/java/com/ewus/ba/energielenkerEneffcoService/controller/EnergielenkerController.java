@@ -106,7 +106,7 @@ public class EnergielenkerController {
 			return facilitiesMock;
 		}
 
-		facilities = EnergielenkerUtils.getESZenergielenkerTableEinsparzaehler(dbConnection, facilities);
+		facilities = EnergielenkerUtils.fillEnergielenkerEszIds(dbConnection, facilities);
 
 		try {
 			for (int i = 0; i < facilities.size(); i++) {
@@ -122,7 +122,7 @@ public class EnergielenkerController {
 
 			for (int i = 0; i < facilitiesFiltered.size(); i++) {
 				try {
-					facilitiesFiltered = EnergielenkerUtils.GET_attributes_JSON_Einsparzaehler_KI(
+					facilitiesFiltered = EnergielenkerUtils.fillEnergielenkerFields(
 							facilitiesFiltered.get(i).getEinsparzaehlerobjektid(), facilitiesFiltered, i);
 					EnergielenkerUtils.fetchLiegenschaftFields(dbConnection, facilitiesFiltered.get(i));
 					facilitiesFiltered.get(i).calcTww();

@@ -56,6 +56,7 @@ import com.ewus.ba.energielenkerEneffcoService.controller.EnergielenkerControlle
 // @RequestMapping(value = "/")
 public class AnalysisController {
     final static int TIMEINTERVAL_15M = 900;
+    final static int TIMEINTERVAL_DAY = 86400;
     final static int TIMEINTERVAL_WEEK = 86407;
     private static final OkHttpClient client = new OkHttpClient().newBuilder().connectTimeout(10, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS).build();
@@ -72,6 +73,7 @@ public class AnalysisController {
             // TODO: fetch configurations and only do desired analysis
             textFragments.add(analyseFacilitySize(facility));
             textFragments.add(analyseDeltaTemperature(facility));
+            textFragments.add(analyseUtilizationRate(facility));
             // TODO: add code to textFragements.
             // TODO: maybe following schema: response: ["ACO.001" : ["text..". "text2.."],
             // "ACO.002" : [...], oder als JSONObject mit Array für jeden Code
@@ -91,12 +93,61 @@ public class AnalysisController {
                 java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).toString(), TIMEINTERVAL_15M,
                 false);
 
-        float avgNutzungsgrad = getAverageValue(values);
+        float avgAuslastungKgr = getAverageValue(values);
         // TODO: fetch grenzwert and TextFragement from db
-        String textFragment = avgNutzungsgrad > 80 ? ""
-                : "Heizkessel ist überdimensioniert, Durchschnittliche Auslastung " + avgNutzungsgrad
+        String textFragment = avgAuslastungKgr > 80 ? ""
+                : "Heizkessel ist überdimensioniert, Durchschnittliche Auslastung " + avgAuslastungKgr
                         + "%. Mögliche Maßnahmen: Brenner einstellen; andere Düse verbauen (geringere Heizleistung) oder Neubau";
         System.out.println("Avg. Nutzungsgrad zw. -10 und -14 Grad: " + getAverageValue(values));
+        System.out.println(textFragment);
+        return textFragment;
+    }
+
+    // TODO: move to analysis service
+    public static String analyseUtilizationRate(Facility facility) {
+        int currentYear = LocalDate.now().getYear();
+        int currentMonth = LocalDate.now().getMonthValue();
+        int currentDay = LocalDate.now().getDayOfMonth();
+        String from, to;
+        if (currentMonth <= 3) { // First months of year
+            from = LocalDateTime.of(currentYear - 1, Month.NOVEMBER, 1, 0, 0, 0).atZone(ZoneId.of("Europe/Berlin"))
+                    .toInstant().toString();
+            to = java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).toString();
+        } else if (currentMonth >= 11 && currentDay > 14) { // at least 2 weeks in timesspan
+            from = LocalDateTime.of(currentYear, Month.NOVEMBER, 1, 0, 0, 0).atZone(ZoneId.of("Europe/Berlin"))
+                    .toInstant().toString();
+            to = java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).toString();
+
+        } else {
+            from = LocalDateTime.of(currentYear - 1, Month.NOVEMBER, 1, 0, 0, 0).atZone(ZoneId.of("Europe/Berlin"))
+                    .toInstant().toString();
+            to = LocalDateTime.of(currentYear, Month.MARCH, 28, 23, 59, 59).atZone(ZoneId.of("Europe/Berlin"))
+                    .toInstant().toString();
+        }
+
+        List<JSONObject> values = EneffcoUtils.readEneffcoDatapointValues(facility.getNutzungsgradId(), from, to,
+                TIMEINTERVAL_DAY, false);
+
+        float avgUtilizationRate = getAverageValue(values);
+
+        String textFragment = "";
+        // TODO: choose which condition first
+        // werden soll in textbaustein. E.g. Avg Nutzungsgrad vorwoche
+        final double LIMIT_UTILIZATION_RATE = facility.getBrennwertkessel() ? 90 : 80;
+        if (avgUtilizationRate < LIMIT_UTILIZATION_RATE) {
+            textFragment = "Die Anlage weist einen geringen Nutzungsgrad auf (Avg. Nutzungsgrad: " + avgUtilizationRate
+                    + "%). Maßnahmen: Prüfen ob WMZ Gesamt gemessen wird; Anlagenanalyse durchführen.​";
+        } else if (facility.getUtilizationRatePreviousWeek() != 0
+                && facility.getUtilizationRatePreviousWeek() < LIMIT_UTILIZATION_RATE) {
+            textFragment = "Die Anlage weist einen geringen Nutzungsgrad auf (Nutzungsgrad Vorwoche: "
+                    + facility.getUtilizationRatePreviousWeek()
+                    + "). Maßnahmen: Prüfen ob WMZ Gesamt gemessen wird; Anlagenanalyse durchführen.";
+        }
+
+        // TODO: fetch grenzwert and TextFragement from db
+
+        System.out.println("avgUtilizationRate Eneffco: " + avgUtilizationRate + ", Utitilization Rate prev week EL:"
+                + facility.getUtilizationRatePreviousWeek());
         System.out.println(textFragment);
         return textFragment;
     }

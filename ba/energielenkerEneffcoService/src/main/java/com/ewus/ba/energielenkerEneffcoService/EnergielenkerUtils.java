@@ -129,6 +129,7 @@ public class EnergielenkerUtils {
                 // }
 
             }
+            // TODO: check if to delte
             facility.setAussentemperaturCode(
                     EnergielenkerUtils.getStringEnergielenker(facility.getLiegenschaftObjektId(), "2882"));
             facility.setVersorgungstyp(
@@ -210,8 +211,7 @@ public class EnergielenkerUtils {
         }
     }
 
-    public static ArrayList<Facility> GET_attributes_JSON_Einsparzaehler_KI(String pid, ArrayList<Facility> facilities,
-            int index) {
+    public static ArrayList<Facility> fillEnergielenkerFields(String pid, ArrayList<Facility> facilities, int index) {
         String query_url = "https://ewus.elmonitor.de/api/v1/basemonitor/objects/" + pid + "/attributes";
 
         try {
@@ -243,6 +243,10 @@ public class EnergielenkerUtils {
 
                 // System.out.println(jobject);
 
+                if (jobject.get("name").toString().contains("103 Nutzungsgrad Vorwoche")) {
+                    facilities.get(index)
+                            .setUtilizationRatePreviousWeek(Double.parseDouble(jobject.get("id").toString()));
+                }
                 if (jobject.get("name").toString().contains("040 Nachtabsenkung Start")) {
                     facilities.get(index).setAbsenkungWeekStart(jobject.get("id").toString());
                 }
@@ -308,8 +312,7 @@ public class EnergielenkerUtils {
         return facilities;
     }
 
-    public static ArrayList<Facility> getESZenergielenkerTableEinsparzaehler(Connection dbVerbindung,
-            ArrayList<Facility> facilities) {
+    public static ArrayList<Facility> fillEnergielenkerEszIds(Connection dbVerbindung, ArrayList<Facility> facilities) {
 
         ResultSet resultSet = null;
         try {
@@ -331,7 +334,7 @@ public class EnergielenkerUtils {
 
                     // build.setHeizgrenze("test");
                     build.setEinsparzaehlerobjektid(resultSet.getString(1));
-                    // System.out.println("getESZenergielenkerTableEinsparzaehler: ");
+                    // System.out.println("fillEnergielenkerEszIds: ");
                     // System.out.println(resultSet.getString(1));
 
                     facilities.add(build);
