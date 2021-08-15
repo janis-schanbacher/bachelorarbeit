@@ -12,3 +12,7 @@ Agile testing happens continuously. Test cases are set based on user stories. As
 
 ## Links to check/include
 [ The Manifesto for Agile Software Development](https://en.wikipedia.org/wiki/Agile_software_development#The_Agile_Manifesto)
+
+## Beginning of august:
+- hinzukommende anforderungen (flexibeles einstellen der grenzwerte ohne programmierung)
+- mehr zwischenschritte notwendig um aus den gegebenen kennwerten texrbausteine zu generieren. 

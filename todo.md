@@ -6,7 +6,148 @@ TODO:
 - AnalyseObjectController replace example from https://www.javaguides.net/2019/01/spring-boot-microsoft-sql-server-jpa-hibernate-crud-restful-api-tutorial.html
 - Exception handling (abschnitt 10): https://www.javaguides.net/2019/01/spring-boot-microsoft-sql-server-jpa-hibernate-crud-restful-api-tutorial.html  
 - Share Data between EL-MS, EneffcoMS and AnalyseMS
-- replace usage of okhttp3
 
 - Testing, orientiert an kbe projekt
 - rückgabetypen und static für umgeschriebene Methoden überprüfen
+- Move commits from Master to development
+
+
+- klären ob configs in EL oder in separater db gespeichert werden sollen. Falls in EL, als 1 bool feld pro analyse oder liste.
+  - alternativ in db  ewus_assets > auswertungs_configs
+
+
+in analysis controller write equivalent to fillKiObjects
+    - dafür geschicktes Kommunikationsformat wählen, wahrscheinlich json. Alternativ möglihkeit ElObject in AnalysisObjects zu überführen.
+    - OkHttpLibrary überall verwenden, und möglichst code duplikate vermeiden 
+      - https://hc.apache.org/httpclient-legacy/performance.html  EIN CLIENT PRO SERVICE/Klasse nicht pro request
+
+
+## Nachtabsenkung
+Regelparameter_Soll_Werte, Zeitprogram Heizkreis
+- Aktiv/nicht aktiv
+
+- KI Wert 
+
+## \Anlagengrößé anpassen:
+- Auslastung datenpunkt bei Eneffco. Dann was is mittlere auslastung
+  - Mittelwert über letztes halebs Jahr
+  - (ist: leistung / maximalleistung der Anlage)
+  - Dann mittlere Auslastung der Wintermonate (Dez, Jan, Feb). 
+  - 
+
+
+## Vor und RL Temperatur:
+- Eneffco Datenpunkt Rücklauftemperatur angucken
+  - Damit eneffco
+  - Rohdatenpunnkte: Code: .RL, z.b. STO.001.WMZ.RL.1
+  - .1 in meisten fällen, manchmal 2,3,10,11
+  - Ich soll den Datenpunkt nehmen. Also z.b. ACO.001.WEZ.WMZ.RL.1
+    - denn manchmal z.b. andere Einheiten in RohDP,...  
+- Wenn Brennwertkessel nicht unter 55grad... Betrachten?
+  - EL>Anlagentechnik>011 Brennwertkessel 1
+  - EL>Anlagentechnik>021 Brennwertkessel 1
+  - wenn nichts drin steht: Rücklauftemperatur zu niedrig. Kesseltyp ist nicht bekannt..
+- Temperaturdifferenz --> dafü® neuer Datenpunkt in Eneffco
+  - --> Text: pumpenreglung einstellen. Hydraulischer Abgleich,...
+- Entweder überall berechneten Datenpunkt in Eneffco hinzufügen. (Oder selber berechnen.)
+- Evt. noch Vorlauftemperatur
+  - z.b. Differenz: Soll-Heizkurven-Temperatur und tatsächlicher maximaler Vorlauf-Temperatur. Wenn z.b. 5% drüber: weicht ab, ist zu groß
+
+## Nutzungsgrad
+- Datenpunkt aus Eneffco. Abh. von höhe Nutzungsgrad Aussage treffen
+- - Datenpunkt: ACO.001.WEZ.ETA.1 (Nutzungsgrad pro zeitpunkt)
+  - Daraus mittel holen
+- bei Datenpunkten wird etwas berechnet wenn ich ihn abhole. 
+- Timeinterval: wenn ich für nen Tag abrufe, gibt eneffco mir den mittelwert als tageswert
+  - Man kann nichts dazwischen nehmen. Welche optionen es gibt siehe /timeinterval
+  - also z.b. wenn ich 5 tage will 5x tag
+
+
+Deployment: erstmal nur systeno
+
+## Sommerabschaltung / Heizgrenze
+
+
+- Extrag Feld in Energielenker für Anlagen. Wenn werte fehlen, soll dort reingeschrieben werden was fehlt. 
+- Wertebereiche und zugehörige Textbausteine in Datenbank, da rantasten wichtig ist.  
+-
+## Fragen:
+- Mittel Nutzungsgrad: Über welchen Zeitraum den Nutzungsgrad betrachten? (start-/endzeitpunkt. zb. letzte 3/12 Monate?)
+- Zeitraum VL
+- 
+
+
+
+# Umsetzung
+
+- fetch all ids from db
+- fetch all configurations
+- get only those values that are in configuration
+
+
+
+
+# Fragen
+- Auslastng datenpunkt code
+
+
+
+## Flexible Grenzwert definitionen
+Datenbank tabelle Textbaustein_Zuordnungen
+  - Id
+  - (code (ID, oder id aus min und max)
+    - Basiswert code,
+    - ergänzt um eine Silbe. mit Andreas/TObias absprechen / nach standard schema
+    - Wertebereichabschnitt_Id)
+  - Analyse Id
+  - Min
+  - Max
+  - evt Min/Max für kompleeres ersetzen mit Bedingung in einheitlichem format
+  - Textbaustein
+
+## Analyseeinstellungen
+Anlagenanalyse_Konfigurationen
+- Anlagencode
+- Analyse ID
+- Aktiv:bool
+- LogId
+
+## Analysen
+- ID
+- Beschreibung
+- Zugehörige textbaustein-zuordnungen (als ID zusammengesetzter Textbaustein_Zuordnungen.Id) 
+  - evt weglassen, da über select * from textbaustein_zuordnungen where analyseId = Analyse.id; möglich
+
+## Analyse-Request
+- Body: Anlagencodes
+- URL: TODO
+- 
+### Ergebniss caching / logging
+- Berechnete Ergebnisse werden in Tabelle gespeichert:
+  - Auswertungs_Ergebnisse
+    - Anlagencode
+    - AnalyseId
+    - Wert
+    - Zeitpunkt
+    - Status: Liste logs
+      - Akzeptiert/Bearbeitet/Abgelehnt
+      - Datum
+      - Benutzer
+    - LogID
+
+
+# Frontend 
+
+
+## 05 Anlagengröße
+- ANlagengröße 15min tkt!!
+- (nutzungsgra) TImeinterval 1 Tag. WEgen verschiebeungen. der wird berechnet aus brennwertT/gaswertT. Wenn zu klein werden falsche werte miteinander dividiert
+- EL Atribut  
+- hier ist zeitraum egal, weil die werte nur von zeitpunkten mit -14<t<-10
+- 
+## 00 Nutzungsgrad
+- Wenn mit wasser über EL
+- EL versuchen zu berechnen, wenn nichts rauskommt über eneffco.
+  - ESZ>103 NUtzungsgrad vorwoche
+
+- grenwert konfigurationen ausblick über webanwendung
