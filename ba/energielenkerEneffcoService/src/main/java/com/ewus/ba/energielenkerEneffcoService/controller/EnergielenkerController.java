@@ -3,6 +3,7 @@ package com.ewus.ba.energielenkerEneffcoService.controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -56,8 +57,8 @@ public class EnergielenkerController {
 	// TODO: pass codes and only fill those. Reusie filter logic from ACO
 	@GetMapping("/fill-facilities")
 	@ResponseBody
-	public static ArrayList<Facility> fillFacilities(@RequestBody String codesJson) {
-		// public static ArrayList<Facility> fillFacilities(@RequestBody String
+	public ArrayList<Facility> fillFacilities(@RequestParam String codesJson) {
+		// public ArrayList<Facility> fillFacilities(@RequestBody String
 		// codesJson) {
 		System.out.println(codesJson);
 		// TODO: use library to parse json array
