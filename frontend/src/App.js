@@ -1,6 +1,6 @@
 import React from 'react';
 // import { Counter } from './components/counter/Counter';
-import ResultTable from './components/resultTable/ResultTable'
+import AnalysisModule from './components/analysisModule/AnalysisModule'
 import './App.css';
 
 function App() {
@@ -10,7 +10,7 @@ function App() {
         {/* <Counter /> */}
         <h1>Analyse Auswertung</h1>
       </header>
-        <ResultTable />
+        <AnalysisModule />
     </div>
   );
 }

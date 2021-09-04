@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
-import { Table, Input, Button, Popconfirm, Form } from 'antd';
+import { Table, Input, Button, Form } from 'antd';
 import axios from "axios";
-import qs from 'qs'
+// import qs from 'qs'
 import { apiUrl } from "../../helper/url";
 import CodeSelection from '../codeSelection/CodeSelection';
 
@@ -87,7 +87,7 @@ const EditableCell = ({
   return <td {...restProps}>{childNode}</td>;
 };
 
-const ResultTable = () => {
+const AnalysisModule = () => {
   const [dataSource, setDataSource] = useState([
     // {
     //   key: '0',
@@ -101,7 +101,8 @@ const ResultTable = () => {
     // },
   ]);
 
-  const [count, setCount] = useState(2);
+  const [value, setValue] = useState(['0-0-1']); // TODO: change default to []
+
 
 //   useEffect(() => {
 //     // TODO: pass from Codes seletion
@@ -165,7 +166,7 @@ const ResultTable = () => {
   ];
 
   const handleAnalyse = () => {
-    const body = ["ACO.001", "ACO.002"];
+    const body = value; // ["ACO.001", "ACO.002"];
     axios.post(`${apiUrl}/analyse`, body)
 
     // axios.get(`${apiUrl}/analyse`, {
@@ -180,28 +181,17 @@ const ResultTable = () => {
 
       const { data } = res;
       setDataSource(Object.keys(data).map(key => {
-        console.log(data[key]);
         return {
           key: key, 
           code: key, 
           textFragments: data[key].join(';\n')}
       }))
       // fillDataSource(Object.keys(data).map(key => data[key]));
-      console.log(data) 
+      // console.log(data) 
   }).catch((err) => {
     console.log(err)
   });
   }
-
-  const handleAdd = () => {
-    const newData = {
-      key: count,
-      name: `Edward King ${count}`,
-      age: '32',
-    };
-    setDataSource([...dataSource, newData]);
-    setCount(count + 1);
-  };
 
   const handleSave = (row) => {
     const newData = dataSource;
@@ -211,11 +201,10 @@ const ResultTable = () => {
     setDataSource(newData);
   };
 
-  const handleDelete = (key) => {
-    // const dataSource = [...this.state.dataSource];
-  
-      setDataSource(dataSource.filter((item) => item.key !== key));
-    };
+  // const handleDelete = (key) => {
+  //   setDataSource(dataSource.filter((item) => item.key !== key));
+  // };
+
   const components = {
     body: {
       row: EditableRow,
@@ -254,22 +243,14 @@ const ResultTable = () => {
   // TODO: move CodeSelection and Analysis Button to parent
   return(
     <div>
-        <CodeSelection /> 
-        <Button
-          onClick={handleAdd}
-          type="primary"
-          style={{
-              marginBottom: 16,
-          }}
-        >
-        Add a row
-        </Button>
+        <CodeSelection value={value} setValue={setValue} /> 
         <Button
           onClick={handleAnalyse}
           type="primary"
           style={{
-              marginBottom: 16,
-          }}
+              margin: "5px 5px 15px 5px",
+              float: 'left'
+          }} // TODO: use StyledComponend
         >
         Analyse
         </Button>
@@ -288,4 +269,4 @@ const ResultTable = () => {
   );
 }
 
-export default ResultTable
+export default AnalysisModule

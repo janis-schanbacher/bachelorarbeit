@@ -1,6 +1,8 @@
 import React, { useState, useEffect} from 'react';
 import { TreeSelect } from 'antd';
 import axios from "axios";
+import PropTypes from "prop-types";
+
 import { apiUrl } from "../../helper/url";
 
 const { SHOW_PARENT } = TreeSelect;
@@ -48,9 +50,9 @@ const { SHOW_PARENT } = TreeSelect;
 //   },
 // ];
 
-// TODO: AnalysisPage > [CodeSelection, AnalyseButton, ResultTable]
-const CodeSelection = () => { 
-    const [value, setValue] = useState(['0-0-0', '0-0-1']); // TODO: change default to []
+// TODO: AnalysisPage > [CodeSelection, AnalyseButton, AnalysisModule]
+const CodeSelection = ({value, setValue}) => { 
+    // const [value, setValue] = useState(['0-0-0', '0-0-1']); // TODO: change default to []
     const [treeData, setTreeData] = useState([]);  
     useEffect(() => {
         axios.get(`${apiUrl}/facility-codes`)
@@ -70,7 +72,6 @@ const CodeSelection = () => {
             }
         }
         prefixes.sort();
-        console.log(prefixes);
 
         // create 1st level of treeData using the prefixes
         const treeData = Object.keys(prefixes).map(key => {    
@@ -97,17 +98,16 @@ const CodeSelection = () => {
             }
         }
 
-        console.log(treeData);
         return treeData;
     }
 
     const onChange = value => {
-        console.log('onChange ', value);
+        // console.log('onChange ', value);
         setValue(value);
     };
 
     const tProps = {
-      treeData,
+      treeData: treeData,
       value: value,
     //   defaultValue: ["ACO.001", "ACO.002"],
       onChange: onChange,
@@ -121,5 +121,16 @@ const CodeSelection = () => {
     };
     return <TreeSelect {...tProps} />;
 }
+
+
+CodeSelection.propTypes = {
+    value: PropTypes.array.isRequired,
+    setValue: PropTypes.func.isRequired,
+  };
+  
+  CodeSelection.defaultProps = {
+    // value: ['0-0-0', '0-0-1'], // TODO: change default to []
+    // setValue: null,
+  };
 
 export default CodeSelection;
