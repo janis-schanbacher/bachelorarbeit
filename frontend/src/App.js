@@ -1,6 +1,6 @@
 import React from 'react';
-// import { Counter } from './features/counter/Counter';
-import ResultTable from './features/resultTable/ResultTable'
+// import { Counter } from './components/counter/Counter';
+import ResultTable from './components/resultTable/ResultTable'
 import './App.css';
 
 function App() {

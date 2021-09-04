@@ -3,6 +3,8 @@ import { Table, Input, Button, Popconfirm, Form } from 'antd';
 import axios from "axios";
 import qs from 'qs'
 import { apiUrl } from "../../helper/url";
+import CodeSelection from '../codeSelection/CodeSelection';
+
 const EditableContext = React.createContext(null);
 
 const EditableRow = ({ index, ...props }) => {
@@ -87,40 +89,49 @@ const EditableCell = ({
 
 const ResultTable = () => {
   const [dataSource, setDataSource] = useState([
-    {
-      key: '0',
-      code: 'ACO.001',
-      textFragments: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-      address: 'London, Park Lane no. 0',
-    },
-    {
-      key: '1',
-      code: 'ACO.002',
-      textFragments: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-      address: 'London, Park Lane no. 1',
-    },
+    // {
+    //   key: '0',
+    //   code: 'ACO.001',
+    //   textFragments: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+    // },
+    // {
+    //   key: '1',
+    //   code: 'ACO.002',
+    //   textFragments: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+    // },
   ]);
 
   const [count, setCount] = useState(2);
 
-  useEffect(() => {
-    axios.get(`${apiUrl}/analyse`, {
-      params: {
-        codes: ["ACO.001", "ACO.002"] // TODO: pass from Codes seletion
-      },
-      paramsSerializer: params => {
-        return qs.stringify(params)
-      }
-    })
-    .then((res) => {
+//   useEffect(() => {
+//     // TODO: pass from Codes seletion
+//     const body = ["ACO.001", "ACO.002"];
+//     axios.post(`${apiUrl}/analyse`, body)
 
-      const { data } = res;
-  //     // fillDataSource(Object.keys(data).map(key => data[key]));
-      console.log(data) 
-  }).catch((err) => {
-    console.log(err)
-  });
-},  [dataSource]);
+//     // axios.get(`${apiUrl}/analyse`, {
+//     //   params: {
+//     //     codes: { ["ACO.001", "ACO.002"]} 
+//     //   },
+//     //   paramsSerializer: params => {
+//     //     return qs.stringify(params)
+//     //   }
+//     // })
+//     .then((res) => {
+
+//       const { data } = res;
+//       setDataSource(Object.keys(data).map(key => {
+//         console.log(data[key]);
+//         return {
+//           key: key, 
+//           code: key, 
+//           textFragments: data[key].join(';\n')}
+//       }))
+//       // fillDataSource(Object.keys(data).map(key => data[key]));
+//       console.log(data) 
+//   }).catch((err) => {
+//     console.log(err)
+//   });
+// },  []);
 
   const columns = [
     { title: "Anlagencode",
@@ -141,10 +152,6 @@ const ResultTable = () => {
         );},
     },
     {
-      title: 'address',
-      dataIndex: 'address',
-    },
-    {
       title: 'Bestätigen',
       dataIndex: 'confirm',
       render: (_, record) =>
@@ -157,18 +164,40 @@ const ResultTable = () => {
     },
   ];
 
-  const handleDelete = (key) => {
-  // const dataSource = [...this.state.dataSource];
+  const handleAnalyse = () => {
+    const body = ["ACO.001", "ACO.002"];
+    axios.post(`${apiUrl}/analyse`, body)
 
-    setDataSource(dataSource.filter((item) => item.key !== key));
-  };
+    // axios.get(`${apiUrl}/analyse`, {
+    //   params: {
+    //     codes: { ["ACO.001", "ACO.002"]} 
+    //   },
+    //   paramsSerializer: params => {
+    //     return qs.stringify(params)
+    //   }
+    // })
+    .then((res) => {
+
+      const { data } = res;
+      setDataSource(Object.keys(data).map(key => {
+        console.log(data[key]);
+        return {
+          key: key, 
+          code: key, 
+          textFragments: data[key].join(';\n')}
+      }))
+      // fillDataSource(Object.keys(data).map(key => data[key]));
+      console.log(data) 
+  }).catch((err) => {
+    console.log(err)
+  });
+  }
 
   const handleAdd = () => {
     const newData = {
       key: count,
       name: `Edward King ${count}`,
       age: '32',
-      address: `London, Park Lane no. ${count}`,
     };
     setDataSource([...dataSource, newData]);
     setCount(count + 1);
@@ -182,6 +211,11 @@ const ResultTable = () => {
     setDataSource(newData);
   };
 
+  const handleDelete = (key) => {
+    // const dataSource = [...this.state.dataSource];
+  
+      setDataSource(dataSource.filter((item) => item.key !== key));
+    };
   const components = {
     body: {
       row: EditableRow,
@@ -217,8 +251,10 @@ const ResultTable = () => {
     }),
   };
 
+  // TODO: move CodeSelection and Analysis Button to parent
   return(
     <div>
+        <CodeSelection /> 
         <Button
           onClick={handleAdd}
           type="primary"
@@ -227,6 +263,15 @@ const ResultTable = () => {
           }}
         >
         Add a row
+        </Button>
+        <Button
+          onClick={handleAnalyse}
+          type="primary"
+          style={{
+              marginBottom: 16,
+          }}
+        >
+        Analyse
         </Button>
         <Table
          rowSelection={{

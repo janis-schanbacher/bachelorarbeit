@@ -1,12 +1,15 @@
 package com.ewus.ba.energielenkerEneffcoService.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -21,7 +24,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -63,6 +68,7 @@ import com.ewus.ba.energielenkerEneffcoService.controller.FacilityAnalysisConfig
 
 @RestController
 // @RequestMapping(value = "/")
+@CrossOrigin
 public class AnalysisController {
     final static int TIMEINTERVAL_15M = 900;
     final static int TIMEINTERVAL_DAY = 86400;
@@ -71,15 +77,15 @@ public class AnalysisController {
             .readTimeout(30, TimeUnit.SECONDS).build();
     final ObjectMapper objectMapper = new ObjectMapper();
 
-    @GetMapping("/analyse")
+    @PostMapping("/analyse")
     @ResponseBody
-    public List<String> analyse(@RequestBody String codesJson) {
+    public Map<String, List<String>> analyse(@RequestBody String codes) {
         System.out.println("entered analyse");
-
-        // List<Facility> facilities = fillFacilities(codesJson); as request
+        System.out.println("codes:" + codes);
+        // List<Facility> facilities = fillFacilities(codes); as request
         // TODO: use eureka url
         HttpUrl.Builder httpBuilder = HttpUrl.parse("http://localhost:8080/fill-facilities").newBuilder();
-        httpBuilder.addQueryParameter("codesJson", codesJson);
+        httpBuilder.addQueryParameter("codesJson", codes);
         Request request = new Request.Builder().url(httpBuilder.build()).build();
         Response response = null;
         List<Facility> facilities = new ArrayList<>();
@@ -102,12 +108,12 @@ public class AnalysisController {
         }
         System.out.println("filled facilities. Size: " + facilities.size());
 
-        // get facility configs using codesJson
+        // get facility configs using codes
         // use in for loop
         // TODO: save config in facility objects
         // TODO: use eureka url
         httpBuilder = HttpUrl.parse("http://localhost:8080/configs/get-list").newBuilder();
-        httpBuilder.addQueryParameter("codesJson", codesJson);
+        httpBuilder.addQueryParameter("codesJson", codes);
         request = new Request.Builder().url(httpBuilder.build()).build();
         response = null;
         List<FacilityAnalysisConfiguration> configs = new ArrayList<>();
@@ -128,8 +134,11 @@ public class AnalysisController {
         }
         System.out.println("Retrieved configs. Size: " + configs.size());
 
-        List<String> textFragments = new ArrayList<>();
+        Map<String, List<String>> textFragments = new HashMap<>();
         for (Facility facility : facilities) {
+            System.out.println("Analysing: " + facility.getCode());
+            List<String> textFragmentsCurrent = new ArrayList<>();
+
             System.out.println(facility.getCode());
 
             // If no config availabe default to run all analyses is used
@@ -156,24 +165,26 @@ public class AnalysisController {
             // }
 
             if (config.getFacilitySize()) {
-                textFragments.add(analyseFacilitySize(facility));
+                textFragmentsCurrent.add(analyseFacilitySize(facility));
             }
             if (config.getUtilizationRate()) {
-                textFragments.add(analyseUtilizationRate(facility));
+                textFragmentsCurrent.add(analyseUtilizationRate(facility));
             }
             if (config.getDeltaTemperature()) {
-                textFragments.add(analyseDeltaTemperature(facility));
+                textFragmentsCurrent.add(analyseDeltaTemperature(facility));
             }
             if (config.getReturnTemperature()) {
-                textFragments.add(analyseReturnTemperature(facility));
+                textFragmentsCurrent.add(analyseReturnTemperature(facility));
             }
-            // TODO: add code to textFragements.
-            // TODO: maybe following schema: response: ["ACO.001" : ["text..". "text2.."],
-            // "ACO.002" : [...], oder als JSONObject mit Array für jeden Code
+
+            textFragmentsCurrent.removeAll(Arrays.asList("", null));
+            textFragments.put(facility.getCode(), textFragmentsCurrent);
             System.out.println("Done Analysing " + facility.getCode());
         }
-        textFragments.removeAll(Arrays.asList("", null));
         System.out.println(textFragments);
+
+        // TODO: remove , when all codes are filled in fill-facilities
+        textFragments.put("ACO.001", textFragments.get("ACO.002"));
         return textFragments;
     }
 

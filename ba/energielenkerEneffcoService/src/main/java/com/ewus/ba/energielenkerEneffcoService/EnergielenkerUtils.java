@@ -11,8 +11,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -85,11 +88,11 @@ public class EnergielenkerUtils {
         return "";
     }
 
-    public static void fetchLiegenschaftFields(Connection connection, Facility facility) {
+    public static void fetchLiegenschaftFields(Connection dbConnection, Facility facility) {
         ResultSet resultSet;
         try {
 
-            Statement statement = connection.createStatement();
+            Statement statement = dbConnection.createStatement();
             String selectSql;
             if (facility.getEinsparzaehlerobjektid() == null || facility.getEinsparzaehlerobjektid().equals("")) {
                 // Create and execute a SELECT SQL statement.
@@ -312,12 +315,12 @@ public class EnergielenkerUtils {
         return facilities;
     }
 
-    public static ArrayList<Facility> fillEnergielenkerEszIds(Connection dbVerbindung, ArrayList<Facility> facilities) {
+    public static ArrayList<Facility> fillEnergielenkerEszIds(Connection dbConnection, ArrayList<Facility> facilities) {
 
         ResultSet resultSet = null;
         try {
             // SMBUS_48AC%/1/Volume%
-            Statement statement = dbVerbindung.createStatement();
+            Statement statement = dbConnection.createStatement();
             {
 
                 // Create and execute a SELECT SQL statement.
@@ -347,11 +350,11 @@ public class EnergielenkerUtils {
         return facilities;
     }
 
-    public static String getAnlagencode(Connection dbVerbindung, String id) {
+    public static String getAnlagencode(Connection dbConnection, String id) {
 
-        String anlagenname = getstep2(dbVerbindung, getstep1(dbVerbindung, id));
-        // System.out.println(getstep2(dbVerbindung,
-        // getstep1(dbVerbindung, id)));
+        String anlagenname = getstep2(dbConnection, getstep1(dbConnection, id));
+        // System.out.println(getstep2(dbConnection,
+        // getstep1(dbConnection, id)));
         if (anlagenname.contains(" (")) {
             String[] tkm = anlagenname.split("\\(");
             String anlagencode = tkm[1];
@@ -361,7 +364,7 @@ public class EnergielenkerUtils {
             return anlagencode;
         } else {
             try {
-                anlagenname = getstep2(dbVerbindung, getstep1(dbVerbindung, getstep1(dbVerbindung, id)));
+                anlagenname = getstep2(dbConnection, getstep1(dbConnection, getstep1(dbConnection, id)));
 
                 String[] tkm = anlagenname.split("\\(");
                 String anlagencode = tkm[1];
@@ -378,12 +381,12 @@ public class EnergielenkerUtils {
         // return "";
     }
 
-    public static String getstep2(Connection dbVerbindung, String pid) {
+    public static String getstep2(Connection dbConnection, String pid) {
 
         ResultSet resultSet = null;
         try {
             // SMBUS_48AC%/1/Volume%
-            Statement statement = dbVerbindung.createStatement();
+            Statement statement = dbConnection.createStatement();
             {
 
                 // Create and execute a SELECT SQL statement.
@@ -410,12 +413,12 @@ public class EnergielenkerUtils {
         return "";
     }
 
-    public static String getstep1(Connection dbVerbindung, String pid) {
+    public static String getstep1(Connection dbConnection, String pid) {
 
         ResultSet resultSet = null;
         try {
             // SMBUS_48AC%/1/Volume%
-            Statement statement = dbVerbindung.createStatement();
+            Statement statement = dbConnection.createStatement();
             {
 
                 // Create and execute a SELECT SQL statement.
@@ -497,7 +500,7 @@ public class EnergielenkerUtils {
             // System.out.println(jobject.get("deinstalled"));
             // System.out.println(jobject.get("name"));
             //
-            // rawInsert(dbVerbindung,jobject);
+            // rawInsert(dbConnection,jobject);
             // }
             in.close();
             conn.disconnect();
@@ -509,4 +512,34 @@ public class EnergielenkerUtils {
         }
         return attributeValue;
     }
+
+    public static List<String> fetchAllFacilityCodes(Connection dbConnection) {
+        List<String> facilityCodes = new LinkedList<>();
+        ResultSet resultSet = null;
+        try {
+            // SMBUS_48AC%/1/Volume%
+            Statement statement = dbConnection.createStatement();
+            {
+                // Create and execute a SELECT SQL statement.
+                String selectSql = "SELECT [Code] FROM [ewus_assets].[dbo].[energielenker_sortiert]";
+
+                resultSet = statement.executeQuery(selectSql);
+
+                // Print results from select statement
+                while (resultSet.next()) {
+                    String code = resultSet.getString(1);
+                    if (code.contains(".") && code.matches("[a-zA-Z]*\\.[0-9]+")) {
+                        facilityCodes.add(resultSet.getString(1));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+        }
+
+        facilityCodes = facilityCodes.stream().distinct().sorted().collect(Collectors.toList());
+        // java.util.Collections.sort(facilityCodes);
+        return facilityCodes;
+    }
+
 }

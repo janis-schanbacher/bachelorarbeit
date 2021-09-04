@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -51,6 +52,7 @@ import okhttp3.Response;
 
 @RestController
 // @RequestMapping(value = "/")
+@CrossOrigin
 public class EnergielenkerController {
 	private static Connection dbConnection = new Datenbankverbindung().getConnection();
 
@@ -142,5 +144,11 @@ public class EnergielenkerController {
 		// System.out.println(facilitiesFiltered.get(0).toString());
 		return facilitiesFiltered;
 		// return facilities;
+	}
+
+	@GetMapping("/facility-codes")
+	@ResponseBody
+	public List<String> getFacilityCodes() {
+		return EnergielenkerUtils.fetchAllFacilityCodes(dbConnection);
 	}
 }
