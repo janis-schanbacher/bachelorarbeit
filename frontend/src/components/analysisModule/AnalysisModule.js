@@ -88,51 +88,26 @@ const EditableCell = ({
 };
 
 const AnalysisModule = () => {
-  const [dataSource, setDataSource] = useState([
-    // {
-    //   key: '0',
-    //   code: 'ACO.001',
-    //   textFragments: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-    // },
-    // {
-    //   key: '1',
-    //   code: 'ACO.002',
-    //   textFragments: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-    // },
-  ]);
+  const [dataSource, setDataSource] = useState([]);
+  const [originalDataSource, setOriginalDataSource] = useState([]);
+  const [value, setValue] = useState(['0-0-0', '0-0-1']); // TODO: change default to []
+  const [rowSelection, setRowSelection] = useState([])
 
-  const [value, setValue] = useState(['0-0-1']); // TODO: change default to []
-
-
-//   useEffect(() => {
-//     // TODO: pass from Codes seletion
-//     const body = ["ACO.001", "ACO.002"];
-//     axios.post(`${apiUrl}/analyse`, body)
-
-//     // axios.get(`${apiUrl}/analyse`, {
-//     //   params: {
-//     //     codes: { ["ACO.001", "ACO.002"]} 
-//     //   },
-//     //   paramsSerializer: params => {
-//     //     return qs.stringify(params)
-//     //   }
-//     // })
-//     .then((res) => {
-
-//       const { data } = res;
-//       setDataSource(Object.keys(data).map(key => {
-//         console.log(data[key]);
-//         return {
-//           key: key, 
-//           code: key, 
-//           textFragments: data[key].join(';\n')}
-//       }))
-//       // fillDataSource(Object.keys(data).map(key => data[key]));
-//       console.log(data) 
-//   }).catch((err) => {
-//     console.log(err)
-//   });
-// },  []);
+  const handleChange = (e) => {
+    const code = e.target.attributes.code.nodeValue;
+    console.log(code);
+    const newDataSource = dataSource;
+    var index = -1;
+    for (var i = 0; i < dataSource.length; i += 1) {
+      if (dataSource[i]["code"] === code) {
+          index = i;
+          break;
+      }
+    }
+    console.log(e.target.value);
+    newDataSource[index]["textFragments"] = e.target.value;
+    setDataSource(newDataSource);
+  }
 
   const columns = [
     { title: "Anlagencode",
@@ -146,9 +121,11 @@ const AnalysisModule = () => {
       render: (val, row) => {
         return (
           <Input.TextArea
-            value={val}
+            // value={val}
             autosize={{ minRows: 2, maxRows: 6 }}
-            defaultValue={""}
+            defaultValue={val}
+            onChange={handleChange}
+            code={row.key}
           />
         );},
     },
@@ -160,7 +137,7 @@ const AnalysisModule = () => {
           // <Popconfirm title="Sure to save?" onConfirm={() => handleSave(record.key)}>
           //   <a>Speichern</a>
           // </Popconfirm>
-          <Button type="primary">Speichern</Button>
+          <Button type="primary" onClick={(e) => handleSave(record)}>Speichern</Button>
         ) : null,
     },
   ];
@@ -188,17 +165,38 @@ const AnalysisModule = () => {
       }))
       // fillDataSource(Object.keys(data).map(key => data[key]));
       // console.log(data) 
-  }).catch((err) => {
-    console.log(err)
-  });
+    })
+    .then(() => {
+      setOriginalDataSource(dataSource);
+    })
+    .catch((err) => {
+      console.log(err)
+    });
   }
 
-  const handleSave = (row) => {
-    const newData = dataSource;
-    const index = newData.findIndex((item) => row.key === item.key);
-    const item = newData[index];
-    newData.splice(index, 1, { ...item, ...row });
-    setDataSource(newData);
+  const handleSave = (record) => {
+    console.log("handleSave: " + record.key);
+    console.log("text new: " + record.textFragments); // equals value in dataSource
+
+    for (var i = 0; i < originalDataSource.length; i += 1) {
+      if (originalDataSource[i]["code"] === record.key) {
+        console.log("text previous: " + originalDataSource[i]["textFragments"])
+        // TODO: log
+        break;
+      }
+    }
+
+    // TODO: request to save to EL
+  };
+
+  const handleSaveAll = () => {
+    console.log(rowSelection);
+    // console.log(selectedRowKeys);
+    // const newData = dataSource;
+    // const index = newData.findIndex((item) => row.key === item.key);
+    // const item = newData[index];
+    // newData.splice(index, 1, { ...item, ...row });
+    // setDataSource(newData);
   };
 
   // const handleDelete = (key) => {
@@ -229,9 +227,10 @@ const AnalysisModule = () => {
     };
   });
 
-  const rowSelection = {
+  const customRowSelection = {
     onChange: (selectedRowKeys, selectedRows) => {
-      console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
+        setRowSelection(selectedRows);
+        console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
     },
     getCheckboxProps: (record) => ({
       disabled: record.name === 'Disabled User',
@@ -252,12 +251,12 @@ const AnalysisModule = () => {
               float: 'left'
           }} // TODO: use StyledComponend
         >
-        Analyse
+        Analysieren
         </Button>
         <Table
          rowSelection={{
           type: "checkbox",
-          ...rowSelection,
+          ...customRowSelection,
         }}
           components={components}
           rowClassName={() => 'editable-row'}
@@ -265,6 +264,14 @@ const AnalysisModule = () => {
           dataSource={dataSource}
           columns={columnsRender}
         />
+        <Button
+          onClick={handleSaveAll}
+          type="primary"
+          style={{
+              margin: "5px 5px 15px 5px",
+              float: 'left'
+          }} // TODO: use StyledComponend
+         >Auswahl bestätigen</Button>
     </div>
   );
 }
