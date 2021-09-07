@@ -242,7 +242,7 @@ const AnalysisModule = () => {
   // TODO: move CodeSelection and Analysis Button to parent
   return(
     <div>
-      <h1>Analyse Auswertung</h1>
+      <h1>Analyse Oberfläche</h1>
         <CodeSelection value={value} setValue={setValue} /> 
         <Button
           onClick={handleAnalyse}

@@ -1,5 +1,5 @@
 @import '~antd/dist/antd.css';
-@import './components/analysisModule/AnalysisModule.css'; /* TODO: remove */
+@import './components/analysisModule/AnalysisModule.css'; /* TODO: remove, use styled COmponents */
 
 .App {
   text-align: center;
