@@ -5,7 +5,8 @@ import { Link } from 'react-router-dom/cjs/react-router-dom.min';
 
 
 const Navbar = () => {
-    const [current, setCurrent] = useState('analyse');
+    // TODO: effect, when url changed update active item. 
+    const [current, setCurrent] = useState('');
 
     const handleClick = e => {
         console.log('click ', e);

@@ -1,5 +1,5 @@
 import React, { useState, useReducer } from 'react';
-import { Card, Table, Button, Checkbox, Divider, Popconfirm } from 'antd';
+import { Typography, Table, Button, Checkbox, Divider, Popconfirm } from 'antd';
 import axios from "axios";
 import qs from 'qs'
 
@@ -7,20 +7,15 @@ import { apiUrl } from "../../helper/url";
 import CodeSelection from '../codeSelection/CodeSelection';
 
 const CheckboxGroup = Checkbox.Group;
+const { Title } = Typography;
 
 const plainOptions = ['Anlagengröße', 'Nutzungsgrad', 'Temperaturdifferenz', 'Rücklauftemperatur'];
 const defaultCheckedList = ['Anlagengröße', 'Nutzungsgrad', 'Temperaturdifferenz', 'Rücklauftemperatur'];
 
 const ConfigurationModule = () => {
   const [dataSource, setDataSource] = useState([]);
-  const [originalDataSource, setOriginalDataSource] = useState([]);
   const [value, setValue] = useState(['0-0-0', '0-0-1']); // TODO: change default to []
   const [rowSelection, setRowSelection] = useState([])
-
-  const [checkedList, setCheckedList] = useState(defaultCheckedList);
-  const [indeterminate, setIndeterminate] = useState(true);
-  const [checkAll, setCheckAll] = useState(false);
-
   const [_, forceUpdate] = useReducer((x) => x + 1, 0); // TODO: remove
 
   const handleChange = (code, list) => {
@@ -30,27 +25,6 @@ const ConfigurationModule = () => {
     setDataSource(newDataSource)
     forceUpdate(); // TODO: remove
   };
-
-  const handleChangeAll = (list) => {
-      // TODO: request /config codes, list
-      setCheckedList(list)
-
-  }
-//   const handleChange = (e) => {
-//     const code = e.target.attributes.code.nodeValue;
-//     console.log(code);
-//     const newDataSource = dataSource;
-//     var index = -1;
-//     for (var i = 0; i < dataSource.length; i += 1) {
-//       if (dataSource[i]["code"] === code) {
-//           index = i;
-//           break;
-//       }
-//     }
-//     console.log(e.target.value);
-//     newDataSource[index]["textFragments"] = e.target.value;
-//     setDataSource(newDataSource);
-//   }
 
   // TODO: evt. auch einfach alle anlagen darstellen, und nach coedes gruppieren, die dann ausklappbar sind. https://ant.design/components/table/#components-table-demo-tree-data 
   const columns = [
@@ -72,17 +46,13 @@ const ConfigurationModule = () => {
       dataIndex: 'confirm',
       render: (_, record) =>
         dataSource.length >= 1 ? (
-          // <Popconfirm title="Sure to save?" onConfirm={() => handleSave(record.key)}>
-          //   <a>Speichern</a>
-          // </Popconfirm>
           <Button type="primary" onClick={(e) => handleConfirm(record)}>Anwenden</Button>
         ) : null,
     },
   ];
 
-  // TODO: rewrite to getConfigs
   const loadConfigs = () => {
-    const codes =  ["ACO.001", "ACO.002"];
+    const codes =  ["ACO.001", "ACO.002"]; // TODO: get codes dynamically, eg. through values, or through CodeSelection props
     axios.get(`${apiUrl}/configs/get-list`, {
           params: {
             codes: codes
@@ -113,11 +83,7 @@ const ConfigurationModule = () => {
                 checkedList: activeAnalyses
             }
         }))
-    })
-    .then(() => {
-      setOriginalDataSource(dataSource);
-    })
-    .catch((err) => {
+    }).catch((err) => {
       console.log(err)
     });
   }
@@ -131,16 +97,12 @@ const ConfigurationModule = () => {
         "returnTemperature": record.checkedList.includes("Rücklauftemperatur")
     })
   };
-
-  // TODO: handleConfirmSelected. handleChangeAll
-  const handleSaveAll = () => {
-    console.log(rowSelection);
-    // console.log(selectedRowKeys);
-    // const newData = dataSource;
-    // const index = newData.findIndex((item) => row.key === item.key);
-    // const item = newData[index];
-    // newData.splice(index, 1, { ...item, ...row });
-    // setDataSource(newData);
+  
+  const handleConfirmSelection = () => {
+    // TODO:"bundle as one request and create api endpoint"
+    for(const record of rowSelection) {
+        handleConfirm(record)
+    }
   };
 
   const columnsRender = columns.map((col) => {
@@ -174,7 +136,8 @@ const ConfigurationModule = () => {
 
   return(
     <div>
-      <h1>Konfigurations-Oberfläche</h1>
+        <Title level={2}>Konfigurations-Oberfläche</Title>
+        <Title level={4} style={{textAlign: "left"}}>Auswahl zu konfigurierender Anlagen</Title>
         <CodeSelection value={value} setValue={setValue} /> 
         <Button
           onClick={loadConfigs}
@@ -186,14 +149,8 @@ const ConfigurationModule = () => {
         >
         Konfigurationen laden
         </Button>
-        <Divider />
-        <Card>
-        <h3 style={{textAlign: 'left'}}>Konfiguration für alle markierten Anlagen anpassen:</h3>
-        <CheckboxGroup options={plainOptions} value={checkedList} onChange={(list) => handleChangeAll(list)} />
-        <Popconfirm title={"Wirklich auf alle markierten Anlagen anwenden?: " + rowSelection.map(val => val.key)} onConfirm={() => handleSaveAll(checkedList)}>
-            <Button type="danger"  style={{float: 'right'}}>Anwenden</Button>
-        </Popconfirm>
-        </Card>        
+        <Divider />  
+        <Title level={4} style={{textAlign: "left"}}>Konfigurationen</Title>
         <Table
          rowSelection={{
           type: "checkbox",
@@ -205,13 +162,13 @@ const ConfigurationModule = () => {
           columns={columnsRender}
         />
         <Button
-          onClick={handleSaveAll}
+          onClick={handleConfirmSelection}
           type="primary"
           style={{
               margin: "5px 5px 15px 5px",
               float: 'left'
           }} // TODO: use StyledComponend
-         >Auswahl bestätigen</Button>
+         >Auswahl anwenden</Button>
     </div>
   );
 }

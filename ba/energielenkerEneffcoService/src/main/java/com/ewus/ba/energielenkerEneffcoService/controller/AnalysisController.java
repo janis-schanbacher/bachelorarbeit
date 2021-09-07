@@ -113,7 +113,7 @@ public class AnalysisController {
         // TODO: save config in facility objects
         // TODO: use eureka url
         httpBuilder = HttpUrl.parse("http://localhost:8080/configs/get-list").newBuilder();
-        httpBuilder.addQueryParameter("codesJson", codes);
+        httpBuilder.addQueryParameter("codes", codes);
         request = new Request.Builder().url(httpBuilder.build()).build();
         response = null;
         List<FacilityAnalysisConfiguration> configs = new ArrayList<>();

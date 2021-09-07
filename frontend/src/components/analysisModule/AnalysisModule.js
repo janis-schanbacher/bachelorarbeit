@@ -1,10 +1,11 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
-import { Table, Input, Button, Form } from 'antd';
+import { Divider, Table, Input, Button, Form, Typography } from 'antd';
 import axios from "axios";
 // import qs from 'qs'
 import { apiUrl } from "../../helper/url";
 import CodeSelection from '../codeSelection/CodeSelection';
 
+const { Title } = Typography;
 const EditableContext = React.createContext(null);
 
 const EditableRow = ({ index, ...props }) => {
@@ -116,7 +117,7 @@ const AnalysisModule = () => {
     {
       title: 'Textbausteine',
       dataIndex: 'textFragments',
-      width: '40%',
+      width: '60%',
       // editable: true,
       render: (val, row) => {
         return (
@@ -143,7 +144,7 @@ const AnalysisModule = () => {
   ];
 
   const handleAnalyse = () => {
-    const body = value; // ["ACO.001", "ACO.002"];
+    const body = ["ACO.001", "ACO.002"]; // TODO: get codes dynamically, maybe through values, or else through params of CodeSelction
     axios.post(`${apiUrl}/analyse`, body)
 
     // axios.get(`${apiUrl}/analyse`, {
@@ -242,7 +243,9 @@ const AnalysisModule = () => {
   // TODO: move CodeSelection and Analysis Button to parent
   return(
     <div>
-      <h1>Analyse Oberfläche</h1>
+        <Title level={2}>Analyse Oberfläche</Title>
+        <Title level={4} style={{textAlign: "left"}}>Auswahl zu analysierender Anlagen</Title>
+   
         <CodeSelection value={value} setValue={setValue} /> 
         <Button
           onClick={handleAnalyse}
@@ -254,6 +257,8 @@ const AnalysisModule = () => {
         >
         Analysieren
         </Button>
+        <Divider />
+        <Title level={4} style={{textAlign: "left"}}>Analyse-Ergebnisse</Title>
         <Table
          rowSelection={{
           type: "checkbox",
