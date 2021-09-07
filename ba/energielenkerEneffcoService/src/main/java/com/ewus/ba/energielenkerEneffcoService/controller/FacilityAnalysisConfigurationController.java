@@ -16,9 +16,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +28,7 @@ import com.ewus.ba.energielenkerEneffcoService.model.FacilityAnalysisConfigurati
 
 @RestController
 @RequestMapping(value = "/configs")
+@CrossOrigin
 public class FacilityAnalysisConfigurationController {
     @Autowired
     private IFacilityAnalysisConfigurationRepository facilityAnalysisConfigurationRepository;
@@ -72,15 +75,14 @@ public class FacilityAnalysisConfigurationController {
      */
     @GetMapping("/get-list")
     @ResponseBody
-    public List<FacilityAnalysisConfiguration> getFacilityAnalysisConfigurations(@RequestParam String codesJson) {
-        JSONArray codesJsonArray = new JSONArray(codesJson);
-        List<String> codesList = new ArrayList<>();
+    public List<FacilityAnalysisConfiguration> getFacilityAnalysisConfigurations(@RequestParam String codes) {
+        // JSONArray codesJsonArray = new JSONArray(codes);
+        // List<String> codesList = new ArrayList<>();
+        // for (int i = 0; i < codesJsonArray.length(); i++) {
+        // codesList.add(codesJsonArray.getString(i));
+        // }
 
-        for (int i = 0; i < codesJsonArray.length(); i++) {
-            codesList.add(codesJsonArray.getString(i));
-        }
-
-        System.out.println("codesList: " + codesList);
+        List<String> codesList = Arrays.asList(codes.replaceAll("[\\[\\]\\s\"]*", "").split(","));
         List<FacilityAnalysisConfiguration> facilityAnalysisConfigurations = facilityAnalysisConfigurationRepository
                 .findAllById(codesList);
         return facilityAnalysisConfigurations;

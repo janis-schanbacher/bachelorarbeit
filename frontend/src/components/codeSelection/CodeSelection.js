@@ -113,7 +113,7 @@ const CodeSelection = ({value, setValue}) => {
       onChange: onChange,
       treeCheckable: true,
       showCheckedStrategy: SHOW_PARENT,
-      placeholder: 'Please select',
+      placeholder: 'Bitte Anlagen auswählen',
       style: {
         width: '100%',
       },
