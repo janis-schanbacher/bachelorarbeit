@@ -11,7 +11,7 @@ import ConfigurationModule from './components/configurationModule/ConfigurationM
 import Navbar from './components/navbar/Navbar';
 import { Layout } from 'antd';
 
-const { Header, Content, Footer } = Layout;
+const { Header, Content } = Layout;
 
 function App() {
   return (

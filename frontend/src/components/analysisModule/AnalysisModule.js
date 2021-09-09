@@ -93,6 +93,7 @@ const AnalysisModule = () => {
   const [originalDataSource, setOriginalDataSource] = useState([]);
   const [value, setValue] = useState(['0-0-0', '0-0-1']); // TODO: change default to []
   const [rowSelection, setRowSelection] = useState([])
+  const [treeData, setTreeData] = useState([]);  
 
   const handleChange = (e) => {
     const code = e.target.attributes.code.nodeValue;
@@ -246,7 +247,7 @@ const AnalysisModule = () => {
         <Title level={2}>Analyse Oberfläche</Title>
         <Title level={4} style={{textAlign: "left"}}>Auswahl zu analysierender Anlagen</Title>
    
-        <CodeSelection value={value} setValue={setValue} /> 
+        <CodeSelection value={value} setValue={setValue} treeData={treeData} setTreeData={setTreeData} /> 
         <Button
           onClick={handleAnalyse}
           type="primary"

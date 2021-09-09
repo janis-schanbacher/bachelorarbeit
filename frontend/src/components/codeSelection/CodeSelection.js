@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from 'react';
+import React, { useEffect} from 'react';
 import { TreeSelect } from 'antd';
 import axios from "axios";
 import PropTypes from "prop-types";
@@ -7,53 +7,9 @@ import { apiUrl } from "../../helper/url";
 
 const { SHOW_PARENT } = TreeSelect;
 
-// TODO: Replace with mapping from codes from EL/DB
-// const treeData = [
-//   {
-//     title: 'ACO',
-//     value: '0-0',
-//     key: '0-0',
-//     children: [
-//       {
-//         title: 'ACO.001',
-//         value: '0-0-0',
-//         key: '0-0-0',
-//       },
-//       {
-//         title: 'ACO.002',
-//         value: '0-0-1',
-//         key: '0-0-1',
-//       },
-//     ],
-//   },
-//   {
-//     title: 'Node2',
-//     value: '0-1',
-//     key: '0-1',
-//     children: [
-//       {
-//         title: 'Child Node3',
-//         value: '0-1-0',
-//         key: '0-1-0',
-//       },
-//       {
-//         title: 'Child Node4',
-//         value: '0-1-1',
-//         key: '0-1-1',
-//       },
-//       {
-//         title: 'Child Node5',
-//         value: '0-1-2',
-//         key: '0-1-2',
-//       },
-//     ],
-//   },
-// ];
-
-// TODO: AnalysisPage > [CodeSelection, AnalyseButton, AnalysisModule]
-const CodeSelection = ({value, setValue}) => { 
-    // const [value, setValue] = useState(['0-0-0', '0-0-1']); // TODO: change default to []
-    const [treeData, setTreeData] = useState([]);  
+const CodeSelection = ({value, setValue, treeData, setTreeData}) => { 
+    // const [value, setValue] = useState([]); 
+    // const [treeData, setTreeData] = useState([]); 
     useEffect(() => {
         axios.get(`${apiUrl}/facility-codes`)
         .then((res) => {
@@ -102,14 +58,13 @@ const CodeSelection = ({value, setValue}) => {
     }
 
     const onChange = value => {
-        // console.log('onChange ', value);
         setValue(value);
     };
 
     const tProps = {
       treeData: treeData,
       value: value,
-    //   defaultValue: ["ACO.001", "ACO.002"],
+      labelInValue: true,
       onChange: onChange,
       treeCheckable: true,
       showCheckedStrategy: SHOW_PARENT,
@@ -126,11 +81,8 @@ const CodeSelection = ({value, setValue}) => {
 CodeSelection.propTypes = {
     value: PropTypes.array.isRequired,
     setValue: PropTypes.func.isRequired,
-  };
-  
-  CodeSelection.defaultProps = {
-    // value: ['0-0-0', '0-0-1'], // TODO: change default to []
-    // setValue: null,
+    treeData: PropTypes.array.isRequired,
+    setTreeData: PropTypes.func.isRequired,
   };
 
 export default CodeSelection;

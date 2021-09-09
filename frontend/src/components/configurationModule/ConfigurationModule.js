@@ -1,7 +1,8 @@
 import React, { useState, useReducer } from 'react';
-import { Typography, Table, Button, Checkbox, Divider, Popconfirm } from 'antd';
+import { Typography, Table, Button, Checkbox, Divider } from 'antd';
 import axios from "axios";
 import qs from 'qs'
+import { find, findIndex } from 'lodash';
 
 import { apiUrl } from "../../helper/url";
 import CodeSelection from '../codeSelection/CodeSelection';
@@ -14,8 +15,10 @@ const defaultCheckedList = ['Anlagengröße', 'Nutzungsgrad', 'Temperaturdiffere
 
 const ConfigurationModule = () => {
   const [dataSource, setDataSource] = useState([]);
-  const [value, setValue] = useState(['0-0-0', '0-0-1']); // TODO: change default to []
+  const [value, setValue] = useState([]); // TODO: change default to []
   const [rowSelection, setRowSelection] = useState([])
+  const [treeData, setTreeData] = useState([])
+  // eslint-disable-next-line no-unused-vars
   const [_, forceUpdate] = useReducer((x) => x + 1, 0); // TODO: remove
 
   const handleChange = (code, list) => {
@@ -52,7 +55,22 @@ const ConfigurationModule = () => {
   ];
 
   const loadConfigs = () => {
-    const codes =  ["ACO.001", "ACO.002"]; // TODO: get codes dynamically, eg. through values, or through CodeSelection props
+    console.log(value);
+    const codes = value.filter(v => v.value.length > 3).map(v => v.label)
+    // Add codes of children from selected prefix (f.i. {value: "0-1", value: "ACO"})
+    const keysOfPrefixes = value.filter(v => v.value.length === 3)
+    for(var i = 0; i < keysOfPrefixes.length ; i++) {
+      const treeElement = find(treeData, o => o.value === keysOfPrefixes[i].value)
+      console.log("treeElement: " + treeElement);
+      if(treeElement !== undefined && treeElement.children !== undefined){
+        console.log(treeElement);
+        for(var k = 0; k < treeElement.children.length ; k++){
+          codes.push(treeElement.children[k].title);
+        } 
+      }
+    }
+      
+    // retrieve configs from backend
     axios.get(`${apiUrl}/configs/get-list`, {
           params: {
             codes: codes
@@ -63,7 +81,8 @@ const ConfigurationModule = () => {
         })
     .then((res) => {
         const { data } = res;
-        setDataSource(Object.keys(data).map(key => {
+        console.log(rowSelection);
+        const configs = Object.keys(data).map(key => {
             var activeAnalyses = [];
             if(data[key].facilitySize){
                 activeAnalyses.push('Anlagengröße')
@@ -82,7 +101,22 @@ const ConfigurationModule = () => {
                 code: data[key].id.toUpperCase(), 
                 checkedList: activeAnalyses
             }
-        }))
+        })
+
+        // add default config, if non exists yet
+        // const keysOfRetrievedConfigs = configs.map(o => o.key)
+        // console.log("keysOfRetrievedConfigs: " + keysOfRetrievedConfigs);
+        for(var i = 0; i < codes.length; i++) {
+          console.log(configs);
+          const index =  configs.findIndex(c => c.code === codes[i].toUpperCase()) 
+          console.log("index: " + index);
+          if(index < 0){ 
+            console.log("Adding default for: " + codes[i]);
+            configs.push({key: codes[i], code: codes[i], checkedList: defaultCheckedList})
+          }
+        }
+
+        setDataSource(configs)
     }).catch((err) => {
       console.log(err)
     });
@@ -138,7 +172,7 @@ const ConfigurationModule = () => {
     <div>
         <Title level={2}>Konfigurations-Oberfläche</Title>
         <Title level={4} style={{textAlign: "left"}}>Auswahl zu konfigurierender Anlagen</Title>
-        <CodeSelection value={value} setValue={setValue} /> 
+        <CodeSelection value={value} setValue={setValue} treeData={treeData} setTreeData={setTreeData} /> 
         <Button
           onClick={loadConfigs}
           type="primary"
