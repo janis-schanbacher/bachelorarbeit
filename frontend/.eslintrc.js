@@ -34,6 +34,8 @@ module.exports = {
     "arrow-parens": ["error", "as-needed", { requireForBlockBody: true }],
     "no-param-reassign": "off",
     "no-unused-vars": ["error", { args: "none", ignoreRestSiblings: true }],
+    "no-plusplus": "off",
+    "no-restricted-syntax": "off",
     "object-curly-newline": ["error", { consistent: true }],
     quotes: ["error", "double"],
     "react/destructuring-assignment": "off",
