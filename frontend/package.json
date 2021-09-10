@@ -7,7 +7,17 @@
     "antd": "^4.16.12",
     "axios": "^0.21.1",
     "cra-template-redux": "1.0.3",
+    "eslint-config-airbnb": "^18.1.0",
+    "eslint-plugin-extra-rules": "^0.0.0-development",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-jest": "^23.11.0",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-lodash": "^7.1.0",
+    "eslint-plugin-react": "^7.20.0",
+    "eslint-plugin-react-hooks": "^4.0.2",
     "lodash": "^4.17.21",
+    "prop-types": "^15.7.2",
+    "qs": "^6.10.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-redux": "^7.2.4",
@@ -18,7 +28,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "eslint './**/*.{js,jsx}'"
   },
   "eslintConfig": {
     "extends": "react-app"
