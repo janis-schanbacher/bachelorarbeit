@@ -2,7 +2,7 @@ import React, { useState, useReducer } from "react";
 import { Typography, Table, Button, Checkbox, Divider } from "antd";
 import axios from "axios";
 import qs from "qs";
-import { find } from "lodash";
+import find from "lodash/find";
 
 import { apiUrl } from "../../helper/url";
 import CodeSelection from "../codeSelection/CodeSelection";
@@ -18,7 +18,7 @@ const ConfigurationModule = () => {
   const [rowSelection, setRowSelection] = useState([]);
   const [treeData, setTreeData] = useState([]);
   // eslint-disable-next-line no-unused-vars
-  const [_, forceUpdate] = useReducer(x => x + 1, 0); // TODO: remove
+  const [__, forceUpdate] = useReducer(x => x + 1, 0); // TODO: remove
   const [bulkSelection, setBulkSelection] = useState(defaultCheckedList);
 
   const handleChange = (code, list) => {
@@ -41,7 +41,6 @@ const ConfigurationModule = () => {
     const selectedKeys = rowSelection.map(row => row.key);
 
     for (let i = 0; i < newDataSource.length; i++) {
-      console.log(newDataSource[i]);
       if (selectedKeys.includes(newDataSource[i].key)) {
         newDataSource[i].checkedList = bulkSelection;
       }
@@ -54,7 +53,25 @@ const ConfigurationModule = () => {
     // forceUpdate(); // TODO: remove
   };
 
-  // TODO: evt. auch einfach alle anlagen darstellen, und nach coedes gruppieren, die dann ausklappbar sind. https://ant.design/components/table/#components-table-demo-tree-data
+  const handleConfirm = (record) => {
+    axios.post(`${apiUrl}/configs`, {
+      id: record.key,
+      facilitySize: record.checkedList.includes("Anlagengröße"),
+      utilizationRate: record.checkedList.includes("Nutzungsgrad"),
+      deltaTemperature: record.checkedList.includes("Temperaturdifferenz"),
+      returnTemperature: record.checkedList.includes("Rücklauftemperatur"),
+    });
+  };
+
+  const handleConfirmSelection = () => {
+    // TODO:"bundle as one request and create api endpoint"
+    for (const record of rowSelection) {
+      handleConfirm(record);
+    }
+  };
+
+  // TODO: evt. auch einfach alle anlagen darstellen, und nach coedes gruppieren,
+  // die dann ausklappbar sind. https://ant.design/components/table/#components-table-demo-tree-data
   const columns = [
     { title: "Anlagencode",
       dataIndex: "code" },
@@ -65,7 +82,13 @@ const ConfigurationModule = () => {
       // editable: true,
       render: (val, row) => {
         const index = dataSource.findIndex(item => item.key === row.key);
-        return <Checkbox.Group options={plainOptions} value={dataSource[index].checkedList} onChange={list => handleChange(row.key, list)} />;
+        return (
+          <Checkbox.Group
+            options={plainOptions}
+            value={dataSource[index].checkedList}
+            onChange={list => handleChange(row.key, list)}
+          />
+        );
       },
     },
     {
@@ -81,8 +104,8 @@ const ConfigurationModule = () => {
     const codes = value.filter(v => v.value.length > 3).map(v => v.label);
     // Add codes of children from selected prefix (f.i. {value: "0-1", value: "ACO"})
     const keysOfPrefixes = value.filter(v => v.value.length === 3);
-    for (var i = 0; i < keysOfPrefixes.length; i++) {
-      const treeElement = find(treeData, o => o.value === keysOfPrefixes[i].value);
+    for (let i = 0; i < keysOfPrefixes.length; i++) {
+      const treeElement = find(treeData, ["value", keysOfPrefixes[i].value]);
       if (treeElement !== undefined && treeElement.children !== undefined) {
         for (let k = 0; k < treeElement.children.length; k++) {
           codes.push(treeElement.children[k].title);
@@ -121,7 +144,7 @@ const ConfigurationModule = () => {
         });
 
         // add default config, if non exists yet
-        for (var i = 0; i < codes.length; i++) {
+        for (let i = 0; i < codes.length; i++) {
           const index = configs.findIndex(c => c.code === codes[i].toUpperCase());
           if (index < 0) {
             // console.log("Adding default for: " + codes[i]);
@@ -130,26 +153,10 @@ const ConfigurationModule = () => {
         }
 
         setDataSource(configs);
-      }).catch((err) => {
-        console.log(err);
+      // }).catch((err) => {
+        // TODO: Error handling --> Show Alert. Also Success alters and/or load animations to be dane
+        // console.log(err);
       });
-  };
-
-  const handleConfirm = (record) => {
-    axios.post(`${apiUrl}/configs`, {
-      id: record.key,
-      facilitySize: record.checkedList.includes("Anlagengröße"),
-      utilizationRate: record.checkedList.includes("Nutzungsgrad"),
-      deltaTemperature: record.checkedList.includes("Temperaturdifferenz"),
-      returnTemperature: record.checkedList.includes("Rücklauftemperatur"),
-    });
-  };
-
-  const handleConfirmSelection = () => {
-    // TODO:"bundle as one request and create api endpoint"
-    for (const record of rowSelection) {
-      handleConfirm(record);
-    }
   };
 
   const columnsRender = columns.map((col) => {
@@ -172,7 +179,6 @@ const ConfigurationModule = () => {
   const customRowSelection = {
     onChange: (selectedRowKeys, selectedRows) => {
       setRowSelection(selectedRows);
-      console.log(`selectedRowKeys: ${selectedRowKeys}`, "selectedRows: ", selectedRows);
     },
     getCheckboxProps: record => ({
       disabled: record.name === "Disabled User",

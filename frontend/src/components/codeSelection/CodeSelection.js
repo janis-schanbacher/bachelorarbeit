@@ -14,7 +14,6 @@ const CodeSelection = ({ value, setValue, treeData, setTreeData }) => {
   const createTreeData = (codes) => {
     // Collect prefixes
     const prefixes = [];
-    // eslint-disable-next-line no-restricted-syntax
     for (const code of codes) {
       const prefix = code.split(".")[0];
       if (prefixes.indexOf(prefix) <= -1) { // prefix is not present in prefixes
@@ -33,9 +32,7 @@ const CodeSelection = ({ value, setValue, treeData, setTreeData }) => {
 
     // TODO: add levels for xxx.x, xxx.xx
     // create 2nd level of treeData by adding codes to the prefixes
-    // eslint-disable-next-line no-restricted-syntax
     for (const code of codes) {
-      // eslint-disable-next-line no-restricted-syntax
       for (const element of treeDataBuilt) {
         if (code.includes(element.title)) {
           element.children.push({

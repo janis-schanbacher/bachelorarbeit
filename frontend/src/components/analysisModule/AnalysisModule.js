@@ -54,36 +54,11 @@ const EditableCell = ({
     });
   };
 
-  const save = async () => {
-    try {
-      const values = await form.validateFields();
-      toggleEdit();
-      handleConfirm({ ...record, ...values });
-    } catch (errInfo) {
-      console.log("Save failed:", errInfo);
-    }
-  };
-
   let childNode = children;
 
   if (editable) {
-    childNode = editing ? (
-      <Form.Item
-        style={{
-          margin: 0,
-        }}
-        name={dataIndex}
-        rules={[
-          {
-            required: true,
-            message: `${title} is required.`,
-          },
-        ]}
-      >
-        <Input ref={inputRef} onPressEnter={save} onBlur={save} />
-      </Form.Item>
-    ) : (
-      // TODO: fix linter errors and remove ignore for whole file
+    // TODO: fix linter errors and remove ignore for whole file (
+    childNode = (
       <div
         className="editable-cell-value-wrap"
         style={{
@@ -140,6 +115,8 @@ const AnalysisModule = () => {
         setOriginalDataSource(dataSource);
       })
       .catch((err) => {
+        // eslint-disable-next-line no-console
+        // TODO: display Error Alert
         console.log(err);
       });
   };
@@ -255,7 +232,6 @@ const AnalysisModule = () => {
   const customRowSelection = {
     onChange: (selectedRowKeys, selectedRows) => {
       setRowSelection(selectedRows);
-      console.log(`selectedRowKeys: ${selectedRowKeys}`, "selectedRows: ", selectedRows);
     },
     getCheckboxProps: record => ({
       disabled: record.name === "Disabled User",
