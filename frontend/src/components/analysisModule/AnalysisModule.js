@@ -26,7 +26,7 @@ const EditableRow = ({ index, ...props }) => {
 
 EditableRow.propTypes = {
   // TODO: set required type or maybe remove prop, because its not used
-  index: PropTypes.isRequired,
+  index: PropTypes.func.isRequired,
 };
 
 const EditableCell = ({
@@ -107,7 +107,7 @@ const AnalysisModule = () => {
         const { data } = res;
         setDataSource(Object.keys(data).map(key => ({ key,
           code: key,
-          textFragments: data[key].join(";\n") })));
+          textFragments: data[key].join("\n") })));
       // fillDataSource(Object.keys(data).map(key => data[key]));
       // console.log(data)
       })
@@ -138,12 +138,13 @@ const AnalysisModule = () => {
   const handleConfirm = (record) => {
     console.log(`handleConfirm: ${record.key}`);
     console.log(`text new: ${record.textFragments}`); // equals value in dataSource
-
+    let textFragmentsResult = "";
     // find/log original textFragments
     for (let i = 0; i < originalDataSource.length; i += 1) {
       if (originalDataSource[i].code === record.key) {
-        console.log(`text previous: ${originalDataSource[i].textFragments}`);
+        textFragmentsResult = originalDataSource[i].textFragments;
         // TODO: log
+        console.log(`textFragmentsResult: ${textFragmentsResult}`);
         break;
       }
     }
@@ -151,24 +152,18 @@ const AnalysisModule = () => {
     // TODO: test andd write controller
     axios.post(`${apiUrl}/text-fragments`, {
       code: record.key,
-      textFragements: record.textFragements,
-    });
-    // TODO: request to save to EL
+      textFragments: record.textFragments,
+      textFragmentsResult,
+    })
+    // TODO: render SuccessNotification
+      .then(res => console.log(`Response status for post /text-fragments of code: ${record.key}: ${res.status}`));
   };
 
   // TODO: weiter hier
   const handleConfirmSelection = () => {
     console.log(rowSelection);
-    // axios.post(`${apiUrl}/text-fragments`, {
-    //   "code": record.key,
-    //   "textFragements": record.textFragements
-    // })
-    // console.log(selectedRowKeys);
-    // const newData = dataSource;
-    // const index = newData.findIndex((item) => row.key === item.key);
-    // const item = newData[index];
-    // newData.splice(index, 1, { ...item, ...row });
-    // setDataSource(newData);
+    rowSelection.forEach(row => handleConfirm(row));
+    // TODO: render SuccessNotification.
   };
 
   // const handleDelete = (key) => {
