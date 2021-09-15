@@ -19,14 +19,17 @@ ext {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	implementation group: 'org.json', name: 'json', version: '20201115'
+	
 	implementation group: 'mysql', name: 'mysql-connector-java', version: '5.1.13'
 	implementation group: 'com.microsoft.sqlserver', name: 'mssql-jdbc', version: '8.2.2.jre8'
 	implementation group: 'commons-io', name: 'commons-io', version: '2.6'
     implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.9.0'
-
+	
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.hsqldb:hsqldb'
 }
 
 dependencyManagement {

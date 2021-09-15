@@ -28,10 +28,10 @@ import okhttp3.Response;
 @RestController
 @RequestMapping(value = "/analysis")
 public class AnalysisController {
-    @PostMapping
+  @PostMapping
     public static String analyse(@RequestBody String codesJson) {
-        ObjectMapper objectMapper = new ObjectMapper(); 
-        String filledFacilitiesJson; 
+        ObjectMapper objectMapper = new ObjectMapper();
+        String filledFacilitiesJson;
 
         OkHttpClient client = new OkHttpClient().newBuilder().build();
 
@@ -46,7 +46,7 @@ public class AnalysisController {
             Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
         System.out.println(filledFacilitiesJson)
-        
+
 
 
         // objectMapper.readValue()
@@ -54,19 +54,19 @@ public class AnalysisController {
         String[] codesArray = codesJson.strip().replace("[", "").replace("]", "").split(",");
 
         ArrayList<Configuration> analysisSettings = getAnalysisSettings(codesArray);
-        
+
         // TODO: equivalent to fillKiObjects
-		ArrayList<AnalysisObject> analysisObjects = new ArrayList<>(); 
+		ArrayList<AnalysisObject> analysisObjects = new ArrayList<>();
         // TODO replace with requiest to http://localhost:8080/energielenker/esz-table and transform result to save in analysisObjects: okhttpClient
 
-        // TODO: 
+        // TODO:
         // analysisObjects = EnergielenkerUtils.getESZenergielenkerTableEinsparzaehler(dbVerbindung.getConnection(), analysisObjects);
 
 
-        
+
         for (String code : codesArray) {
             // TODO: retrieve configs for all codes and save in map
-            
+
             // TODO: create analyse objects and fill it with EL + Eneffco Data (either here
             // or outside body for all. If for all can be done in one EL request its better,
             // because EL workload has prio)
@@ -80,27 +80,27 @@ public class AnalysisController {
 
         // TODO: Send results as JSON return value
 
-        return ""; 
-    }
-
-    
-// TODO: check, implement
-    private static ArrayList<Configuration> getAnalysisSettings(String[] codes){
-        // TODO: retrieve Settings from config table and save to configurations usiing configuration.getCode())
-                // TODO: instead of hard coded get settings from db.
-
-        // get from db using select ... where code is in configurations.mapToCodesArray
-        // Dann in configurations schreiben und diese zurückgeben
-        ArrayList<Configuration> configurations = new ArrayList<>();
-        for(String code : codes) { 
-
-        }
-        return configurations; // TODO: check if necessary or done because of call by reference
-    }   
-
-    private static String analysis1(String analyseJSONObject) {
-        // TODO: Maybe use AnalysisObject model instead of json
-        // TODO: check conditions and return Textblock
         return "";
     }
+
+  // TODO: check, implement
+  private static ArrayList<Configuration> getAnalysisSettings(String[] codes) {
+    // TODO: retrieve Settings from config table and save to configurations usiing
+    // configuration.getCode())
+    // TODO: instead of hard coded get settings from db.
+
+    // get from db using select ... where code is in configurations.mapToCodesArray
+    // Dann in configurations schreiben und diese zurückgeben
+    ArrayList<Configuration> configurations = new ArrayList<>();
+    for (String code : codes) {
+
+    }
+    return configurations; // TODO: check if necessary or done because of call by reference
+  }
+
+  private static String analysis1(String analyseJSONObject) {
+    // TODO: Maybe use AnalysisObject model instead of json
+    // TODO: check conditions and return Textblock
+    return "";
+  }
 }

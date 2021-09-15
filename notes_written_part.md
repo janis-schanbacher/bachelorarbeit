@@ -16,3 +16,42 @@ Agile testing happens continuously. Test cases are set based on user stories. As
 ## Beginning of august:
 - hinzukommende anforderungen (flexibeles einstellen der grenzwerte ohne programmierung)
 - mehr zwischenschritte notwendig um aus den gegebenen kennwerten texrbausteine zu generieren. 
+
+
+
+
+
+
+- TODO: library für Requests, die wiederverwendbar ist
+- 
+# Notes Process
+## Juli:
+
+- Anforderungsanalyse
+- Besprechung/Entwicklung Analysen und zugehörige Textbausteine
+  - Dafür unerwartet datenpunkte statt einzelnen Kennwerten auszulesen
+  - Hinzu kam Anforderung die Grenzwerte für die verschiedenen Textbausteine flexibel anpassen zu können (und dem zuge wahrsch auch die Textbausteine)
+- Zuerst Service für Energielenker und Eneffco getrennt. Benötigen beide Datenabnkanbindung. Da sinngemäß alle Datensbeschaffung ist kombiniert in einem Microservice
+
+## August
+
+- Neuer Service für Service-Analyse Configurationen
+- Frontend
+  - yarn
+    ```
+    sudo npm install --global yarn
+    ```
+  - Create-React-app (yarn) mit Redux template
+    - https://redux.js.org/introduction/getting-started
+    ```
+    npx create-react-app frontend --template redux
+    ```
+  - Styled Components
+  - Ant Design (Design Framework)
+  - Redux (Local Storage)
+  - Axios (Http Requests)
+    ```
+    yarn add axios
+
+    ```
+  - 

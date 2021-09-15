@@ -1,6 +1,20 @@
 spring:
   application:
     name: energielenker-eneffco-service
+  datasource:
+    url: jdbc:sqlserver://
+    # TODO: read from dbConfig.properties or ENV
+    username: 
+    password: 
+    driver-class-name: 
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.SQLServer2012Dialect
+    show-sql: true
+    hibernate:
+      ddl-auto: update
 server:
   port: 8080
 eureka:
