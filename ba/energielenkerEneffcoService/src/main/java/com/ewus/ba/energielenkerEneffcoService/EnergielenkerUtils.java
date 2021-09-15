@@ -11,13 +11,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.message.ReusableMessage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -87,60 +93,12 @@ public class EnergielenkerUtils {
     return new String[] { value, creationTime };
   }
 
-  public static void fetchLiegenschaftFields(Connection dbConnection, Facility facility) {
-    ResultSet resultSet;
-    try {
-
-      Statement statement = dbConnection.createStatement();
-      String selectSql;
-      if (facility.getEinsparzaehlerobjektid() == null || facility.getEinsparzaehlerobjektid().equals("")) {
-        // Create and execute a SELECT SQL statement.
-        selectSql = "SELECT [Code], [ewus_assets].[dbo].[energielenker_objects].[parentId]"
-            + "FROM [ewus_assets].[dbo].[energielenker_sortiert]" + "JOIN [ewus_assets].[dbo].[energielenker_objects]"
-            + "ON [ewus_assets].[dbo].[energielenker_sortiert].[ID] = [ewus_assets].[dbo].[energielenker_objects].[id]"
-            + "WHERE code = '" + facility.getCode()
-            + "' AND [ewus_assets].[dbo].[energielenker_sortiert].[Name] = 'Anlagentechnik';";
-      } else {
-        selectSql = "SELECT parentid FROM [ewus_assets].[dbo].[energielenker_objects] WHERE id = '"
-            + facility.getEinsparzaehlerobjektid() + "';";
-      }
-      System.out.println(selectSql);
-      resultSet = statement.executeQuery(selectSql);
-
-      // Print results from select statement
-      while (resultSet.next()) {
-        // System.out.println(resultSet.getString(2) + " " + resultSet.getString(3));
-        // System.out.println(resultSet.getString(1) + " | ");
-
-        System.out.println(resultSet.getString(1));
-        facility.setLiegenschaftObjectId(resultSet.getString(1));
-
-        // if (facility.getCode().equalsIgnoreCase("ACO.001")) {
-        // facility.setLiegenschaftObjectId("25354");
-        // } else if (facility.getCode().equalsIgnoreCase("ACO.002")) {
-        // facility.setLiegenschaftObjectId("25355");
-        // } else if (facility.getCode().equalsIgnoreCase("ACO.003")) {
-        // facility.setLiegenschaftObjectId("25357");
-        // } else if (facility.getCode().equalsIgnoreCase("ACO.004")) {
-        // facility.setLiegenschaftObjectId("25356");
-        // } else if (facility.getCode().equalsIgnoreCase("ACO.005")) {
-        // facility.setLiegenschaftObjectId("25396");
-        // } else if (facility.getCode().equalsIgnoreCase("ACO.006")) {
-        // facility.setLiegenschaftObjectId("25397");
-        // }
-
-      }
-      // TODO: check if to delte
-      facility.setAussentemperaturCode(
-          EnergielenkerUtils.getStringEnergielenker(facility.getLiegenschaftObjectId(), "2882")[0]);
-      facility
-          .setVersorgungstyp(EnergielenkerUtils.getStringEnergielenker(facility.getLiegenschaftObjectId(), "2578")[0]);
-      System.out.println("facility.getAussentemperaturCode(): " + facility.getAussentemperaturCode());
-      System.out.println("facility.getVersorgungstyp(): " + facility.getVersorgungstyp());
-      System.out.println("Done Fetching Liegenschaftsfields for: " + facility.getCode());
-    } catch (Exception e) {
-      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
-    }
+  public static void fetchLiegenschaftFieldValues(Connection dbConnection, Facility facility) {
+    // TODO: check if to delte
+    facility.setAussentemperaturCode(
+        EnergielenkerUtils.getStringEnergielenker(facility.getLiegenschaftObjectId(), "2882")[0]);
+    facility
+        .setVersorgungstyp(EnergielenkerUtils.getStringEnergielenker(facility.getLiegenschaftObjectId(), "2578")[0]);
   }
 
   public static void postStringEnergielenker(String obId, String attributeId, String pValue) throws Exception {
@@ -213,7 +171,7 @@ public class EnergielenkerUtils {
   }
 
   /**
-   * Fetches the attributes from an Energielenker Object (such as
+   * Fetches the attributes (such as from an Energielenker Object (such as
    * Einsparzählerprotokoll, or Regelparameter_Soll-Werte).
    *
    * @param elObjId    Id of Energielenker object
@@ -298,27 +256,27 @@ public class EnergielenkerUtils {
           facilities.get(index).setMinimumAussentemp(jobject.get("id").toString());
         }
         if (jobject.get("name").toString().contains("960 AKTUELL Textbausteine Auto Analyse")) {
-          System.out.println("textFragments: " + jobject.get("id").toString());
+          // System.out.println("textFragments: " + jobject.get("id").toString());
           facilities.get(index).setTextFragments(jobject.get("id").toString());
         }
         if (jobject.get("name").toString().contains("961 ALT Textbausteine Auto Analyse")) {
-          System.out.println("textFragmentsPrev: " + jobject.get("id").toString());
+          // System.out.println("textFragmentsPrev: " + jobject.get("id").toString());
           facilities.get(index).setTextFragmentsPrev(jobject.get("id").toString());
         }
 
         // Values
         if (jobject.get("name").toString().contains("190 WMZ Eneffco (letzte Stelle im DP Code)")) {
           facilities.get(index)
-              .setWmzEneffco(Integer.parseInt(GET_attributeValueJson(elObjId, jobject.get("id").toString())));
+              .setWmzEneffco(Integer.parseInt(getAttributeValue(elObjId, jobject.get("id").toString())));
         }
         if (jobject.get("name").toString().contains("040 Nachtabsenkung Start")) {
-          facilities.get(index).setNighttimeFrom(GET_attributeValueJson(elObjId, jobject.get("id").toString()));
+          facilities.get(index).setNighttimeFrom(getAttributeValue(elObjId, jobject.get("id").toString()));
         }
         if (jobject.get("name").toString().contains("041 Nachtabsenkung Ende")) {
-          facilities.get(index).setNighttimeTo(GET_attributeValueJson(elObjId, jobject.get("id").toString()));
+          facilities.get(index).setNighttimeTo(getAttributeValue(elObjId, jobject.get("id").toString()));
         }
         if (jobject.get("name").toString().contains("041 Nachtabsenkung Ende")) {
-          facilities.get(index).setNighttimeTo(GET_attributeValueJson(elObjId, jobject.get("id").toString()));
+          facilities.get(index).setNighttimeTo(getAttributeValue(elObjId, jobject.get("id").toString()));
         }
       }
 
@@ -328,54 +286,55 @@ public class EnergielenkerUtils {
       Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
     }
 
-    System.out.println(facilities);
     return facilities;
   }
 
-  // TODO cleanup, reutrnm,...
-  public static ArrayList<Facility> fillEnergielenkerRegelparameterSollWerteObjectIds(Connection dbConnection,
-      ArrayList<Facility> facilities) {
-    System.out.println("Entered fillEnergielenkerRegelparameterSollWerteObjectIds");
-    System.out.println(facilities);
-    System.out.println("'" + facilities.stream().map(f -> f.getCode()).collect(Collectors.joining(" ', '")) + "'");
+  public static ArrayList<Facility> getFacilities(Connection dbConnection, String[] codes) {
+    System.out.println("Entered getFacilities");
+    ArrayList<Facility> facilities = Stream.of(codes).map(code -> new Facility(code.replace("\"", "")))
+        .collect(Collectors.toCollection(ArrayList::new));
+
     ResultSet resultSet = null;
     try {
-      // SMBUS_48AC%/1/Volume%
       Statement statement = dbConnection.createStatement();
-      {
 
-        // Create and execute a SELECT SQL statement.
-        String selectSql = "SELECT [Code],[ID],[Name] " + "FROM [ewus_assets].[dbo].[energielenker_sortiert] "
-            + "WHERE Code IN ('" + facilities.stream().map(f -> f.getCode()).collect(Collectors.joining("','"))
-            + "') AND Name = 'Regelparameter_Soll-Werte';";
+      String codesAsSqlList = "('" + String.join("','", codes).replace("\"", "") + "')";
+      String selectSql = "SELECT [Code], [energielenker_sortiert].[id], [energielenker_sortiert].[name], [energielenker_objects].[parentId] "
+          + "FROM [ewus_assets].[dbo].[energielenker_sortiert] JOIN [ewus_assets].[dbo].[energielenker_objects] "
+          + "ON [ewus_assets].[dbo].[energielenker_sortiert].[id] = [ewus_assets].[dbo].[energielenker_objects].[id] "
+          + "WHERE [Code] IN " + codesAsSqlList + " AND deinstalled = 'false'";
 
-        System.out.println(selectSql);
-        resultSet = statement.executeQuery(selectSql);
+      resultSet = statement.executeQuery(selectSql);
 
-        // Print results from select statement
-        while (resultSet.next()) {
-          // System.out.println(resultSet.getString(2) + " " + resultSet.getString(3));
-          System.out.println(resultSet.getString(1) + " | ");
-          System.out.println(resultSet.getString(2) + " | ");
-          // System.out.println(resultSet.getString(3) + " | ");
+      // For each result check if the referenced Object is of interest. If yes, save
+      // id in corresponding Facility
+      while (resultSet.next()) {
+        String code = resultSet.getString(1);
+        String id = resultSet.getString(2);
+        String name = resultSet.getString(3);
+        String parentId = resultSet.getString(4);
+        // System.out.println(resultSet.getString(1) + " " + resultSet.getString(2) + "
+        // " + resultSet.getString(3) + " "
+        // + resultSet.getString(4));
 
+        if (name.equals("Einsparzählerprotokoll")) {
           for (int i = 0; i < facilities.size(); i++) {
-            if (facilities.get(i).getCode() == resultSet.getString(1)) {
-              facilities.get(i).setRegelparameterSollWerteObjectId(resultSet.getString(2));
+            if (facilities.get(i).getCode().equalsIgnoreCase(code)) {
+              facilities.get(i).setEinsparzaehlerobjektid(id);
+              // Liegenschaft is parent of Anlagentechnik, Einsparzählerprotokoll,
+              // ESZ_Einsparungen, Messtechnik
+              facilities.get(i).setLiegenschaftObjectId(parentId);
               break;
             }
           }
-          // TODO: setRegelparameterSollWerteObjectId of the corresponding facilities
-          // Facility build = new Facility();
-
-          // // build.setHeizgrenze("test");
-          // build.setRegelparameterSollWerteObjectId(resultSet.getString(1));
-          // // System.out.println("fillEnergielenkerEszIds: ");
-          // // System.out.println(resultSet.getString(1));
-
-          // facilities.add(build);
+        } else if (name.equals("Regelparameter_Soll-Werte")) {
+          for (int i = 0; i < facilities.size(); i++) {
+            if (facilities.get(i).getCode().equalsIgnoreCase(code)) {
+              facilities.get(i).setRegelparameterSollWerteObjectId(id);
+              break;
+            }
+          }
         }
-
       }
     } catch (SQLException e) {
       Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
@@ -383,141 +342,18 @@ public class EnergielenkerUtils {
     return facilities;
   }
 
-  public static ArrayList<Facility> fillEnergielenkerEszIds(Connection dbConnection, ArrayList<Facility> facilities) {
-    System.out.println("Entered fillEnergielenkerEszIds");
-    ResultSet resultSet = null;
-    try {
-      // SMBUS_48AC%/1/Volume%
-      Statement statement = dbConnection.createStatement();
-      {
-
-        // Create and execute a SELECT SQL statement.
-        String selectSql = "SELECT [id],[parentId] ,[categoryId] FROM [ewus_assets].[dbo].[energielenker_objects] Where deinstalled = 'false' and name like 'Einsparzählerprotokoll%' ";
-
-        resultSet = statement.executeQuery(selectSql);
-
-        // Print results from select statement
-        while (resultSet.next()) {
-          // System.out.println(resultSet.getString(2) + " " + resultSet.getString(3));
-          // System.out.println(resultSet.getString(1) + " | ");
-
-          Facility build = new Facility();
-
-          // build.setHeizgrenze("test");
-          build.setEinsparzaehlerobjektid(resultSet.getString(1));
-          // System.out.println("fillEnergielenkerEszIds: ");
-          // System.out.println(resultSet.getString(1));
-
-          facilities.add(build);
-        }
-
-      }
-    } catch (SQLException e) {
-      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
-    }
-    return facilities;
-  }
-
-  public static String getAnlagencode(Connection dbConnection, String id) {
-
-    String anlagenname = getstep2(dbConnection, getstep1(dbConnection, id));
-    // System.out.println(getstep2(dbConnection,
-    // getstep1(dbConnection, id)));
-    if (anlagenname.contains(" (")) {
-      String[] tkm = anlagenname.split("\\(");
-      String anlagencode = tkm[1];
-      anlagencode = anlagencode.replace(")", "");
-      anlagencode = anlagencode.replace(" ", "");
-      // System.out.print(anlagencode);
-      return anlagencode;
-    } else {
-      try {
-        anlagenname = getstep2(dbConnection, getstep1(dbConnection, getstep1(dbConnection, id)));
-
-        String[] tkm = anlagenname.split("\\(");
-        String anlagencode = tkm[1];
-        anlagencode = anlagencode.replace(")", "");
-        anlagencode = anlagencode.replace(" ", "");
-        // System.out.print(anlagencode);
-        return anlagencode;
-      } catch (Exception e) {
-        return "not found";
-      }
-
-    }
-
-    // return "";
-  }
-
-  public static String getstep2(Connection dbConnection, String pid) {
-
-    ResultSet resultSet = null;
-    try {
-      // SMBUS_48AC%/1/Volume%
-      Statement statement = dbConnection.createStatement();
-      {
-
-        // Create and execute a SELECT SQL statement.
-        String selectSql = "SELECT [name],[parentId] ,[categoryId] FROM [ewus_assets].[dbo].[energielenker_objects] Where id = '"
-            + pid + "'";
-
-        resultSet = statement.executeQuery(selectSql);
-
-        // Print results from select statement
-        while (resultSet.next()) {
-          // System.out.println(resultSet.getString(2) + " " + resultSet.getString(3));
-          // System.out.println(resultSet.getString(1) + " | " + resultSet.getString(2) +
-          // " | ");
-          // eSZ_Einsparungen.add(resultSet.getString(1));
-          return resultSet.getString(1);
-
-        }
-
-      }
-    } catch (SQLException e) {
-      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
-    }
-
-    return "";
-  }
-
-  public static String getstep1(Connection dbConnection, String pid) {
-
-    ResultSet resultSet = null;
-    try {
-      // SMBUS_48AC%/1/Volume%
-      Statement statement = dbConnection.createStatement();
-      {
-
-        // Create and execute a SELECT SQL statement.
-        String selectSql = "SELECT [id],[parentId] ,[categoryId] FROM [ewus_assets].[dbo].[energielenker_objects] Where id = '"
-            + pid + "'";
-
-        resultSet = statement.executeQuery(selectSql);
-
-        // Print results from select statement
-        while (resultSet.next()) {
-          // System.out.println(resultSet.getString(2) + " " + resultSet.getString(3));
-          // System.out.println(resultSet.getString(1) + " | " + resultSet.getString(2) +
-          // " | ");
-          // eSZ_Einsparungen.add(resultSet.getString(1));
-          return resultSet.getString(2);
-
-        }
-
-      }
-    } catch (SQLException e) {
-      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
-    }
-
-    return "";
-  }
-
-  public static String GET_attributeValueJson(String poid, String paid) {
-    // System.out.println(poid);
-    // System.out.println(paid);
+  /**
+   * Get value of attribute from Energielenker Object specified by objectId
+   *
+   * @param objectId    Specifies the Energielenker object, which contains the
+   *                    attribute
+   * @param attributeId Specifies the id of the attribute
+   * @return Value of the attribute as json
+   */
+  public static String getAttributeValue(String objectId, String attributeId) {
     String attributeValue = "";
-    String query_url = "https://ewus.elmonitor.de/api/v1/basemonitor/objects/" + poid + "/attributes/" + paid;
+    String query_url = "https://ewus.elmonitor.de/api/v1/basemonitor/objects/" + objectId + "/attributes/"
+        + attributeId;
 
     JSONObject jobject = null;
     try {
@@ -534,46 +370,20 @@ public class EnergielenkerUtils {
       // read the response
       InputStream in = new BufferedInputStream(conn.getInputStream());
       String result = IOUtils.toString(in, "UTF-8");
-      // System.out.println(result);
-      // System.out.println("result after Reading JSON Response");
 
-      // JSONObject myResponse = new JSONObject(result);
-
-      ArrayList<String> listdata = new ArrayList<String>();
-      // JSONArray jArray = new JSONArray(result);
       jobject = new JSONObject(result);
       // System.out.println(jobject.get("values"));
       JSONArray jArray = new JSONArray(jobject.get("values").toString());
-      // System.out.println(jArray.get(0));
       JSONObject jobjectValue = null;
       if (jArray.length() > 0) {
         jobjectValue = new JSONObject(jArray.get(0).toString());
-        // System.out.println(jobjectValue.get("resolvedValue").toString());
         attributeValue = jobjectValue.get("resolvedValue").toString();
       }
-      // if (jArray != null) {
-      // for (int i=0;i<jArray.length();i++){
-      // listdata.add(jArray.getString(i));
-      // }
-      // }
-      // System.out.println("token : "+myResponse.getString("token"));
 
-      // for (int i = 0; i < jArray.length(); i++) {
-      //
-      // System.out.println(jArray.get(i));
-      // String test01 = ""+jArray.get(i);
-      // JSONObject jobject = new JSONObject(test01);
-      //
-      // System.out.println(jobject);
-      // System.out.println(jobject.get("deinstalled"));
-      // System.out.println(jobject.get("name"));
-      //
-      // rawInsert(dbConnection,jobject);
-      // }
       in.close();
       conn.disconnect();
     } catch (Exception e) {
-      System.err.println("# Error GET_attributeValueJson: ");
+      System.err.println("# Error getAttributeValue: ");
       System.err.println(query_url);
       System.err.println(jobject);
       Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);

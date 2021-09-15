@@ -13,22 +13,11 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
-import java.util.Properties;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.concurrent.TimeUnit;
 import java.time.temporal.ChronoUnit;
@@ -36,35 +25,20 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.MediaType;
 import okhttp3.Response;
 import okhttp3.HttpUrl;
-import okhttp3.Call;
-import okhttp3.Callback;
 
-import org.apache.commons.configuration.SystemConfiguration;
-import org.apache.commons.io.IOUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.ewus.ba.energielenkerEneffcoService.Utils;
-import com.ewus.ba.energielenkerEneffcoService.Config;
-import com.ewus.ba.energielenkerEneffcoService.Datenbankverbindung;
 import com.ewus.ba.energielenkerEneffcoService.model.Facility;
 import com.ewus.ba.energielenkerEneffcoService.model.FacilityAnalysisConfiguration;
-import com.ewus.ba.energielenkerEneffcoService.repository.IFacilityAnalysisConfigurationRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ewus.ba.energielenkerEneffcoService.EneffcoUtils;
-import com.ewus.ba.energielenkerEneffcoService.EnergielenkerUtils;
-import com.ewus.ba.energielenkerEneffcoService.controller.EnergielenkerController;
-import com.ewus.ba.energielenkerEneffcoService.controller.FacilityAnalysisConfigurationController;
 
 @RestController
 // @RequestMapping(value = "/")
@@ -185,21 +159,21 @@ public class AnalysisController {
     System.out.println(textFragments);
 
     // TODO: remove , when all codes are filled in fill-facilities
-    textFragments.put("ACO.001", textFragments.get("ACO.002"));
+    // textFragments.put("ACO.001", textFragments.get("ACO.002"));
     return textFragments;
   }
 
   // TODO: move to analysis service
   // TODO: Bestimmung From, To
   public String analyseFacilitySize(Facility facility) {
+    System.out.println("entered analyseFacilitySize. Code: " + facility.getCode() + " AuslastungKgrId: "
+        + facility.getAuslastungKgrId());
     List<JSONObject> values = EneffcoUtils.readEneffcoDatapointValues(facility.getAuslastungKgrId(),
-        java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).minus(365, ChronoUnit.DAYS).toString(), // TODO:
-                                                                                                                     // change
-                                                                                                                     // amount
-                                                                                                                     // of
-                                                                                                                     // days
+        // TODO: change amount of days
+        java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).minus(365, ChronoUnit.DAYS).toString(),
         java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).toString(), TIMEINTERVAL_15M, false);
 
+    System.out.println(values);
     float avgAuslastungKgr = getAverageValue(values);
     // TODO: fetch grenzwert and TextFragement from db
     String textFragment = avgAuslastungKgr > 80 ? ""
@@ -207,6 +181,7 @@ public class AnalysisController {
             + "%. Mögliche Maßnahmen: Brenner einstellen, andere Düse verbauen (geringere Heizleistung) oder Neubau.";
     System.out.println("Avg. Nutzungsgrad zw. -10 und -14 Grad: " + getAverageValue(values));
     System.out.println(textFragment);
+    System.out.println("finisehd analyseFacilitySize");
     return textFragment;
   }
 

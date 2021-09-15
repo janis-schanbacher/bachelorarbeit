@@ -394,6 +394,7 @@ public class Facility {
     // z.b. "4a3a0973-2fc4-47b6-aaf7-1ddd52bc94af"
     str.append("ruecklaufId: " + ruecklaufId + "\n"); // Eneffco Datenpunkt Tabelle:
     // [Anlagencode].WEZ.WMZ.RL.[wmzEneffco]
+    str.append("auslastungKgrId: " + auslastungKgrId + "\n");
     str.append("aussentemperaturCode: " + aussentemperaturCode + "\n");
     str.append("aussentemperaturId: " + aussentemperaturId + "\n"); // EL>Liegenschaft> 038 zugeordnete
                                                                     // Außentemperatur

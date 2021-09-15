@@ -61,24 +61,17 @@ public class EnergielenkerController {
   private static Connection dbConnection = new Datenbankverbindung().getConnection();
   private Map<String, Facility> facilitiesMap = new HashMap<>();
 
-  // TODO: pass codes and only fill those. Reusie filter logic from ACO
   @GetMapping("/fill-facilities")
   @ResponseBody
   public ArrayList<Facility> fillFacilities(@RequestParam String codesJson) {
-    // public ArrayList<Facility> fillFacilities(@RequestBody String
-    // codesJson) {
     System.out.println(codesJson);
-    // TODO: use library to parse json array
     String[] codesArray = codesJson.strip().replace("[", "").replace("]", "").split(",");
+
     System.out.println(Arrays.toString(codesArray));
-    System.out.println("fillFacilities()");
     EnergielenkerUtils.loginEnergielenker();
     ArrayList<Facility> facilities = new ArrayList<Facility>();
-    ArrayList<Facility> facilitiesFiltered = new ArrayList<Facility>();
 
-    final boolean MOCK_FILL_FACILITIES = true; // TODO: text/fix read timeout when false. Wait for EL field to be
-                                               // listed
-                                               // in DB
+    final boolean MOCK_FILL_FACILITIES = false;
 
     if (MOCK_FILL_FACILITIES) {
       ArrayList<Facility> facilitiesMock = new ArrayList<Facility>();
@@ -105,49 +98,30 @@ public class EnergielenkerController {
       facilityMock.setRegelparameterSollWerteObjectId("30362");
 
       facilitiesMock.add(facilityMock);
-      EnergielenkerUtils.fillEnergielenkerRegelparameterSollWerteObjectIds(dbConnection, facilitiesMock);
       facilitiesMock = EnergielenkerUtils
           .fillEnergielenkerFields(facilitiesMock.get(0).getRegelparameterSollWerteObjectId(), facilitiesMock, 0);
       facilitiesMap.put(facilityMock.getCode().toUpperCase(), facilityMock);
-      // TODO: move rest of block to proper location
-
-      // for (int i = 0; i < facilitiesMock.size(); i++) {
-      // System.out.println(AnalysisController.analyseFacilitySize(facilitiesMock.get(i)));
-      // System.out.println(AnalysisController.analyseDeltaTemperature(facilitiesMock.get(i)));
-      // System.out.println("Done with " + facilitiesMock.get(i).getCode());
-      // }
-
-      System.out.println("Leaving fillFacilities()");
       return facilitiesMock;
     }
 
-    facilities = EnergielenkerUtils.fillEnergielenkerEszIds(dbConnection, facilities);
+    facilities = EnergielenkerUtils.getFacilities(dbConnection, codesArray);
 
     try {
       for (int i = 0; i < facilities.size(); i++) {
-        // objects
-        facilities.get(i)
-            .setCode(EnergielenkerUtils.getAnlagencode(dbConnection, facilities.get(i).getEinsparzaehlerobjektid()));
-        // Filter all facilities with codes passed in codesJson
-        String codeToCheck = facilities.get(i).getCode().toLowerCase();
-        if (Arrays.stream(codesArray).anyMatch(s -> s != null && s.toLowerCase().contains(codeToCheck))) {
-          facilitiesFiltered.add(facilities.get(i));
-        }
-      }
-
-      for (int i = 0; i < facilitiesFiltered.size(); i++) {
         try {
-          facilitiesFiltered = EnergielenkerUtils
-              .fillEnergielenkerFields(facilitiesFiltered.get(i).getEinsparzaehlerobjektid(), facilitiesFiltered, i);
-          EnergielenkerUtils.fetchLiegenschaftFields(dbConnection, facilitiesFiltered.get(i));
-          facilitiesFiltered.get(i).calcTww();
-          EnergielenkerUtils.fillEnergielenkerRegelparameterSollWerteObjectIds(dbConnection, facilitiesFiltered);
-          facilitiesFiltered = EnergielenkerUtils.fillEnergielenkerFields(
-              facilitiesFiltered.get(i).getRegelparameterSollWerteObjectId(), facilitiesFiltered, i);
-          EneffcoUtils.fetchEneffcoIds(dbConnection, facilitiesFiltered.get(i));
+          // Fill fields of Energielenker-object Einsparzählerprotokoll
+          facilities = EnergielenkerUtils.fillEnergielenkerFields(facilities.get(i).getEinsparzaehlerobjektid(),
+              facilities, i);
+          EnergielenkerUtils.fetchLiegenschaftFieldValues(dbConnection, facilities.get(i));
+          facilities.get(i).calcTww();
+
+          // Fill fields of Energielenker-object Regelparameter_Soll-Werte
+          facilities = EnergielenkerUtils
+              .fillEnergielenkerFields(facilities.get(i).getRegelparameterSollWerteObjectId(), facilities, i);
+
+          EneffcoUtils.fetchEneffcoIds(dbConnection, facilities.get(i)); // TODO: fetch in AnalysisController, which will be in AnalysisService
         } catch (Exception e) {
-          System.err.println("Error fillFacilities: " + facilitiesFiltered.get(i).getCode());
-          Utils.LOGGER.log(Level.WARNING, "Error fillFacilities at: " + facilitiesFiltered.get(i).getCode() + "\n",
+          Utils.LOGGER.log(Level.WARNING, "Error fillFacilities at: " + facilities.get(i).getCode() + "\n",
               "errors.log");
           Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
@@ -156,10 +130,9 @@ public class EnergielenkerController {
       Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
     }
 
-    facilitiesMap.putAll(facilitiesFiltered.stream().collect(Collectors.toMap(f -> f.getCode(), f -> f)));
+    facilitiesMap.putAll(facilities.stream().collect(Collectors.toMap(f -> f.getCode(), f -> f)));
     System.out.println(facilitiesMap);
-    return facilitiesFiltered;
-    // return facilities;
+    return facilities;
   }
 
   @GetMapping("/facility-codes")
@@ -170,7 +143,6 @@ public class EnergielenkerController {
 
   @PostMapping("/text-fragments")
   public ResponseEntity postTextFragments(@RequestBody Map<String, String> body) {
-
     System.out.println("postTextFragments(): " + body);
     Facility facility = facilitiesMap.get(body.get("code").toUpperCase());
 
