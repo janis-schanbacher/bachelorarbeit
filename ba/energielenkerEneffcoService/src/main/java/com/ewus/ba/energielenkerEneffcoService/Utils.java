@@ -12,6 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Utils {
+
   // static Logger log = Logger.getLogger(Utils.class.getName());
   public static final Logger LOGGER = Logger.getLogger(Utils.class.getName());
 
@@ -23,8 +24,7 @@ public class Utils {
       FileWriter myWriter = new FileWriter(logFile, true);
       myWriter.write(s);
       myWriter.close();
-      if (printSuccess)
-        System.out.println("Successfully wrote to the file: " + logFile);
+      if (printSuccess) System.out.println("Successfully wrote to the file: " + logFile);
     } catch (IOException e) {
       System.err.println("An error occurred.");
       Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
@@ -64,14 +64,16 @@ public class Utils {
 
   public static String getCurrentDayTimeNoDots() {
     String formattedDate = "";
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy_MM_dd_'T'_HH_mm_ss", Locale.US);/* w ww . j av a 2s. co m */
+    SimpleDateFormat sdf =
+        new SimpleDateFormat("yyyy_MM_dd_'T'_HH_mm_ss", Locale.US); /* w ww . j av a 2s. co m */
     formattedDate = sdf.format(new Date());
     return formattedDate;
   }
 
   public static String getCurrentDayTime() {
     String formattedDate = "";
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy:MM:dd:'T'HH:mm:ss", Locale.US);/* w ww . j av a 2s. co m */
+    SimpleDateFormat sdf =
+        new SimpleDateFormat("yyyy:MM:dd:'T'HH:mm:ss", Locale.US); /* w ww . j av a 2s. co m */
     formattedDate = sdf.format(new Date());
     return formattedDate;
   }

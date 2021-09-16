@@ -1,55 +1,52 @@
 package com.ewus.ba.energielenkerEneffcoService.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.concurrent.TimeUnit;
-import java.time.temporal.ChronoUnit;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.Month;
-import java.time.ZoneId;
-
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.HttpUrl;
-
-import org.json.JSONObject;
-
+import com.ewus.ba.energielenkerEneffcoService.EneffcoUtils;
 import com.ewus.ba.energielenkerEneffcoService.Utils;
 import com.ewus.ba.energielenkerEneffcoService.model.Facility;
 import com.ewus.ba.energielenkerEneffcoService.model.FacilityAnalysisConfiguration;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ewus.ba.energielenkerEneffcoService.EneffcoUtils;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import org.json.JSONObject;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 // @RequestMapping(value = "/")
 @CrossOrigin
 public class AnalysisController {
-  final static int TIMEINTERVAL_15M = 900;
-  final static int TIMEINTERVAL_DAY = 86400;
-  final static int TIMEINTERVAL_WEEK = 86407;
-  private static final OkHttpClient client = new OkHttpClient().newBuilder().connectTimeout(10, TimeUnit.SECONDS)
-      // .readTimeout(30, TimeUnit.SECONDS)
-      .build();
+
+  static final int TIMEINTERVAL_15M = 900;
+
+  static final int TIMEINTERVAL_DAY = 86400;
+
+  static final int TIMEINTERVAL_WEEK = 86407;
+
+  private static final OkHttpClient client =
+      new OkHttpClient()
+          .newBuilder()
+          .connectTimeout(10, TimeUnit.SECONDS)
+          // .readTimeout(30, TimeUnit.SECONDS)
+          .build();
+
   final ObjectMapper objectMapper = new ObjectMapper();
 
   @PostMapping("/analyse")
@@ -59,7 +56,8 @@ public class AnalysisController {
     System.out.println("codes:" + codes);
     // List<Facility> facilities = fillFacilities(codes); as request
     // TODO: use eureka url
-    HttpUrl.Builder httpBuilder = HttpUrl.parse("http://localhost:8080/fill-facilities").newBuilder();
+    HttpUrl.Builder httpBuilder =
+        HttpUrl.parse("http://localhost:8080/fill-facilities").newBuilder();
     httpBuilder.addQueryParameter("codesJson", codes);
     Request request = new Request.Builder().url(httpBuilder.build()).build();
     Response response = null;
@@ -75,8 +73,8 @@ public class AnalysisController {
         return null;
       }
 
-      facilities = objectMapper.readValue(response.body().string(), new TypeReference<List<Facility>>() {
-      });
+      facilities =
+          objectMapper.readValue(response.body().string(), new TypeReference<List<Facility>>() {});
 
     } catch (Exception e) {
       Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
@@ -101,9 +99,10 @@ public class AnalysisController {
         System.out.println(response);
         return null;
       }
-      configs = objectMapper.readValue(response.body().string(),
-          new TypeReference<List<FacilityAnalysisConfiguration>>() {
-          });
+      configs =
+          objectMapper.readValue(
+              response.body().string(),
+              new TypeReference<List<FacilityAnalysisConfiguration>>() {});
     } catch (Exception e) {
       Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
     }
@@ -121,8 +120,8 @@ public class AnalysisController {
       // facility.getCode().equals(c.getId()))
       // .findFirst().orElse(new FacilityAnalysisConfiguration(facility.getCode(),
       // true, true, true, true));
-      FacilityAnalysisConfiguration config = new FacilityAnalysisConfiguration(facility.getCode(), true, true, true,
-          true);
+      FacilityAnalysisConfiguration config =
+          new FacilityAnalysisConfiguration(facility.getCode(), true, true, true, true);
       System.out.println(config);
       // TODO: fetch configurations and only do desired analysis
       // ResponseEntity<FacilityAnalysisConfiguration> configResponse =
@@ -133,7 +132,8 @@ public class AnalysisController {
       // umgeschrieben: check if config
       // // == null
       // System.out.println(
-      // "No config for " + facility.getCode() + " available. Using default to run all
+      // "No config for " + facility.getCode() + " available. Using default to run
+      // all
       // analyses.");
       // config = new FacilityAnalysisConfiguration(facility.getCode(), true, true,
       // true, true);
@@ -166,19 +166,33 @@ public class AnalysisController {
   // TODO: move to analysis service
   // TODO: Bestimmung From, To
   public String analyseFacilitySize(Facility facility) {
-    System.out.println("entered analyseFacilitySize. Code: " + facility.getCode() + " AuslastungKgrId: "
-        + facility.getAuslastungKgrId());
-    List<JSONObject> values = EneffcoUtils.readEneffcoDatapointValues(facility.getAuslastungKgrId(),
-        // TODO: change amount of days
-        java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).minus(365, ChronoUnit.DAYS).toString(),
-        java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).toString(), TIMEINTERVAL_15M, false);
+    System.out.println(
+        "entered analyseFacilitySize. Code: "
+            + facility.getCode()
+            + " AuslastungKgrId: "
+            + facility.getAuslastungKgrId());
+    List<JSONObject> values =
+        EneffcoUtils.readEneffcoDatapointValues(
+            facility.getAuslastungKgrId(),
+            // TODO: change amount of days
+            java.time.Clock.systemUTC()
+                .instant()
+                .truncatedTo(ChronoUnit.MILLIS)
+                .minus(365, ChronoUnit.DAYS)
+                .toString(),
+            java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).toString(),
+            TIMEINTERVAL_15M,
+            false);
 
     System.out.println(values);
     float avgAuslastungKgr = getAverageValue(values);
     // TODO: fetch grenzwert and TextFragement from db
-    String textFragment = avgAuslastungKgr > 80 ? ""
-        : "Heizkessel ist überdimensioniert, Durchschnittliche Auslastung " + avgAuslastungKgr
-            + "%. Mögliche Maßnahmen: Brenner einstellen, andere Düse verbauen (geringere Heizleistung) oder Neubau.";
+    String textFragment =
+        avgAuslastungKgr > 80
+            ? ""
+            : "Heizkessel ist überdimensioniert, Durchschnittliche Auslastung "
+                + avgAuslastungKgr
+                + "%. Mögliche Maßnahmen: Brenner einstellen, andere Düse verbauen (geringere Heizleistung) oder Neubau.";
     System.out.println("Avg. Nutzungsgrad zw. -10 und -14 Grad: " + getAverageValue(values));
     System.out.println(textFragment);
     System.out.println("finisehd analyseFacilitySize");
@@ -192,23 +206,36 @@ public class AnalysisController {
     int currentDay = LocalDate.now().getDayOfMonth();
     String from, to;
     if (currentMonth <= 3) { // First months of year
-      from = LocalDateTime.of(currentYear - 1, Month.NOVEMBER, 1, 0, 0, 0).atZone(ZoneId.of("Europe/Berlin"))
-          .toInstant().toString();
+      from =
+          LocalDateTime.of(currentYear - 1, Month.NOVEMBER, 1, 0, 0, 0)
+              .atZone(ZoneId.of("Europe/Berlin"))
+              .toInstant()
+              .toString();
       to = java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).toString();
     } else if (currentMonth >= 11 && currentDay > 14) { // at least 2 weeks in timesspan
-      from = LocalDateTime.of(currentYear, Month.NOVEMBER, 1, 0, 0, 0).atZone(ZoneId.of("Europe/Berlin")).toInstant()
-          .toString();
+      from =
+          LocalDateTime.of(currentYear, Month.NOVEMBER, 1, 0, 0, 0)
+              .atZone(ZoneId.of("Europe/Berlin"))
+              .toInstant()
+              .toString();
       to = java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).toString();
 
     } else {
-      from = LocalDateTime.of(currentYear - 1, Month.NOVEMBER, 1, 0, 0, 0).atZone(ZoneId.of("Europe/Berlin"))
-          .toInstant().toString();
-      to = LocalDateTime.of(currentYear, Month.MARCH, 28, 23, 59, 59).atZone(ZoneId.of("Europe/Berlin")).toInstant()
-          .toString();
+      from =
+          LocalDateTime.of(currentYear - 1, Month.NOVEMBER, 1, 0, 0, 0)
+              .atZone(ZoneId.of("Europe/Berlin"))
+              .toInstant()
+              .toString();
+      to =
+          LocalDateTime.of(currentYear, Month.MARCH, 28, 23, 59, 59)
+              .atZone(ZoneId.of("Europe/Berlin"))
+              .toInstant()
+              .toString();
     }
 
-    List<JSONObject> values = EneffcoUtils.readEneffcoDatapointValues(facility.getNutzungsgradId(), from, to,
-        TIMEINTERVAL_DAY, false);
+    List<JSONObject> values =
+        EneffcoUtils.readEneffcoDatapointValues(
+            facility.getNutzungsgradId(), from, to, TIMEINTERVAL_DAY, false);
 
     float avgUtilizationRate = getAverageValue(values);
 
@@ -217,19 +244,25 @@ public class AnalysisController {
     // werden soll in textbaustein. E.g. Avg Nutzungsgrad vorwoche
     final double LIMIT_UTILIZATION_RATE = facility.getBrennwertkessel() ? 90 : 80;
     if (avgUtilizationRate < LIMIT_UTILIZATION_RATE) {
-      textFragment = "Die Anlage weist einen geringen Nutzungsgrad auf (Avg. Nutzungsgrad: " + avgUtilizationRate
-          + "%). Maßnahmen: Prüfen ob WMZ Gesamt gemessen wird, Anlagenanalyse durchführen.​";
+      textFragment =
+          "Die Anlage weist einen geringen Nutzungsgrad auf (Avg. Nutzungsgrad: "
+              + avgUtilizationRate
+              + "%). Maßnahmen: Prüfen ob WMZ Gesamt gemessen wird, Anlagenanalyse durchführen.​";
     } else if (facility.getUtilizationRatePreviousWeek() != 0
         && facility.getUtilizationRatePreviousWeek() < LIMIT_UTILIZATION_RATE) {
-      textFragment = "Die Anlage weist einen geringen Nutzungsgrad auf (Nutzungsgrad Vorwoche: "
-          + facility.getUtilizationRatePreviousWeek()
-          + "). Maßnahmen: Prüfen ob WMZ Gesamt gemessen wird, Anlagenanalyse durchführen.";
+      textFragment =
+          "Die Anlage weist einen geringen Nutzungsgrad auf (Nutzungsgrad Vorwoche: "
+              + facility.getUtilizationRatePreviousWeek()
+              + "). Maßnahmen: Prüfen ob WMZ Gesamt gemessen wird, Anlagenanalyse durchführen.";
     }
 
     // TODO: fetch grenzwert and TextFragement from db
 
-    System.out.println("avgUtilizationRate Eneffco: " + avgUtilizationRate + ", Utitilization Rate prev week EL:"
-        + facility.getUtilizationRatePreviousWeek());
+    System.out.println(
+        "avgUtilizationRate Eneffco: "
+            + avgUtilizationRate
+            + ", Utitilization Rate prev week EL:"
+            + facility.getUtilizationRatePreviousWeek());
     System.out.println(textFragment);
     return textFragment;
   }
@@ -238,13 +271,20 @@ public class AnalysisController {
   // TODO: Bestimmung From, To
   public String analyseDeltaTemperature(Facility facility) {
     int currentYear = LocalDate.now().getYear();
-    String from = LocalDateTime.of(currentYear - 1, Month.DECEMBER, 1, 0, 0, 0).atZone(ZoneId.of("Europe/Berlin"))
-        .toInstant().toString();
-    String to = LocalDateTime.of(currentYear, Month.FEBRUARY, 28, 23, 59, 59).atZone(ZoneId.of("Europe/Berlin"))
-        .toInstant().toString();
+    String from =
+        LocalDateTime.of(currentYear - 1, Month.DECEMBER, 1, 0, 0, 0)
+            .atZone(ZoneId.of("Europe/Berlin"))
+            .toInstant()
+            .toString();
+    String to =
+        LocalDateTime.of(currentYear, Month.FEBRUARY, 28, 23, 59, 59)
+            .atZone(ZoneId.of("Europe/Berlin"))
+            .toInstant()
+            .toString();
 
-    List<JSONObject> values = EneffcoUtils.readEneffcoDatapointValues(facility.getDeltaTemeratureId(), from, to,
-        TIMEINTERVAL_15M, false);
+    List<JSONObject> values =
+        EneffcoUtils.readEneffcoDatapointValues(
+            facility.getDeltaTemeratureId(), from, to, TIMEINTERVAL_15M, false);
 
     float avgDeltaTemperature = getAverageValue(values);
     System.out.println("Avg. Temperaturdifferenz: " + getAverageValue(values));
@@ -252,16 +292,21 @@ public class AnalysisController {
     // TODO: fetch grenzwerte and TextFragements from db
     if (!facility.getTww()) { // TODO: Check. hat brennwertkessel
       if (avgDeltaTemperature < 15) {
-        // TODO Die Temperaturspreizung ist mit/um xK zu gering. Fragen ob entsprechend
+        // TODO Die Temperaturspreizung ist mit/um xK zu gering. Fragen ob
+        // entsprechend
         // ändern
-        textFragment = "Die Temperaturspreizung ist mit " + avgDeltaTemperature
-            + "K zu gering. Maßnahmen: Heizkurve einstellen, Absenkung VL-Temp., Verringerung der Wasserumlaufmenge.";
+        textFragment =
+            "Die Temperaturspreizung ist mit "
+                + avgDeltaTemperature
+                + "K zu gering. Maßnahmen: Heizkurve einstellen, Absenkung VL-Temp., Verringerung der Wasserumlaufmenge.";
       }
     } else {
       if (avgDeltaTemperature < 10) {
-        // TODO Die Temperaturspreizung ist mit/um xK zu gering. Fragen ob entsprechend
+        // TODO Die Temperaturspreizung ist mit/um xK zu gering. Fragen ob
+        // entsprechend
         // ändern
-        textFragment = "Die Temperaturspreizung ist zu gering. Maßnahmen: Heizkurve einstellen, Absenkung VL-Temp., Verringerung der Wasserumlaufmenge.";
+        textFragment =
+            "Die Temperaturspreizung ist zu gering. Maßnahmen: Heizkurve einstellen, Absenkung VL-Temp., Verringerung der Wasserumlaufmenge.";
       }
     }
 
@@ -276,38 +321,54 @@ public class AnalysisController {
     int currentDay = LocalDate.now().getDayOfMonth();
     String from, to;
     if (currentMonth <= 2) { // First months of year
-      from = LocalDateTime.of(currentYear - 1, Month.DECEMBER, 1, 0, 0, 0).atZone(ZoneId.of("Europe/Berlin"))
-          .toInstant().toString();
+      from =
+          LocalDateTime.of(currentYear - 1, Month.DECEMBER, 1, 0, 0, 0)
+              .atZone(ZoneId.of("Europe/Berlin"))
+              .toInstant()
+              .toString();
       to = java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).toString();
     } else if (currentMonth >= 12 && currentDay > 14) { // at least 2 weeks in timesspan
-      from = LocalDateTime.of(currentYear, Month.DECEMBER, 1, 0, 0, 0).atZone(ZoneId.of("Europe/Berlin")).toInstant()
-          .toString();
+      from =
+          LocalDateTime.of(currentYear, Month.DECEMBER, 1, 0, 0, 0)
+              .atZone(ZoneId.of("Europe/Berlin"))
+              .toInstant()
+              .toString();
       to = java.time.Clock.systemUTC().instant().truncatedTo(ChronoUnit.MILLIS).toString();
 
     } else {
-      from = LocalDateTime.of(currentYear - 1, Month.DECEMBER, 1, 0, 0, 0).atZone(ZoneId.of("Europe/Berlin"))
-          .toInstant().toString();
-      to = LocalDateTime.of(currentYear, Month.FEBRUARY, 28, 23, 59, 59).atZone(ZoneId.of("Europe/Berlin")).toInstant()
-          .toString();
+      from =
+          LocalDateTime.of(currentYear - 1, Month.DECEMBER, 1, 0, 0, 0)
+              .atZone(ZoneId.of("Europe/Berlin"))
+              .toInstant()
+              .toString();
+      to =
+          LocalDateTime.of(currentYear, Month.FEBRUARY, 28, 23, 59, 59)
+              .atZone(ZoneId.of("Europe/Berlin"))
+              .toInstant()
+              .toString();
     }
 
-    List<JSONObject> values = EneffcoUtils.readEneffcoDatapointValues(facility.getRuecklaufId(), from, to,
-        TIMEINTERVAL_DAY, false);
+    List<JSONObject> values =
+        EneffcoUtils.readEneffcoDatapointValues(
+            facility.getRuecklaufId(), from, to, TIMEINTERVAL_DAY, false);
 
     // TODO: fetch grenzwert and TextFragement from db
     final double LIMIT_PORTION_ACCEPTED_MIN = 95.0 / 100;
     final double LIMIT_RETURN_TEMPERATURE = 55;
-    double portionOfValuesMarginBelowLimit = getPortionOfValuesMargin(values, LIMIT_RETURN_TEMPERATURE);
+    double portionOfValuesMarginBelowLimit =
+        getPortionOfValuesMargin(values, LIMIT_RETURN_TEMPERATURE);
 
     String textFragment = "";
     // TODO: check 90% vs 95%/. Absichern, dass gut: alle werte von .RL.WMZ
     // betrachten, zählen wenn unter 55, prozentsatz bilden.Wenn Kein
     // Brennwertkessel kein Textbaustein
     if (portionOfValuesMarginBelowLimit < LIMIT_PORTION_ACCEPTED_MIN) {
-      textFragment = "Brennwerteffekt wird nicht ausreichend genutzt. Maßnahmen: Heizkurve einstellen, Absenkung VL-Temp., Verringerung der Wasserumlaufmenge.";
+      textFragment =
+          "Brennwerteffekt wird nicht ausreichend genutzt. Maßnahmen: Heizkurve einstellen, Absenkung VL-Temp., Verringerung der Wasserumlaufmenge.";
     }
 
-    System.out.println("portionOfValuesMarginBelowLimit Eneffco: " + portionOfValuesMarginBelowLimit);
+    System.out.println(
+        "portionOfValuesMarginBelowLimit Eneffco: " + portionOfValuesMarginBelowLimit);
     System.out.println(textFragment);
     return textFragment;
   }
@@ -329,5 +390,4 @@ public class AnalysisController {
     }
     return (double) acceptedValuesCount / values.size();
   }
-
 }

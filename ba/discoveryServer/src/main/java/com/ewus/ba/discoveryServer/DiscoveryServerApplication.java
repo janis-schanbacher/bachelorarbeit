@@ -10,8 +10,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 @CrossOrigin
 public class DiscoveryServerApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(DiscoveryServerApplication.class, args);
-	}
-
+  public static void main(String[] args) {
+    SpringApplication.run(DiscoveryServerApplication.class, args);
+  }
 }

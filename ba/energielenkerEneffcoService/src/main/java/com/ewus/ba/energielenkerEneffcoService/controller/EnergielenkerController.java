@@ -1,64 +1,34 @@
 package com.ewus.ba.energielenkerEneffcoService.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import com.ewus.ba.energielenkerEneffcoService.Datenbankverbindung;
+import com.ewus.ba.energielenkerEneffcoService.EneffcoUtils;
+import com.ewus.ba.energielenkerEneffcoService.EnergielenkerUtils;
+import com.ewus.ba.energielenkerEneffcoService.Utils;
+import com.ewus.ba.energielenkerEneffcoService.model.Facility;
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
-import java.time.temporal.ChronoUnit;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.Month;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
-
-import org.apache.commons.io.IOUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import com.ewus.ba.energielenkerEneffcoService.Utils;
-import com.ewus.ba.energielenkerEneffcoService.Config;
-import com.ewus.ba.energielenkerEneffcoService.Datenbankverbindung;
-import com.ewus.ba.energielenkerEneffcoService.model.Facility;
-import com.ewus.ba.energielenkerEneffcoService.EneffcoUtils;
-import com.ewus.ba.energielenkerEneffcoService.EnergielenkerUtils;
-
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 // @RequestMapping(value = "/")
 @CrossOrigin
 public class EnergielenkerController {
+
   private static Connection dbConnection = new Datenbankverbindung().getConnection();
+
   private Map<String, Facility> facilitiesMap = new HashMap<>();
 
   @GetMapping("/fill-facilities")
@@ -98,8 +68,9 @@ public class EnergielenkerController {
       facilityMock.setRegelparameterSollWerteObjectId("30362");
 
       facilitiesMock.add(facilityMock);
-      facilitiesMock = EnergielenkerUtils
-          .fillEnergielenkerFields(facilitiesMock.get(0).getRegelparameterSollWerteObjectId(), facilitiesMock, 0);
+      facilitiesMock =
+          EnergielenkerUtils.fillEnergielenkerFields(
+              facilitiesMock.get(0).getRegelparameterSollWerteObjectId(), facilitiesMock, 0);
       facilitiesMap.put(facilityMock.getCode().toUpperCase(), facilityMock);
       return facilitiesMock;
     }
@@ -110,18 +81,30 @@ public class EnergielenkerController {
       for (int i = 0; i < facilities.size(); i++) {
         try {
           // Fill fields of Energielenker-object Einsparzählerprotokoll
-          facilities = EnergielenkerUtils.fillEnergielenkerFields(facilities.get(i).getEinsparzaehlerobjektid(),
-              facilities, i);
+          facilities =
+              EnergielenkerUtils.fillEnergielenkerFields(
+                  facilities.get(i).getEinsparzaehlerobjektid(), facilities, i);
           EnergielenkerUtils.fetchLiegenschaftFieldValues(dbConnection, facilities.get(i));
           facilities.get(i).calcTww();
 
           // Fill fields of Energielenker-object Regelparameter_Soll-Werte
-          facilities = EnergielenkerUtils
-              .fillEnergielenkerFields(facilities.get(i).getRegelparameterSollWerteObjectId(), facilities, i);
+          facilities =
+              EnergielenkerUtils.fillEnergielenkerFields(
+                  facilities.get(i).getRegelparameterSollWerteObjectId(), facilities, i);
 
-          EneffcoUtils.fetchEneffcoIds(dbConnection, facilities.get(i)); // TODO: fetch in AnalysisController, which will be in AnalysisService
+          EneffcoUtils.fetchEneffcoIds(dbConnection, facilities.get(i)); // TODO:
+          // fetch
+          // in
+          // AnalysisController,
+          // which
+          // will
+          // be
+          // in
+          // AnalysisService
         } catch (Exception e) {
-          Utils.LOGGER.log(Level.WARNING, "Error fillFacilities at: " + facilities.get(i).getCode() + "\n",
+          Utils.LOGGER.log(
+              Level.WARNING,
+              "Error fillFacilities at: " + facilities.get(i).getCode() + "\n",
               "errors.log");
           Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
@@ -153,12 +136,11 @@ public class EnergielenkerController {
     }
     // TODO: , set 960 to body.textfragments, save
     // body to db/log
-    try
-
-    {
+    try {
       // Save old
-      String[] prev = EnergielenkerUtils.getStringEnergielenker(facility.getRegelparameterSollWerteObjectId(),
-          facility.getTextFragments());
+      String[] prev =
+          EnergielenkerUtils.getStringEnergielenker(
+              facility.getRegelparameterSollWerteObjectId(), facility.getTextFragments());
       // System.out
       // .println("facility.getRegelparameterSollWerteObjectId()" +
       // facility.getRegelparameterSollWerteObjectId());
@@ -166,29 +148,32 @@ public class EnergielenkerController {
       // facility.getTextFragments());
       // System.out.println("prev: " + prev);
       if (prev != null && !prev[0].isBlank()) {
-        EnergielenkerUtils.postStringEnergielenker(facility.getRegelparameterSollWerteObjectId(),
-            facility.getTextFragmentsPrev(), prev[1] + ": " + prev[0]);
+        EnergielenkerUtils.postStringEnergielenker(
+            facility.getRegelparameterSollWerteObjectId(),
+            facility.getTextFragmentsPrev(),
+            prev[1] + ": " + prev[0]);
       }
       // Save new
       String textFragmentsNew = body.get("textFragments");
       if (textFragmentsNew != null) {
-        EnergielenkerUtils.postStringEnergielenker(facility.getRegelparameterSollWerteObjectId(),
-            facility.getTextFragments(), textFragmentsNew.replace("\n", "   "));// body.get("textFragments"));
+        EnergielenkerUtils.postStringEnergielenker(
+            facility.getRegelparameterSollWerteObjectId(),
+            facility.getTextFragments(),
+            textFragmentsNew.replace("\n", "   ")); // body.get("textFragments"));
       } else {
-        return ResponseEntity.badRequest().body("The field 'textFragments'is required, but not present");
+        return ResponseEntity.badRequest()
+            .body("The field 'textFragments'is required, but not present");
       }
       // TODO: log: analysisResult (if different), editedAnalysisResult, timestamp,
       // code
       // EnergielenkerUtils.getStringEnergielenker(facility.getRegelparameterSollWerteObjectId(),
       // facility.getTextFragments());
 
-    } catch (
-
-    Exception e) {
+    } catch (Exception e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
     } // TODO
-    return ResponseEntity.created(null).build();// EnergielenkerUtils.fetchAllFacilityCodes(dbConnection);
+    return ResponseEntity.created(null)
+        .build(); // EnergielenkerUtils.fetchAllFacilityCodes(dbConnection);
   }
-
 }

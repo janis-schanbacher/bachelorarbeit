@@ -1,5 +1,6 @@
 package com.ewus.ba.energielenkerEneffcoService;
 
+import com.ewus.ba.energielenkerEneffcoService.model.Facility;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,40 +12,38 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.message.ReusableMessage;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-
-import com.ewus.ba.energielenkerEneffcoService.model.Facility;
+import org.apache.commons.io.IOUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class EnergielenkerUtils {
+
   public static String tokenEnergielenker;
 
   public static String loginEnergielenker() {
     try {
-      Properties credentials = Config.readProperties("src/main/resources/dbConfig.properties",
-          new String[] { "energielenkerUsername", "energielenkerPassword" });
+      Properties credentials =
+          Config.readProperties(
+              "src/main/resources/dbConfig.properties",
+              new String[] {"energielenkerUsername", "energielenkerPassword"});
       String query_url = "https://ewus.elmonitor.de/api/login_check";
-      String json = "{ \"username\" :  \"" + credentials.getProperty("energielenkerUsername") + "\" , \"password\" : \""
-          + credentials.getProperty("energielenkerPassword") + "\" }";
+      String json =
+          "{ \"username\" :  \""
+              + credentials.getProperty("energielenkerUsername")
+              + "\" , \"password\" : \""
+              + credentials.getProperty("energielenkerPassword")
+              + "\" }";
       URL url = new URL(query_url);
       HttpURLConnection conn = (HttpURLConnection) url.openConnection();
       conn.setConnectTimeout(5000);
@@ -74,15 +73,32 @@ public class EnergielenkerUtils {
   public static String[] getStringEnergielenker(String obId, String attributeId) {
     OkHttpClient client = new OkHttpClient().newBuilder().build();
     String creationTime = "", value = "";
-    Request request = new Request.Builder()
-        .url("https://ewus.elmonitor.de/api/v1/basemonitor/objects/" + obId + "/attributes/" + attributeId)
-        .addHeader("accept", "application/json").addHeader("Authorization", "Bearer " + tokenEnergielenker).build();
+    Request request =
+        new Request.Builder()
+            .url(
+                "https://ewus.elmonitor.de/api/v1/basemonitor/objects/"
+                    + obId
+                    + "/attributes/"
+                    + attributeId)
+            .addHeader("accept", "application/json")
+            .addHeader("Authorization", "Bearer " + tokenEnergielenker)
+            .build();
     try {
       JSONObject response = new JSONObject(client.newCall(request).execute().body().string());
-      creationTime = response.getJSONArray("values").getJSONObject(0).getJSONObject("value").getString("creationTime");
+      creationTime =
+          response
+              .getJSONArray("values")
+              .getJSONObject(0)
+              .getJSONObject("value")
+              .getString("creationTime");
 
       if (attributeId.equals("2578")) {
-        value = response.getJSONArray("values").getJSONObject(0).getJSONObject("resolvedValue").getString("name");
+        value =
+            response
+                .getJSONArray("values")
+                .getJSONObject(0)
+                .getJSONObject("resolvedValue")
+                .getString("name");
       } else { // if (attributeId.equals("2882") || attributeId.equals("2953")) {
         value = response.getJSONArray("values").getJSONObject(0).getString("resolvedValue");
       }
@@ -90,26 +106,34 @@ public class EnergielenkerUtils {
       Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
     }
 
-    return new String[] { value, creationTime };
+    return new String[] {value, creationTime};
   }
 
   public static void fetchLiegenschaftFieldValues(Connection dbConnection, Facility facility) {
     // TODO: check if to delte
     facility.setAussentemperaturCode(
         EnergielenkerUtils.getStringEnergielenker(facility.getLiegenschaftObjectId(), "2882")[0]);
-    facility
-        .setVersorgungstyp(EnergielenkerUtils.getStringEnergielenker(facility.getLiegenschaftObjectId(), "2578")[0]);
+    facility.setVersorgungstyp(
+        EnergielenkerUtils.getStringEnergielenker(facility.getLiegenschaftObjectId(), "2578")[0]);
   }
 
-  public static void postStringEnergielenker(String obId, String attributeId, String pValue) throws Exception {
+  public static void postStringEnergielenker(String obId, String attributeId, String pValue)
+      throws Exception {
     OkHttpClient client = new OkHttpClient().newBuilder().build();
     MediaType mediaType = MediaType.parse("application/json");
     RequestBody body = RequestBody.create("{\n    \"value\": \"" + pValue + "\"\n}", mediaType);
-    Request request = new Request.Builder()
-        .url("https://ewus.elmonitor.de/api/v1/basemonitor/attributes/" + attributeId + "/values?entityId=" + obId
-            + "&sourceId=1")
-        .method("PATCH", body).addHeader("Content-Type", "application/json")
-        .addHeader("Authorization", "Bearer " + tokenEnergielenker).build();
+    Request request =
+        new Request.Builder()
+            .url(
+                "https://ewus.elmonitor.de/api/v1/basemonitor/attributes/"
+                    + attributeId
+                    + "/values?entityId="
+                    + obId
+                    + "&sourceId=1")
+            .method("PATCH", body)
+            .addHeader("Content-Type", "application/json")
+            .addHeader("Authorization", "Bearer " + tokenEnergielenker)
+            .build();
     try {
       Response response = client.newCall(request).execute();
       if (response.code() == 400 || response.code() == 500) {
@@ -123,15 +147,23 @@ public class EnergielenkerUtils {
     }
   }
 
-  public static void postIntEnergielenker(String obId, String attributeId, int pValue) throws Exception {
+  public static void postIntEnergielenker(String obId, String attributeId, int pValue)
+      throws Exception {
     OkHttpClient client = new OkHttpClient().newBuilder().build();
     MediaType mediaType = MediaType.parse("application/json");
     RequestBody body = RequestBody.create("{\n    \"value\": " + pValue + "\n}", mediaType);
-    Request request = new Request.Builder()
-        .url("https://ewus.elmonitor.de/api/v1/basemonitor/attributes/" + attributeId + "/values?entityId=" + obId
-            + "&sourceId=1")
-        .method("PATCH", body).addHeader("Content-Type", "application/json")
-        .addHeader("Authorization", "Bearer " + tokenEnergielenker).build();
+    Request request =
+        new Request.Builder()
+            .url(
+                "https://ewus.elmonitor.de/api/v1/basemonitor/attributes/"
+                    + attributeId
+                    + "/values?entityId="
+                    + obId
+                    + "&sourceId=1")
+            .method("PATCH", body)
+            .addHeader("Content-Type", "application/json")
+            .addHeader("Authorization", "Bearer " + tokenEnergielenker)
+            .build();
     try {
       Response response = client.newCall(request).execute();
       if (response.code() == 400 || response.code() == 500) {
@@ -145,15 +177,23 @@ public class EnergielenkerUtils {
     }
   }
 
-  public static void postFloatEnergielenker(String obId, String attributeId, Float pValue) throws Exception {
+  public static void postFloatEnergielenker(String obId, String attributeId, Float pValue)
+      throws Exception {
     OkHttpClient client = new OkHttpClient().newBuilder().build();
     MediaType mediaType = MediaType.parse("application/json");
     RequestBody body = RequestBody.create("{\n    \"value\": " + pValue + "\n}", mediaType);
-    Request request = new Request.Builder()
-        .url("https://ewus.elmonitor.de/api/v1/basemonitor/attributes/" + attributeId + "/values?entityId=" + obId
-            + "&sourceId=1")
-        .method("PATCH", body).addHeader("Content-Type", "application/json")
-        .addHeader("Authorization", "Bearer " + tokenEnergielenker).build();
+    Request request =
+        new Request.Builder()
+            .url(
+                "https://ewus.elmonitor.de/api/v1/basemonitor/attributes/"
+                    + attributeId
+                    + "/values?entityId="
+                    + obId
+                    + "&sourceId=1")
+            .method("PATCH", body)
+            .addHeader("Content-Type", "application/json")
+            .addHeader("Authorization", "Bearer " + tokenEnergielenker)
+            .build();
     Response response = null;
     try {
       response = client.newCall(request).execute();
@@ -171,16 +211,18 @@ public class EnergielenkerUtils {
   }
 
   /**
-   * Fetches the attributes (such as from an Energielenker Object (such as
-   * Einsparzählerprotokoll, or Regelparameter_Soll-Werte).
+   * Fetches the attributes (such as from an Energielenker Object (such as Einsparzählerprotokoll,
+   * or Regelparameter_Soll-Werte).
    *
-   * @param elObjId    Id of Energielenker object
+   * @param elObjId Id of Energielenker object
    * @param facilities Facilities to be filled
    * @param index
    * @return
    */
-  public static ArrayList<Facility> fillEnergielenkerFields(String elObjId, ArrayList<Facility> facilities, int index) {
-    String query_url = "https://ewus.elmonitor.de/api/v1/basemonitor/objects/" + elObjId + "/attributes";
+  public static ArrayList<Facility> fillEnergielenkerFields(
+      String elObjId, ArrayList<Facility> facilities, int index) {
+    String query_url =
+        "https://ewus.elmonitor.de/api/v1/basemonitor/objects/" + elObjId + "/attributes";
     System.out.print("Entered fillEnergielenkerFields with: ");
     System.out.println(query_url);
     try {
@@ -213,7 +255,9 @@ public class EnergielenkerUtils {
         // System.out.println(jobject);
 
         if (jobject.get("name").toString().contains("103 Nutzungsgrad Vorwoche")) {
-          facilities.get(index).setUtilizationRatePreviousWeek(Double.parseDouble(jobject.get("id").toString()));
+          facilities
+              .get(index)
+              .setUtilizationRatePreviousWeek(Double.parseDouble(jobject.get("id").toString()));
         }
         if (jobject.get("name").toString().contains("040 Nachtabsenkung Start")) {
           facilities.get(index).setAbsenkungWeekStart(jobject.get("id").toString());
@@ -256,27 +300,37 @@ public class EnergielenkerUtils {
           facilities.get(index).setMinimumAussentemp(jobject.get("id").toString());
         }
         if (jobject.get("name").toString().contains("960 AKTUELL Textbausteine Auto Analyse")) {
-          // System.out.println("textFragments: " + jobject.get("id").toString());
+          // System.out.println("textFragments: " +
+          // jobject.get("id").toString());
           facilities.get(index).setTextFragments(jobject.get("id").toString());
         }
         if (jobject.get("name").toString().contains("961 ALT Textbausteine Auto Analyse")) {
-          // System.out.println("textFragmentsPrev: " + jobject.get("id").toString());
+          // System.out.println("textFragmentsPrev: " +
+          // jobject.get("id").toString());
           facilities.get(index).setTextFragmentsPrev(jobject.get("id").toString());
         }
 
         // Values
         if (jobject.get("name").toString().contains("190 WMZ Eneffco (letzte Stelle im DP Code)")) {
-          facilities.get(index)
-              .setWmzEneffco(Integer.parseInt(getAttributeValue(elObjId, jobject.get("id").toString())));
+          facilities
+              .get(index)
+              .setWmzEneffco(
+                  Integer.parseInt(getAttributeValue(elObjId, jobject.get("id").toString())));
         }
         if (jobject.get("name").toString().contains("040 Nachtabsenkung Start")) {
-          facilities.get(index).setNighttimeFrom(getAttributeValue(elObjId, jobject.get("id").toString()));
+          facilities
+              .get(index)
+              .setNighttimeFrom(getAttributeValue(elObjId, jobject.get("id").toString()));
         }
         if (jobject.get("name").toString().contains("041 Nachtabsenkung Ende")) {
-          facilities.get(index).setNighttimeTo(getAttributeValue(elObjId, jobject.get("id").toString()));
+          facilities
+              .get(index)
+              .setNighttimeTo(getAttributeValue(elObjId, jobject.get("id").toString()));
         }
         if (jobject.get("name").toString().contains("041 Nachtabsenkung Ende")) {
-          facilities.get(index).setNighttimeTo(getAttributeValue(elObjId, jobject.get("id").toString()));
+          facilities
+              .get(index)
+              .setNighttimeTo(getAttributeValue(elObjId, jobject.get("id").toString()));
         }
       }
 
@@ -291,18 +345,23 @@ public class EnergielenkerUtils {
 
   public static ArrayList<Facility> getFacilities(Connection dbConnection, String[] codes) {
     System.out.println("Entered getFacilities");
-    ArrayList<Facility> facilities = Stream.of(codes).map(code -> new Facility(code.replace("\"", "")))
-        .collect(Collectors.toCollection(ArrayList::new));
+    ArrayList<Facility> facilities =
+        Stream.of(codes)
+            .map(code -> new Facility(code.replace("\"", "")))
+            .collect(Collectors.toCollection(ArrayList::new));
 
     ResultSet resultSet = null;
     try {
       Statement statement = dbConnection.createStatement();
 
       String codesAsSqlList = "('" + String.join("','", codes).replace("\"", "") + "')";
-      String selectSql = "SELECT [Code], [energielenker_sortiert].[id], [energielenker_sortiert].[name], [energielenker_objects].[parentId] "
-          + "FROM [ewus_assets].[dbo].[energielenker_sortiert] JOIN [ewus_assets].[dbo].[energielenker_objects] "
-          + "ON [ewus_assets].[dbo].[energielenker_sortiert].[id] = [ewus_assets].[dbo].[energielenker_objects].[id] "
-          + "WHERE [Code] IN " + codesAsSqlList + " AND deinstalled = 'false'";
+      String selectSql =
+          "SELECT [Code], [energielenker_sortiert].[id], [energielenker_sortiert].[name], [energielenker_objects].[parentId] "
+              + "FROM [ewus_assets].[dbo].[energielenker_sortiert] JOIN [ewus_assets].[dbo].[energielenker_objects] "
+              + "ON [ewus_assets].[dbo].[energielenker_sortiert].[id] = [ewus_assets].[dbo].[energielenker_objects].[id] "
+              + "WHERE [Code] IN "
+              + codesAsSqlList
+              + " AND deinstalled = 'false'";
 
       resultSet = statement.executeQuery(selectSql);
 
@@ -313,7 +372,8 @@ public class EnergielenkerUtils {
         String id = resultSet.getString(2);
         String name = resultSet.getString(3);
         String parentId = resultSet.getString(4);
-        // System.out.println(resultSet.getString(1) + " " + resultSet.getString(2) + "
+        // System.out.println(resultSet.getString(1) + " " +
+        // resultSet.getString(2) + "
         // " + resultSet.getString(3) + " "
         // + resultSet.getString(4));
 
@@ -321,7 +381,8 @@ public class EnergielenkerUtils {
           for (int i = 0; i < facilities.size(); i++) {
             if (facilities.get(i).getCode().equalsIgnoreCase(code)) {
               facilities.get(i).setEinsparzaehlerobjektid(id);
-              // Liegenschaft is parent of Anlagentechnik, Einsparzählerprotokoll,
+              // Liegenschaft is parent of Anlagentechnik,
+              // Einsparzählerprotokoll,
               // ESZ_Einsparungen, Messtechnik
               facilities.get(i).setLiegenschaftObjectId(parentId);
               break;
@@ -345,15 +406,17 @@ public class EnergielenkerUtils {
   /**
    * Get value of attribute from Energielenker Object specified by objectId
    *
-   * @param objectId    Specifies the Energielenker object, which contains the
-   *                    attribute
+   * @param objectId Specifies the Energielenker object, which contains the attribute
    * @param attributeId Specifies the id of the attribute
    * @return Value of the attribute as json
    */
   public static String getAttributeValue(String objectId, String attributeId) {
     String attributeValue = "";
-    String query_url = "https://ewus.elmonitor.de/api/v1/basemonitor/objects/" + objectId + "/attributes/"
-        + attributeId;
+    String query_url =
+        "https://ewus.elmonitor.de/api/v1/basemonitor/objects/"
+            + objectId
+            + "/attributes/"
+            + attributeId;
 
     JSONObject jobject = null;
     try {
@@ -419,5 +482,4 @@ public class EnergielenkerUtils {
     // java.util.Collections.sort(facilityCodes);
     return facilityCodes;
   }
-
 }

@@ -1,7 +1,5 @@
 package com.ewus.ba.energielenkerEneffcoService.model;
 
-import java.util.List;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -10,79 +8,83 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "facility_analysis_configurations")
 public class FacilityAnalysisConfiguration {
-    @Id
-    private String id; // equals facilityCode;
 
-    @Column(name = "Anlagengroesse")
-    private boolean facilitySize;
-    @Column(name = "Nutzungsgrad")
-    private boolean utilizationRate;
-    @Column(name = "Temperaturdifferenz")
-    private boolean deltaTemperature;
-    @Column(name = "Ruecklauftemperatur")
-    private boolean returnTemperature;
+  @Id private String id; // equals facilityCode;
 
-    /**
-     * Constructor
-     */
-    public FacilityAnalysisConfiguration() {
-    }
+  @Column(name = "Anlagengroesse")
+  private boolean facilitySize;
 
-    /**
-     * Constructor that sets all arguments
-     *
-     * @param id                Id, code of a facility in format ABC.123
-     * @param facilitySize
-     * @param utilizationRate
-     * @param deltaTemperature
-     * @param returnTemperature
-     */
-    public FacilityAnalysisConfiguration(String id, boolean facilitySize, boolean utilizationRate,
-            boolean deltaTemperature, boolean returnTemperature) {
-        this.id = id;
-        this.facilitySize = facilitySize;
-        this.utilizationRate = utilizationRate;
-        this.deltaTemperature = deltaTemperature;
-        this.returnTemperature = returnTemperature;
-    }
+  @Column(name = "Nutzungsgrad")
+  private boolean utilizationRate;
 
-    public String getId() {
-        return id;
-    }
+  @Column(name = "Temperaturdifferenz")
+  private boolean deltaTemperature;
 
-    public void setId(String id) {
-        this.id = id;
-    }
+  @Column(name = "Ruecklauftemperatur")
+  private boolean returnTemperature;
 
-    public boolean getFacilitySize() {
-        return facilitySize;
-    }
+  /** Constructor */
+  public FacilityAnalysisConfiguration() {}
 
-    public void setFacilitySize(boolean facilitySize) {
-        this.facilitySize = facilitySize;
-    }
+  /**
+   * Constructor that sets all arguments
+   *
+   * @param id Id, code of a facility in format ABC.123
+   * @param facilitySize
+   * @param utilizationRate
+   * @param deltaTemperature
+   * @param returnTemperature
+   */
+  public FacilityAnalysisConfiguration(
+      String id,
+      boolean facilitySize,
+      boolean utilizationRate,
+      boolean deltaTemperature,
+      boolean returnTemperature) {
+    this.id = id;
+    this.facilitySize = facilitySize;
+    this.utilizationRate = utilizationRate;
+    this.deltaTemperature = deltaTemperature;
+    this.returnTemperature = returnTemperature;
+  }
 
-    public boolean getUtilizationRate() {
-        return utilizationRate;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public void setUtilizationRate(boolean utilizationRate) {
-        this.utilizationRate = utilizationRate;
-    }
+  public void setId(String id) {
+    this.id = id;
+  }
 
-    public boolean getDeltaTemperature() {
-        return deltaTemperature;
-    }
+  public boolean getFacilitySize() {
+    return facilitySize;
+  }
 
-    public void setDeltaTemperature(boolean deltaTemperature) {
-        this.deltaTemperature = deltaTemperature;
-    }
+  public void setFacilitySize(boolean facilitySize) {
+    this.facilitySize = facilitySize;
+  }
 
-    public boolean getReturnTemperature() {
-        return returnTemperature;
-    }
+  public boolean getUtilizationRate() {
+    return utilizationRate;
+  }
 
-    public void setReturnTemperature(boolean returnTemperature) {
-        this.returnTemperature = returnTemperature;
-    }
+  public void setUtilizationRate(boolean utilizationRate) {
+    this.utilizationRate = utilizationRate;
+  }
+
+  public boolean getDeltaTemperature() {
+    return deltaTemperature;
+  }
+
+  public void setDeltaTemperature(boolean deltaTemperature) {
+    this.deltaTemperature = deltaTemperature;
+  }
+
+  public boolean getReturnTemperature() {
+    return returnTemperature;
+  }
+
+  public void setReturnTemperature(boolean returnTemperature) {
+    this.returnTemperature = returnTemperature;
+  }
 }
