@@ -87,4 +87,15 @@ public class FacilityAnalysisConfiguration {
   public void setReturnTemperature(boolean returnTemperature) {
     this.returnTemperature = returnTemperature;
   }
+
+  @Override
+  public String toString() {
+    StringBuilder str = new StringBuilder();
+
+    str.append("facilitySize: " + facilitySize + "\n");
+    str.append("utilizationRate: " + utilizationRate + "\n");
+    str.append("deltaTemperature: " + deltaTemperature + "\n");
+    str.append("returnTemperature: " + returnTemperature + "\n");
+    return str.toString();
+  }
 }

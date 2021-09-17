@@ -1,6 +1,9 @@
 package com.ewus.ba.energielenkerEneffcoService;
 
+import com.ewus.ba.energielenkerEneffcoService.model.EneffcoValue;
 import com.ewus.ba.energielenkerEneffcoService.model.Facility;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -13,7 +16,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 // TODO: telete if not necessary. Otherwise rename MS, f.i.. to dataService. wär aber schön wenns
 // ausschließlich energielenker
@@ -24,6 +26,8 @@ public class EneffcoUtils {
       "Basic " + Config.readProperty("src/main/resources/dbConfig.properties", "tokenEneffco");
 
   public static String ENEFFCO_BASE_URL = "https://ewus.eneffco.de/api/v1.0";
+
+  final static ObjectMapper objectMapper = new ObjectMapper();
 
   private static final OkHttpClient client =
       new OkHttpClient()
@@ -118,7 +122,7 @@ public class EneffcoUtils {
   }
 
   // TODO: use HttpUrl.Builder und .addQueryParameter("from", from)
-  public static List<JSONObject> readEneffcoDatapointValues(
+  public static List<EneffcoValue> readEneffcoDatapointValues(
       String datapointId, String from, String to, int timeInterval, boolean includeNanValues) {
     // System.out.println("readEneffcoDatapointValues: datapointId: " + datapointId
     // + ", from: " + from + ", to: " + to
@@ -143,18 +147,18 @@ public class EneffcoUtils {
 
       if (response.code() == 400 || response.code() == 500) {
         System.out.println("Response get enfeffco datapoint values: " + response.code());
-        System.out.println(response);
         return null;
       }
 
       String responseBody = response.body().string();
       JSONArray jArray = new JSONArray(responseBody);
-      List<JSONObject> jObjects = new ArrayList<>();
+      List<EneffcoValue> values = new ArrayList<>();
 
       for (int i = 0; i < jArray.length(); i++) {
-        jObjects.add(jArray.getJSONObject(i));
+        String valueJsonWithCamelCaseKeys = jArray.getJSONObject(i).toString().replace("Value", "value").replace("From", "from").replace("To", "to");
+        values.add(objectMapper.readValue(valueJsonWithCamelCaseKeys, EneffcoValue.class));
       }
-      return jObjects;
+      return values;
 
     } catch (Exception e) {
       Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);

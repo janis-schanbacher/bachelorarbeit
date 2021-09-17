@@ -3,10 +3,12 @@ package com.ewus.ba.analysisService.controller;
 import com.ewus.ba.analysisService.EneffcoUtils;
 // import com.ewus.ba.energielenkerEneffcoService.EneffcoUtils;
 import com.ewus.ba.analysisService.Utils;
+import com.ewus.ba.analysisService.model.EneffcoValue;
 import com.ewus.ba.analysisService.model.Facility;
 import com.ewus.ba.analysisService.model.FacilityAnalysisConfiguration;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -23,6 +25,8 @@ import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,7 +49,7 @@ public class AnalysisController {
       new OkHttpClient()
           .newBuilder()
           .connectTimeout(10, TimeUnit.SECONDS)
-          // .readTimeout(30, TimeUnit.SECONDS)
+          .readTimeout(60, TimeUnit.SECONDS)
           .build();
 
   final ObjectMapper objectMapper = new ObjectMapper();
@@ -66,7 +70,7 @@ public class AnalysisController {
     try {
       response = client.newCall(request).execute();
 
-      if (response.code() == 400 || response.code() == 500) {
+      if (response.code() == 400 || response.code() == 404 || response.code() == 500) {
         // TODO: proper logging
         System.out.println("Response fill-facilities: " + response.code());
         System.out.println(response);
@@ -74,11 +78,15 @@ public class AnalysisController {
         return null;
       }
 
+      System.out.println("response.code(): " + response.code());
+      // System.out.println(response.body().string());
       facilities =
           objectMapper.readValue(response.body().string(), new TypeReference<List<Facility>>() {});
 
     } catch (Exception e) {
+      System.out.println(facilities);
       Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+      return null;
     }
     System.out.println("filled facilities. Size: " + facilities.size());
 
@@ -86,7 +94,7 @@ public class AnalysisController {
     // use in for loop
     // TODO: save config in facility objects
     // TODO: use eureka url
-    httpBuilder = HttpUrl.parse("http://localhost:8080/configs/get-list").newBuilder();
+    httpBuilder = HttpUrl.parse("http://localhost:8082/configs/get-list").newBuilder();
     httpBuilder.addQueryParameter("codes", codes);
     request = new Request.Builder().url(httpBuilder.build()).build();
     response = null;
@@ -94,15 +102,17 @@ public class AnalysisController {
     try {
       response = client.newCall(request).execute();
 
-      if (response.code() == 400 || response.code() == 500) {
+      if (response.code() == 400 || response.code() == 404 || response.code() == 500) {
         // TODO: proper logging
         System.out.println("Response /codes/get-list: " + response.code());
         System.out.println(response);
         return null;
       }
+
+      String body = response.body().string();
       configs =
           objectMapper.readValue(
-              response.body().string(),
+              body,
               new TypeReference<List<FacilityAnalysisConfiguration>>() {});
     } catch (Exception e) {
       Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
@@ -116,6 +126,7 @@ public class AnalysisController {
 
       System.out.println(facility.getCode());
 
+      // TODO: !! not always use default
       // If no config availabe default to run all analyses is used
       // FacilityAnalysisConfiguration config = configs.stream().filter(c ->
       // facility.getCode().equals(c.getId()))
@@ -123,7 +134,7 @@ public class AnalysisController {
       // true, true, true, true));
       FacilityAnalysisConfiguration config =
           new FacilityAnalysisConfiguration(facility.getCode(), true, true, true, true);
-      System.out.println(config);
+
       // TODO: fetch configurations and only do desired analysis
       // ResponseEntity<FacilityAnalysisConfiguration> configResponse =
       // FacilityAnalysisConfigurationController
@@ -157,7 +168,6 @@ public class AnalysisController {
       textFragments.put(facility.getCode(), textFragmentsCurrent);
       System.out.println("Done Analysing " + facility.getCode());
     }
-    System.out.println(textFragments);
 
     // TODO: remove , when all codes are filled in fill-facilities
     // textFragments.put("ACO.001", textFragments.get("ACO.002"));
@@ -172,7 +182,7 @@ public class AnalysisController {
             + facility.getCode()
             + " AuslastungKgrId: "
             + facility.getAuslastungKgrId());
-    List<JSONObject> values =
+    List<EneffcoValue> values =
         getEneffcoValues(
             facility.getAuslastungKgrId(),
             // TODO: change amount of days
@@ -185,7 +195,11 @@ public class AnalysisController {
             TIMEINTERVAL_15M,
             false);
 
-    System.out.println(values);
+    if (values == null) {
+      System.out.println("Could not retrieve Eneffco values for AuslastungKgr");
+      return "";
+    }
+
     float avgAuslastungKgr = getAverageValue(values);
     // TODO: fetch grenzwert and TextFragement from db
     String textFragment =
@@ -195,7 +209,7 @@ public class AnalysisController {
                 + avgAuslastungKgr
                 + "%. Mögliche Maßnahmen: Brenner einstellen, andere Düse verbauen (geringere Heizleistung) oder Neubau.";
     System.out.println("Avg. Nutzungsgrad zw. -10 und -14 Grad: " + getAverageValue(values));
-    System.out.println(textFragment);
+    // System.out.println(textFragment);
     System.out.println("finisehd analyseFacilitySize");
     return textFragment;
   }
@@ -234,9 +248,12 @@ public class AnalysisController {
               .toString();
     }
 
-    List<JSONObject> values =
+    List<EneffcoValue> values =
         getEneffcoValues(facility.getNutzungsgradId(), from, to, TIMEINTERVAL_DAY, false);
 
+    if (values == null) {
+      return "";
+    }
     float avgUtilizationRate = getAverageValue(values);
 
     String textFragment = "";
@@ -263,13 +280,14 @@ public class AnalysisController {
             + avgUtilizationRate
             + ", Utitilization Rate prev week EL:"
             + facility.getUtilizationRatePreviousWeek());
-    System.out.println(textFragment);
+    // System.out.println(textFragment);
     return textFragment;
   }
 
   // TODO: move to analysis service
   // TODO: Bestimmung From, To
   public String analyseDeltaTemperature(Facility facility) {
+    System.out.println("Entered analyseDeltaTemperature");
     int currentYear = LocalDate.now().getYear();
     String from =
         LocalDateTime.of(currentYear - 1, Month.DECEMBER, 1, 0, 0, 0)
@@ -282,9 +300,12 @@ public class AnalysisController {
             .toInstant()
             .toString();
 
-    List<JSONObject> values =
+    List<EneffcoValue> values =
         getEneffcoValues(facility.getDeltaTemeratureId(), from, to, TIMEINTERVAL_15M, false);
 
+    if (values == null) {
+      return "";
+    }
     float avgDeltaTemperature = getAverageValue(values);
     System.out.println("Avg. Temperaturdifferenz: " + getAverageValue(values));
     String textFragment = "";
@@ -309,7 +330,7 @@ public class AnalysisController {
       }
     }
 
-    System.out.println(textFragment);
+    // System.out.println(textFragment);
     return textFragment;
   }
 
@@ -347,9 +368,12 @@ public class AnalysisController {
               .toString();
     }
 
-    List<JSONObject> values =
+    List<EneffcoValue> values =
         getEneffcoValues(facility.getRuecklaufId(), from, to, TIMEINTERVAL_DAY, false);
 
+    if (values == null) {
+      return "";
+    }
     // TODO: fetch grenzwert and TextFragement from db
     final double LIMIT_PORTION_ACCEPTED_MIN = 95.0 / 100;
     final double LIMIT_RETURN_TEMPERATURE = 55;
@@ -367,66 +391,66 @@ public class AnalysisController {
 
     System.out.println(
         "portionOfValuesMarginBelowLimit Eneffco: " + portionOfValuesMarginBelowLimit);
-    System.out.println(textFragment);
+    // System.out.println(textFragment);
     return textFragment;
   }
 
-  public List<JSONObject> getEneffcoValues(
+  public List<EneffcoValue> getEneffcoValues(
       String datapointId, String from, String to, int timeInterval, boolean includeNanValues) {
-      return EneffcoUtils.readEneffcoDatapointValues(datapointId, from, to, timeInterval, includeNanValues);
     // System.out.println("readEneffcoDatapointValues: datapointId: " + datapointId
     // + ", from: " + from + ", to: " + to
     // + ", timeInterval: " + timeInterval + ", includeNanValues: " +
     // includeNanValues);
 
-    // HttpUrl.Builder httpBuilder =
-    //     HttpUrl.parse("localhost:8080/eneffco/" + datapointId + "/values").newBuilder();
-    // httpBuilder.addQueryParameter("from", from);
-    // httpBuilder.addQueryParameter("to", to);
-    // httpBuilder.addQueryParameter("timeInterval", String.valueOf(timeInterval));
-    // httpBuilder.addQueryParameter("includeNanValues", String.valueOf(includeNanValues));
+    String baseUrl = "http://localhost:8080/eneffco/datapoint/";
+    HttpUrl.Builder httpBuilder = HttpUrl
+        .parse(baseUrl + datapointId + "/values")
+        .newBuilder();
+    httpBuilder.addQueryParameter("from", from);
+    httpBuilder.addQueryParameter("to", to);
+    httpBuilder.addQueryParameter("timeInterval", String.valueOf(timeInterval));
+    httpBuilder.addQueryParameter("includeNanValues", String.valueOf(includeNanValues));
 
-    // Request request = new Request.Builder().url(httpBuilder.build()).build();
-    // Response response = null;
-    // try {
-    //   response = client.newCall(request).execute();
+    Request request = new Request.Builder().url(httpBuilder.build()).build();
+    Response response = null;
+    String responseBody = null;
+    try {
+      response = client.newCall(request).execute();
 
-    //   if (response.code() == 400 || response.code() == 500) {
-    //     System.out.println(
-    //         "Response get /enfeffco/" + datapointId + "/values : " + response.code());
-    //     System.out.println(response);
-    //     return null;
-    //   }
+      if (response.code() == 400 || response.code() == 404 || response.code() == 500) {
+        System.out.println("Response get " + baseUrl + datapointId + "/values : " + response.code());
+        return null;
+      }
 
-    //   String responseBody = response.body().string();
-    //   JSONArray jArray = new JSONArray(responseBody);
-    //   List<JSONObject> values = new ArrayList<>();
+      responseBody = response.body().string();
+      JSONArray jArray = new JSONArray(responseBody);
+      List<EneffcoValue> values = new ArrayList<>();
 
-    //   for (int i = 0; i < jArray.length(); i++) {
-    //     values.add(jArray.getJSONObject(i));
-    //   }
-    //   return values;
+      for (int i = 0; i < jArray.length(); i++) {
+        values.add(objectMapper.readValue(jArray.get(i).toString(), EneffcoValue.class));
+      }
+      return values;
 
-    // } catch (Exception e) {
-    //   Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
-    //   return null;
-    // }
+    } catch (Exception e) {
+      System.out.println("Response getEneffcoValue: " + responseBody);
+      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+      return null;
+    }
   }
 
   // TODO move
-  public float getAverageValue(List<JSONObject> values) {
+  public float getAverageValue(List<EneffcoValue> values) {
     float sum = 0;
     for (int i = 0; i < values.size(); i++) {
-      sum += values.get(i).getFloat("Value");
+      sum += values.get(i).getValue();
     }
     return sum / values.size();
   }
 
-  public double getPortionOfValuesMargin(List<JSONObject> values, double limit) {
+  public double getPortionOfValuesMargin(List<EneffcoValue> values, double limit) {
     int acceptedValuesCount = 0;
-    System.out.println("limit: " + limit);
     for (int i = 0; i < values.size(); i++) {
-      acceptedValuesCount += (values.get(i).getFloat("Value") < limit) ? 1 : 0;
+      acceptedValuesCount += (values.get(i).getValue() < limit) ? 1 : 0;
     }
     return (double) acceptedValuesCount / values.size();
   }

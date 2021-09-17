@@ -79,6 +79,8 @@ public class FacilityAnalysisConfigurationController {
     List<String> codesList = Arrays.asList(codes.replaceAll("[\\[\\]\\s\"]*", "").split(","));
     List<FacilityAnalysisConfiguration> facilityAnalysisConfigurations =
         facilityAnalysisConfigurationRepository.findAllById(codesList);
+
+    System.out.println(facilityAnalysisConfigurations);
     return facilityAnalysisConfigurations;
   }
 
