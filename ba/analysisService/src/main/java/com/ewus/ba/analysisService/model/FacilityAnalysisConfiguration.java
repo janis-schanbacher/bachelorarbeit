@@ -1,4 +1,4 @@
-package com.ewus.ba.energielenkerEneffcoService.model;
+package com.ewus.ba.analysisService.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

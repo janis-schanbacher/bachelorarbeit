@@ -2,7 +2,7 @@
 
 ## Features
 - Energielenker Daten bzgl. möglicher Anlagenoptimierungen auswerten
-    - Out: 
+    - Out:
         - Results as text fragments for tickets and protocols
         - Send Results to Ticketservice
     - In:

@@ -1,7 +1,7 @@
-package com.ewus.ba.energielenkerEneffcoService.controller;
+package com.ewus.ba.analysisService.controller;
 
-import com.ewus.ba.energielenkerEneffcoService.model.FacilityAnalysisConfiguration;
-import com.ewus.ba.energielenkerEneffcoService.repository.IFacilityAnalysisConfigurationRepository;
+import com.ewus.ba.analysisService.model.FacilityAnalysisConfiguration;
+import com.ewus.ba.analysisService.repository.IFacilityAnalysisConfigurationRepository;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;

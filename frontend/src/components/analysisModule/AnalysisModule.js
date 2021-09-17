@@ -7,7 +7,7 @@ import { Divider, Table, Input, Button, Form, Typography } from "antd";
 import axios from "axios";
 // import qs from 'qs'
 
-import { apiUrl } from "../../helper/url";
+import { apiUrl, portAnalysisService, portEnergielenkerEneffcoService } from "../../helper/url";
 import CodeSelection from "../codeSelection/CodeSelection";
 
 const { Title } = Typography;
@@ -86,14 +86,14 @@ EditableCell.propTypes = {
 const AnalysisModule = () => {
   const [dataSource, setDataSource] = useState([]);
   const [originalDataSource, setOriginalDataSource] = useState([]);
-  const [value, setValue] = useState(["0-0-0", "0-0-1"]); // TODO: change default to []
+  const [value, setValue] = useState(["0-0-1"]); // TODO: change default to []
   const [rowSelection, setRowSelection] = useState([]);
   const [treeData, setTreeData] = useState([]);
 
   const handleAnalyse = () => {
     // TODO: get codes dynamically, maybe through values, or else through params of CodeSelction
-    const body = ["ACO.001", "ACO.002"];
-    axios.post(`${apiUrl}/analyse`, body)
+    const body = ["ACO.002"];
+    axios.post(`${apiUrl}:${portAnalysisService}/analyse`, body)
 
     // axios.get(`${apiUrl}/analyse`, {
     //   params: {
@@ -110,6 +110,8 @@ const AnalysisModule = () => {
           textFragments: data[key].join("\n") })));
       // fillDataSource(Object.keys(data).map(key => data[key]));
       // console.log(data)
+      // TODO: if data.size < codes.size indicate error for the missing ones.
+      //  With hint, probably Energielenker fields missing
       })
       .then(() => {
         setOriginalDataSource(dataSource);
@@ -150,7 +152,7 @@ const AnalysisModule = () => {
     }
 
     // TODO: test andd write controller
-    axios.post(`${apiUrl}/text-fragments`, {
+    axios.post(`${apiUrl}:${portEnergielenkerEneffcoService}/text-fragments`, {
       code: record.key,
       textFragments: record.textFragments,
       textFragmentsResult,

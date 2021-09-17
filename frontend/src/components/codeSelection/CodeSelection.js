@@ -3,7 +3,7 @@ import { TreeSelect } from "antd";
 import axios from "axios";
 import PropTypes from "prop-types";
 
-import { apiUrl } from "../../helper/url";
+import { apiUrl, portEnergielenkerEneffcoService } from "../../helper/url";
 
 const { SHOW_PARENT } = TreeSelect;
 
@@ -49,7 +49,7 @@ const CodeSelection = ({ value, setValue, treeData, setTreeData }) => {
   };
 
   useEffect(() => {
-    axios.get(`${apiUrl}/facility-codes`)
+    axios.get(`${apiUrl}:${portEnergielenkerEneffcoService}/facility-codes`)
       .then((res) => {
         const { data } = res;
         setTreeData(createTreeData(data));

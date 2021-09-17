@@ -4,7 +4,7 @@ import axios from "axios";
 import qs from "qs";
 import find from "lodash/find";
 
-import { apiUrl } from "../../helper/url";
+import { apiUrl, portAnalysisService } from "../../helper/url";
 import CodeSelection from "../codeSelection/CodeSelection";
 
 const { Title } = Typography;
@@ -54,7 +54,7 @@ const ConfigurationModule = () => {
   };
 
   const handleConfirm = (record) => {
-    axios.post(`${apiUrl}/configs`, {
+    axios.post(`${apiUrl}:${portAnalysisService}/configs`, {
       id: record.key,
       facilitySize: record.checkedList.includes("Anlagengröße"),
       utilizationRate: record.checkedList.includes("Nutzungsgrad"),
@@ -114,7 +114,7 @@ const ConfigurationModule = () => {
     }
 
     // retrieve configs from backend
-    axios.get(`${apiUrl}/configs/get-list`, {
+    axios.get(`${apiUrl}:${portAnalysisService}/configs/get-list`, {
       params: {
         codes,
       },

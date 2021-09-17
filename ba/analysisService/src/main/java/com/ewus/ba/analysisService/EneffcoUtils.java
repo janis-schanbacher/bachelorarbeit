@@ -1,6 +1,6 @@
-package com.ewus.ba.energielenkerEneffcoService;
+package com.ewus.ba.analysisService;
 
-import com.ewus.ba.energielenkerEneffcoService.model.Facility;
+import com.ewus.ba.analysisService.model.Facility;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
