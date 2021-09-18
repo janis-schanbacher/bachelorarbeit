@@ -70,21 +70,8 @@ public class EneffcoUtils {
           getEneffcoId(c, facility.getCode() + ".WEZ.ETA." + facility.getWmzEneffco()));
       facility.setAuslastungKgrId(
           getEneffcoId(c, facility.getCode() + ".WEZ.AUS.KGR." + facility.getWmzEneffco()));
-      facility.setDeltaTemeratureId(
+      facility.setDeltaTemperatureId(
           getEneffcoId(c, facility.getCode() + ".WEZ.WMZ.DT." + facility.getWmzEneffco()));
-      facility.setAussentemperaturId(getEneffcoId(c, facility.getAussentemperaturCode()));
-
-      // System.out.println("## Eneffco ids: " + facility.getCode());
-      // System.out.println("VorlaufId: " + facility.getVorlaufId());
-      // System.out.println("RuecklaufId: " + facility.getRuecklaufId());
-      // System.out.println("VolumenstromId: " + facility.getVolumenstromId());
-      // System.out.println("LeistungId: " + facility.getLeistungId());
-      // System.out.println("AussentemperaturId: " +
-      // facility.getAussentemperaturId());
-      // System.out.println("NutzungsgradId: " + facility.getNutzungsgradId());
-      // System.out.println("AuslastungKgrId: " + facility.getAuslastungKgrId());
-      // System.out.println("getDeltaTemeratureId: " +
-      // facility.getDeltaTemeratureId());
 
     } catch (Exception e) {
       // System.err.println("# Error fetchEneffcoIds: " + facility.getCode());

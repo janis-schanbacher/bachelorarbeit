@@ -1,7 +1,5 @@
 package com.ewus.ba.analysisService.controller;
 
-import com.ewus.ba.analysisService.EneffcoUtils;
-// import com.ewus.ba.energielenkerEneffcoService.EneffcoUtils;
 import com.ewus.ba.analysisService.Utils;
 import com.ewus.ba.analysisService.model.EneffcoValue;
 import com.ewus.ba.analysisService.model.Facility;
@@ -301,7 +299,7 @@ public class AnalysisController {
             .toString();
 
     List<EneffcoValue> values =
-        getEneffcoValues(facility.getDeltaTemeratureId(), from, to, TIMEINTERVAL_15M, false);
+        getEneffcoValues(facility.getDeltaTemperatureId(), from, to, TIMEINTERVAL_15M, false);
 
     if (values == null) {
       return "";
