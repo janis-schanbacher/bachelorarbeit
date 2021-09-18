@@ -89,6 +89,20 @@ public class FacilityAnalysisConfiguration {
   }
 
   @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof FacilityAnalysisConfiguration) {
+      FacilityAnalysisConfiguration config = (FacilityAnalysisConfiguration) obj;
+
+      return id.equals(config.getId())
+        && facilitySize == config.getFacilitySize()
+        && utilizationRate == config.getUtilizationRate()
+        && deltaTemperature == config.getDeltaTemperature()
+        && returnTemperature == config.getReturnTemperature();
+    }
+    return false;
+  }
+
+  @Override
   public String toString() {
     StringBuilder str = new StringBuilder();
 

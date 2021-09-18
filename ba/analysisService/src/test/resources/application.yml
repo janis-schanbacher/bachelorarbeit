@@ -2,7 +2,7 @@ spring:
   jpa:
     database: hsql
     hibernate:
-      ddl-auto: update
+      ddl-auto: create # creates the schema, destroying previous data.
   datasource:
     driver-class-name: org.hsqldb.jdbc.JDBCDriver
     url: jdbc:hsqldb:mem:testdb;DB_CLOSE_DELAY=-1
