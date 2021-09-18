@@ -259,46 +259,6 @@ public class EnergielenkerUtils {
               .get(index)
               .setUtilizationRatePreviousWeek(Double.parseDouble(jobject.get("id").toString()));
         }
-        if (jobject.get("name").toString().contains("040 Nachtabsenkung Start")) {
-          facilities.get(index).setAbsenkungWeekStart(jobject.get("id").toString());
-        }
-        if (jobject.get("name").toString().contains("041 Nachtabsenkung Ende")) {
-          facilities.get(index).setAbsenkungWeekEnd(jobject.get("id").toString());
-        }
-        if (jobject.get("name").toString().contains("042 Nachtabsenkung WE Start")) {
-          facilities.get(index).setAbsenkungWeekendStart(jobject.get("id").toString());
-        }
-        if (jobject.get("name").toString().contains("043 Nachtabsenkung WE Ende")) {
-          facilities.get(index).setAbsenkungWeekendEnd(jobject.get("id").toString());
-        }
-        if (jobject.get("name").toString().contains("310 Nachtabsenkung Wahrsch. Mo-Do")) {
-          facilities.get(index).setpAbsenkungMoDiMiDo(jobject.get("id").toString());
-        }
-        if (jobject.get("name").toString().contains("311 Nachtabsenkung Wahrsch. Fr")) {
-          facilities.get(index).setpAbsenkungFr(jobject.get("id").toString());
-        }
-        if (jobject.get("name").toString().contains("312 Nachtabsenkung Wahrsch. Sa")) {
-          facilities.get(index).setpAbsenkungSa(jobject.get("id").toString());
-        }
-        if (jobject.get("name").toString().contains("313 Nachtabsenkung Wahrsch. So")) {
-          facilities.get(index).setpAbsenkungSo(jobject.get("id").toString());
-        }
-        if (jobject.get("name").toString().contains("050 Heizgrenze")) {
-          facilities.get(index).setHeizgrenze(jobject.get("id").toString());
-        }
-        if (jobject.get("name").toString().contains("051 Heizgrenze Pumpe")) {
-          facilities.get(index).setHeizgrenzePumpe(jobject.get("id").toString());
-        }
-
-        if (jobject.get("name").toString().contains("300 Heizkurve y-Achsenabschnitt")) {
-          facilities.get(index).setyAchsenabschnitt(jobject.get("id").toString());
-        }
-        if (jobject.get("name").toString().contains("301 Heizkurve Steigung")) {
-          facilities.get(index).setSteigung(jobject.get("id").toString());
-        }
-        if (jobject.get("name").toString().contains("302 Heizkurve MinimumAussentemp")) {
-          facilities.get(index).setMinimumAussentemp(jobject.get("id").toString());
-        }
         if (jobject.get("name").toString().contains("960 AKTUELL Textbausteine Auto Analyse")) {
           // System.out.println("textFragments: " +
           // jobject.get("id").toString());
@@ -316,21 +276,6 @@ public class EnergielenkerUtils {
               .get(index)
               .setWmzEneffco(
                   Integer.parseInt(getAttributeValue(elObjId, jobject.get("id").toString())));
-        }
-        if (jobject.get("name").toString().contains("040 Nachtabsenkung Start")) {
-          facilities
-              .get(index)
-              .setNighttimeFrom(getAttributeValue(elObjId, jobject.get("id").toString()));
-        }
-        if (jobject.get("name").toString().contains("041 Nachtabsenkung Ende")) {
-          facilities
-              .get(index)
-              .setNighttimeTo(getAttributeValue(elObjId, jobject.get("id").toString()));
-        }
-        if (jobject.get("name").toString().contains("041 Nachtabsenkung Ende")) {
-          facilities
-              .get(index)
-              .setNighttimeTo(getAttributeValue(elObjId, jobject.get("id").toString()));
         }
       }
 
