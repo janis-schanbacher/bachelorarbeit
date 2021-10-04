@@ -86,13 +86,25 @@ EditableCell.propTypes = {
 const AnalysisModule = () => {
   const [dataSource, setDataSource] = useState([]);
   const [originalDataSource, setOriginalDataSource] = useState([]);
-  const [value, setValue] = useState(["0-0-1"]); // TODO: change default to []
+  const [value, setValue] = useState([]); // TODO: change default to []
   const [rowSelection, setRowSelection] = useState([]);
   const [treeData, setTreeData] = useState([]);
 
+  const getSelectedCodes = () => {
+    const selectedCodes = value.map((v) => {
+      const { label } = v;
+      if (label.length < 7) {
+        return treeData.find(node => node.title.includes(`${label}`)).children.map(n => n.title);
+      }
+      return label;
+    }).flat();
+    return selectedCodes;
+  };
+
   const handleAnalyse = () => {
     // TODO: get codes dynamically, maybe through values, or else through params of CodeSelction
-    const body = ["ACO.002"];
+    const body = getSelectedCodes();
+
     axios.post(`${apiUrl}:${portAnalysisService}/analyse`, body)
 
     // axios.get(`${apiUrl}/analyse`, {
@@ -140,25 +152,25 @@ const AnalysisModule = () => {
   const handleConfirm = (record) => {
     console.log(`handleConfirm: ${record.key}`);
     console.log(`text new: ${record.textFragments}`); // equals value in dataSource
-    let textFragmentsResult = "";
+    let textFragmentsAnalysisResult = "";
     // find/log original textFragments
     for (let i = 0; i < originalDataSource.length; i += 1) {
       if (originalDataSource[i].code === record.key) {
-        textFragmentsResult = originalDataSource[i].textFragments;
+        textFragmentsAnalysisResult = originalDataSource[i].textFragments;
         // TODO: log
-        console.log(`textFragmentsResult: ${textFragmentsResult}`);
+        console.log(`textFragmentsAnalysisResult: ${textFragmentsAnalysisResult}`);
         break;
       }
     }
 
     // TODO: test andd write controller
     axios.post(`${apiUrl}:${portEnergielenkerEneffcoService}/text-fragments`, {
-      code: record.key,
+      id: record.key,
       textFragments: record.textFragments,
-      textFragmentsResult,
+      textFragmentsAnalysisResult,
     })
     // TODO: render SuccessNotification
-      .then(res => console.log(`Response status for post /text-fragments of code: ${record.key}: ${res.status}`));
+      .then(res => console.log(`Response status for post /text-fragments of id: ${record.key}: ${res.status}`));
   };
 
   // TODO: weiter hier
@@ -197,7 +209,7 @@ const AnalysisModule = () => {
       // <Popconfirm title="Sure to save?" onConfirm={() => handleConfirm(record.key)}>
       //   <a>Speichern</a>
       // </Popconfirm>
-        <Button type="primary" onClick={e => handleConfirm(record)}>Speichern</Button>
+        <Button type="primary" onClick={e => handleConfirm(record)}>Bestätigen</Button>
       ) : null),
     },
   ];

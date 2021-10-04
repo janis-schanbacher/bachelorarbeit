@@ -95,7 +95,7 @@ const ConfigurationModule = () => {
       title: "Bestätigen",
       dataIndex: "confirm",
       render: (_, record) => (dataSource.length >= 1 ? (
-        <Button type="primary" onClick={e => handleConfirm(record)}>Anwenden</Button>
+        <Button type="primary" onClick={e => handleConfirm(record)}>Speichern</Button>
       ) : null),
     },
   ];
@@ -222,15 +222,6 @@ const ConfigurationModule = () => {
       </Button>
       <Divider />
       <Title level={4} style={{ textAlign: "left" }}>Konfigurationen</Title>
-      <Button
-        onClick={handleConfirmSelection}
-        type="primary"
-        style={{
-          margin: "10px 0",
-          float: "left",
-        }}
-      >Auswahl anwenden
-      </Button>
       <Table
         rowSelection={{
           type: "checkbox",
@@ -241,6 +232,15 @@ const ConfigurationModule = () => {
         dataSource={dataSource}
         columns={columnsRender}
       />
+      <Button
+        onClick={handleConfirmSelection}
+        type="primary"
+        style={{
+          margin: "10px 0",
+          float: "left",
+        }}
+      >Auswahl bestätigen
+      </Button>
     </div>
   );
 };
