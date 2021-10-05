@@ -1,9 +1,9 @@
 package com.ewus.ba.energielenkerEneffcoService.model;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FacilityTest {
   Facility f;
@@ -34,13 +34,13 @@ public class FacilityTest {
 
   @Test
   void testConstructor() {
-      new Facility("TST.002");
-      new Facility();
+    new Facility("TST.002");
+    new Facility();
   }
 
   @Test
   void testGetWmzEneffco() {
-      assertEquals(1, f.getWmzEneffco());
+    assertEquals(1, f.getWmzEneffco());
   }
 
   @Test
@@ -50,7 +50,7 @@ public class FacilityTest {
 
   @Test
   void testGetRuecklaufId() {
-      assertEquals("a20772af-076f-421e-9c64-a78b1ce5017b", f.getRuecklaufId());
+    assertEquals("a20772af-076f-421e-9c64-a78b1ce5017b", f.getRuecklaufId());
   }
 
   @Test
@@ -131,7 +131,7 @@ public class FacilityTest {
   @Test
   void testSetWmzEneffco() {
     f.setWmzEneffco(2);
-      assertEquals(2, f.getWmzEneffco());
+    assertEquals(2, f.getWmzEneffco());
   }
 
   @Test
@@ -143,7 +143,7 @@ public class FacilityTest {
   @Test
   void testSetRuecklaufId() {
     f.setRuecklaufId("a20772af-076f-421e-9c64-a78b1ce5017b new");
-      assertEquals("a20772af-076f-421e-9c64-a78b1ce5017b new", f.getRuecklaufId());
+    assertEquals("a20772af-076f-421e-9c64-a78b1ce5017b new", f.getRuecklaufId());
   }
 
   @Test
@@ -204,7 +204,6 @@ public class FacilityTest {
   void testSetTextFragments() {
     f.setTextFragments("Textfragments.. new");
     assertEquals("Textfragments.. new", f.getTextFragments());
-
   }
 
   @Test

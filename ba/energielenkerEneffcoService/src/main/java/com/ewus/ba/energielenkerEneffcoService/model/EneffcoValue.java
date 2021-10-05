@@ -29,7 +29,7 @@ public class EneffcoValue {
     this.from = from;
   }
 
-    public String getTo() {
+  public String getTo() {
     return this.to;
   }
 

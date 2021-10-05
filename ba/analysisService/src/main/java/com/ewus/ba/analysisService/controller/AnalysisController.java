@@ -6,7 +6,6 @@ import com.ewus.ba.analysisService.model.Facility;
 import com.ewus.ba.analysisService.model.FacilityAnalysisConfiguration;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -23,7 +22,6 @@ import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-
 import org.json.JSONArray;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -59,8 +57,8 @@ public class AnalysisController {
     // List<Facility> facilities = fillFacilities(codes); as request
     // TODO: use eureka url
     HttpUrl.Builder httpBuilder =
-        HttpUrl.parse("http://localhost:8080/fill-facilities").newBuilder();
-    httpBuilder.addQueryParameter("codesJson", codes);
+        HttpUrl.parse("http://localhost:8080/facilities-data-list").newBuilder();
+    httpBuilder.addQueryParameter("codes", codes);
     Request request = new Request.Builder().url(httpBuilder.build()).build();
     Response response = null;
     List<Facility> facilities = new ArrayList<>();
@@ -69,7 +67,7 @@ public class AnalysisController {
 
       if (response.code() == 400 || response.code() == 404 || response.code() == 500) {
         // TODO: proper logging
-        System.out.println("Response fill-facilities: " + response.code());
+        System.out.println("Response GET /facilities-data-list: " + response.code());
         System.out.println(response);
         // TODO:""
         return null;
@@ -108,9 +106,7 @@ public class AnalysisController {
 
       String body = response.body().string();
       configs =
-          objectMapper.readValue(
-              body,
-              new TypeReference<List<FacilityAnalysisConfiguration>>() {});
+          objectMapper.readValue(body, new TypeReference<List<FacilityAnalysisConfiguration>>() {});
     } catch (Exception e) {
       Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
     }
@@ -162,17 +158,20 @@ public class AnalysisController {
       }
 
       textFragmentsCurrent.removeAll(Arrays.asList("", null));
+
+      // Add previous textfragments
+      textFragmentsCurrent.add("prev: " + facility.getTextFragmentsValue());
+
       textFragments.put(facility.getCode(), textFragmentsCurrent);
       System.out.println("Done Analysing " + facility.getCode());
     }
 
-    // TODO: remove , when all codes are filled in fill-facilities
-    // textFragments.put("ACO.001", textFragments.get("ACO.002"));
     return textFragments;
   }
 
   // TODO: move to analysis service
   // TODO: Bestimmung From, To
+  // TODO: Move analyses to Analysis Class, not to be done in controller
   public String analyseFacilitySize(Facility facility) {
     System.out.println(
         "entered analyseFacilitySize. Code: "
@@ -254,6 +253,7 @@ public class AnalysisController {
     float avgUtilizationRate = getAverageValue(values);
 
     String textFragment = "";
+
     // TODO: choose which condition first
     // werden soll in textbaustein. E.g. Avg Nutzungsgrad vorwoche
     final double LIMIT_UTILIZATION_RATE = facility.getBrennwertkessel() ? 90 : 80;
@@ -282,7 +282,7 @@ public class AnalysisController {
   }
 
   // TODO: move to analysis service
-  // TODO: Bestimmung From, To
+  // TODO: Bestimmung From, To analog zu Nutzungsgrad, aber Dez bis Feb.
   public String analyseDeltaTemperature(Facility facility) {
     System.out.println("Entered analyseDeltaTemperature");
     int currentYear = LocalDate.now().getYear();
@@ -400,9 +400,7 @@ public class AnalysisController {
     // includeNanValues);
 
     String baseUrl = "http://localhost:8080/eneffco/datapoint/";
-    HttpUrl.Builder httpBuilder = HttpUrl
-        .parse(baseUrl + datapointId + "/values")
-        .newBuilder();
+    HttpUrl.Builder httpBuilder = HttpUrl.parse(baseUrl + datapointId + "/values").newBuilder();
     httpBuilder.addQueryParameter("from", from);
     httpBuilder.addQueryParameter("to", to);
     httpBuilder.addQueryParameter("timeInterval", String.valueOf(timeInterval));
@@ -415,7 +413,8 @@ public class AnalysisController {
       response = client.newCall(request).execute();
 
       if (response.code() == 400 || response.code() == 404 || response.code() == 500) {
-        System.out.println("Response get " + baseUrl + datapointId + "/values : " + response.code());
+        System.out.println(
+            "Response get " + baseUrl + datapointId + "/values : " + response.code());
         return null;
       }
 

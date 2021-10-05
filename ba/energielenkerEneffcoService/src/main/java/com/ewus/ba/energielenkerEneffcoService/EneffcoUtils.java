@@ -3,7 +3,6 @@ package com.ewus.ba.energielenkerEneffcoService;
 import com.ewus.ba.energielenkerEneffcoService.model.EneffcoValue;
 import com.ewus.ba.energielenkerEneffcoService.model.Facility;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -27,7 +26,7 @@ public class EneffcoUtils {
 
   public static String ENEFFCO_BASE_URL = "https://ewus.eneffco.de/api/v1.0";
 
-  final static ObjectMapper objectMapper = new ObjectMapper();
+  static final ObjectMapper objectMapper = new ObjectMapper();
 
   private static final OkHttpClient client =
       new OkHttpClient()
@@ -142,7 +141,13 @@ public class EneffcoUtils {
       List<EneffcoValue> values = new ArrayList<>();
 
       for (int i = 0; i < jArray.length(); i++) {
-        String valueJsonWithCamelCaseKeys = jArray.getJSONObject(i).toString().replace("Value", "value").replace("From", "from").replace("To", "to");
+        String valueJsonWithCamelCaseKeys =
+            jArray
+                .getJSONObject(i)
+                .toString()
+                .replace("Value", "value")
+                .replace("From", "from")
+                .replace("To", "to");
         values.add(objectMapper.readValue(valueJsonWithCamelCaseKeys, EneffcoValue.class));
       }
       return values;

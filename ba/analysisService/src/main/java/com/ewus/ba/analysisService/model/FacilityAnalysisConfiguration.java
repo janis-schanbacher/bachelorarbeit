@@ -94,10 +94,10 @@ public class FacilityAnalysisConfiguration {
       FacilityAnalysisConfiguration config = (FacilityAnalysisConfiguration) obj;
 
       return id.equals(config.getId())
-        && facilitySize == config.getFacilitySize()
-        && utilizationRate == config.getUtilizationRate()
-        && deltaTemperature == config.getDeltaTemperature()
-        && returnTemperature == config.getReturnTemperature();
+          && facilitySize == config.getFacilitySize()
+          && utilizationRate == config.getUtilizationRate()
+          && deltaTemperature == config.getDeltaTemperature()
+          && returnTemperature == config.getReturnTemperature();
     }
     return false;
   }
