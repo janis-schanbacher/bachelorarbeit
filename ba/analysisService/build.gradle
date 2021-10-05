@@ -68,7 +68,7 @@ spotless {
   java {
     // don't need to set target, it is inferred from java
 
-    // googleJavaFormat()
+    googleJavaFormat()
 
     // make sure every file has the following copyright header.
     // optionally, Spotless can set copyright years by digging

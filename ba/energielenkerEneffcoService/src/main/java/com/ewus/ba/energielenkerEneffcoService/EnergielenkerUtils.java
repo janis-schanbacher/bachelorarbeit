@@ -263,6 +263,12 @@ public class EnergielenkerUtils {
           // System.out.println("textFragments: " +
           // jobject.get("id").toString());
           facilities.get(index).setTextFragments(jobject.get("id").toString());
+          // retrieve last saved textFragments with timestamp of creation
+          String[] textFragmentsPrev =
+              getStringEnergielenker(elObjId, jobject.get("id").toString());
+          facilities
+              .get(index)
+              .setTextFragmentsValue(textFragmentsPrev[1] + ": " + textFragmentsPrev[0]);
         }
         if (jobject.get("name").toString().contains("961 ALT Textbausteine Auto Analyse")) {
           // System.out.println("textFragmentsPrev: " +
@@ -272,6 +278,13 @@ public class EnergielenkerUtils {
 
         // Values
         if (jobject.get("name").toString().contains("190 WMZ Eneffco (letzte Stelle im DP Code)")) {
+          facilities
+              .get(index)
+              .setWmzEneffco(
+                  Integer.parseInt(getAttributeValue(elObjId, jobject.get("id").toString())));
+        }
+
+        if (jobject.get("name").toString().contains("960 AKTUELL Textbausteine Auto Analyse")) {
           facilities
               .get(index)
               .setWmzEneffco(

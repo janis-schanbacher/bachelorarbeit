@@ -57,7 +57,11 @@ public class Facility {
 
   private String textFragmentsPrev; // Einsparzaehlerprotokoll >
   // Regelparameter_Soll-Werte > 961 ALT
+  // Textbausteine Auto Analyse
 
+  private String
+      textFragmentsValue; // Content of Einsparzaehlerprotokoll > Regelparameter_Soll-Werte >
+  // 960 AKTUELL
   // Textbausteine Auto Analyse
 
   private String einsparzaehlerobjektid;
@@ -192,6 +196,14 @@ public class Facility {
     this.textFragmentsPrev = textFragmentsPrev;
   }
 
+  public String getTextFragmentsValue() {
+    return textFragmentsValue;
+  }
+
+  public void setTextFragmentsValue(String textFragmentsValue) {
+    this.textFragmentsValue = textFragmentsValue;
+  }
+
   public String getEinsparzaehlerobjektid() {
     return einsparzaehlerobjektid;
   }
@@ -252,6 +264,7 @@ public class Facility {
     str.append("tww: " + tww + "\n");
     str.append("textFragments: " + textFragments + "\n");
     str.append("textFragmentsPrev: " + textFragmentsPrev + "\n");
+    str.append("textFragmentsValue: " + textFragmentsValue + "\n");
     str.append("einsparzaehlerobjektid: " + einsparzaehlerobjektid + "\n");
     str.append("wmzEneffco: " + wmzEneffco + "\n");
     str.append("einsparzaehlerobjektid: " + einsparzaehlerobjektid + "\n");

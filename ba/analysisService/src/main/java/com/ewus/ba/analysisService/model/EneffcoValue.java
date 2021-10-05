@@ -6,6 +6,7 @@ public class EneffcoValue {
   private String to;
 
   public EneffcoValue() {}
+
   public EneffcoValue(double value, String from, String to) {
     this.value = value;
     this.from = from;
@@ -28,7 +29,7 @@ public class EneffcoValue {
     this.from = from;
   }
 
-    public String getTo() {
+  public String getTo() {
     return this.to;
   }
 

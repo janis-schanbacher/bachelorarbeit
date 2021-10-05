@@ -102,9 +102,7 @@ const AnalysisModule = () => {
   };
 
   const handleAnalyse = () => {
-    // TODO: get codes dynamically, maybe through values, or else through params of CodeSelction
     const body = getSelectedCodes();
-
     axios.post(`${apiUrl}:${portAnalysisService}/analyse`, body)
 
     // axios.get(`${apiUrl}/analyse`, {
@@ -117,9 +115,18 @@ const AnalysisModule = () => {
     // })
       .then((res) => {
         const { data } = res;
-        setDataSource(Object.keys(data).map(key => ({ key,
-          code: key,
-          textFragments: data[key].join("\n") })));
+        setDataSource(Object.keys(data).map((key) => {
+          const row = {
+            key,
+            code: key,
+            textFragments: data[key].filter(tf => !tf.includes("prev: ")).join("\n"),
+            textFragmentsPrev: data[key].find(tf => tf.includes("prev: ")).substring(6),
+          };
+          if (row.textFragmentsPrev === "null") {
+            row.textFragmentsPrev = "";
+          }
+          return row;
+        }).sort((a, b) => ((a.key < b.key) ? -1 : 1)));
       // fillDataSource(Object.keys(data).map(key => data[key]));
       // console.log(data)
       // TODO: if data.size < codes.size indicate error for the missing ones.
@@ -190,7 +197,7 @@ const AnalysisModule = () => {
     {
       title: "Textbausteine",
       dataIndex: "textFragments",
-      width: "60%",
+      width: "45%",
       // editable: true,
       render: (val, row) => (
         <Input.TextArea
@@ -201,6 +208,12 @@ const AnalysisModule = () => {
           code={row.key}
         />
       ),
+    },
+    {
+      title: "Vorige Textbausteine",
+      dataIndex: "textFragmentsPrev",
+      key: "textFragmentsPrev",
+      width: "25%",
     },
     {
       title: "Bestätigen",

@@ -31,11 +31,12 @@ public class EnergielenkerController {
 
   private Map<String, Facility> facilitiesMap = new HashMap<>();
 
-  @GetMapping("/fill-facilities")
+  // TODO: Change route to facilities-data-list
+  @GetMapping("/facilities-data-list")
   @ResponseBody
-  public ArrayList<Facility> fillFacilities(@RequestParam String codesJson) {
-    System.out.println(codesJson);
-    String[] codesArray = codesJson.strip().replace("[", "").replace("]", "").split(",");
+  public ArrayList<Facility> fillFacilities(@RequestParam String codes) {
+    System.out.println(codes);
+    String[] codesArray = codes.strip().replace("[", "").replace("]", "").split(",");
 
     System.out.println(Arrays.toString(codesArray));
     EnergielenkerUtils.loginEnergielenker();
@@ -121,11 +122,11 @@ public class EnergielenkerController {
   @PostMapping("/text-fragments")
   public ResponseEntity postTextFragments(@RequestBody Map<String, String> body) {
     System.out.println("postTextFragments(): " + body);
-    Facility facility = facilitiesMap.get(body.get("code").toUpperCase());
+    Facility facility = facilitiesMap.get(body.get("id").toUpperCase());
 
     if (facility == null) { // TODO: check why facility never found yet in map.
       System.out.println("loading facility");
-      facility = fillFacilities(body.get("code")).get(0);
+      facility = fillFacilities(body.get("id")).get(0);
       System.out.println(facility);
     }
     // TODO: , set 960 to body.textfragments, save
@@ -158,7 +159,7 @@ public class EnergielenkerController {
         return ResponseEntity.badRequest()
             .body("The field 'textFragments'is required, but not present");
       }
-      // TODO: log: analysisResult (if different), editedAnalysisResult, timestamp,
+      // TODO: log: saved textFragments, diff to textFraagmentsAnalysisResult, timestamp,
       // code
       // EnergielenkerUtils.getStringEnergielenker(facility.getRegelparameterSollWerteObjectId(),
       // facility.getTextFragments());

@@ -6,6 +6,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -59,12 +60,13 @@ public class FacilityAnalysisConfigurationController {
   }
 
   /**
-   * Returns a ResponseEntity with status 200 and the facilityAnalysisConfigurations specified by
-   * the codesJson, or 404 no facilityAnalysisConfiguration with the provided id exists.
+   * Returns a ResponseEntity with status 200 and the a list of facilityAnalysisConfigurations for
+   * the facilities that are specified by the codes in the codes parameter and have a configuration.
    *
    * @param id id of the facilityAnalysisConfiguration to be returned (equals code of the facility)
-   * @return a ResponseEntity with status 200 and the facilityAnalysisConfiguration specified by id,
-   *     or 404 no facilityAnalysisConfiguration with the provided id exists.
+   * @return a ResponseEntity with status 200 and the a list of facilityAnalysisConfigurations for
+   *     the facilities that are specified by the codes in the codes parameter and have a
+   *     configuration.
    */
   @GetMapping("/get-list")
   @ResponseBody
@@ -76,7 +78,12 @@ public class FacilityAnalysisConfigurationController {
     // codesList.add(codesJsonArray.getString(i));
     // }
 
-    List<String> codesList = Arrays.asList(codes.replaceAll("[\\[\\]\\s\"]*", "").split(","));
+    // Remove quotation marks and square brackets, transform to lower case, and save results in List
+    List<String> codesList =
+        Arrays.asList(codes.replaceAll("[\\[\\]\\s\"]*", "").split(",")).stream()
+            .map(String::toLowerCase)
+            .collect(Collectors.toList());
+
     List<FacilityAnalysisConfiguration> facilityAnalysisConfigurations =
         facilityAnalysisConfigurationRepository.findAllById(codesList);
 
