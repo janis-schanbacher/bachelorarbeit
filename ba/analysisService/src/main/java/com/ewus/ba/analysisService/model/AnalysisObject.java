@@ -64,11 +64,6 @@ public class AnalysisObject {
     this.state = state;
   }
 
-  // Analysis Settings. TODO: if to much, source out to settings Object
-  // TODO: fill with proper analysis names
-  public boolean doAnalysis1;
-  public boolean doAnalysis2;
-
   @Override
   public String toString() {
     StringBuilder str = new StringBuilder();

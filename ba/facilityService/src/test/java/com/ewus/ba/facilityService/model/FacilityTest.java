@@ -28,8 +28,9 @@ public class FacilityTest {
     f.setEinsparzaehlerObjectId("27249");
     f.setLiegenschaftObjectId("25355");
     f.setRegelparameterSollWerteObjectId("30362");
-    f.setTextFragmentsId("Textfragments..");
-    f.setTextFragmentsPrevId("Textfragments previous..");
+    f.setTextFragmentsId("2953");
+    f.setTextFragmentsPrevId("2954");
+    f.setTextFragments("Textfragments..");
   }
 
   @Test
@@ -100,15 +101,19 @@ public class FacilityTest {
 
   @Test
   void testGetTextFragmentsId() {
-    assertEquals("Textfragments Id..", f.getTextFragmentsId());
+    assertEquals("2953", f.getTextFragmentsId());
   }
 
   @Test
-  void testGetTextFragmentsPrevId() {
-    assertEquals("Textfragments previous Id..", f.getTextFragmentsPrevId());
+  void testGetTextFragmentsPrev() {
+    assertEquals("2954", f.getTextFragmentsPrevId());
   }
 
-  // TODO: Test get set textFragments
+  @Test
+  void testGetTextFragments() {
+    assertEquals("Textfragments..", f.getTextFragments());
+  }
+
   @Test
   void testGetEinsparzaehlerObjectId() {
     assertEquals("27249", f.getEinsparzaehlerObjectId());
@@ -203,14 +208,20 @@ public class FacilityTest {
 
   @Test
   void testSetTextFragmentsId() {
-    f.setTextFragmentsId("Textfragments Id.. new");
-    assertEquals("Textfragments Id.. new", f.getTextFragmentsId());
+    f.setTextFragmentsId("2953 new");
+    assertEquals("2953 new", f.getTextFragmentsId());
   }
 
   @Test
-  void testSetTextFragmentsPrev() {
-    f.setTextFragmentsPrevId("Textfragments previous Id.. new");
-    assertEquals("Textfragments previous Id.. new", f.getTextFragmentsPrevId());
+  void testSetTextFragmentsPrevId() {
+    f.setTextFragmentsPrevId("2954 new");
+    assertEquals("2954 new", f.getTextFragmentsPrevId());
+  }
+
+  @Test
+  void testSetTextFragments() {
+    f.setTextFragmentsPrevId("Textfragments.. new");
+    assertEquals("Textfragments.. new", f.getTextFragmentsPrevId());
   }
 
   @Test

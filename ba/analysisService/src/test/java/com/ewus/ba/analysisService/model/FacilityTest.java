@@ -28,8 +28,9 @@ public class FacilityTest {
     f.setEinsparzaehlerObjectId("27249");
     f.setLiegenschaftObjectId("25355");
     f.setRegelparameterSollWerteObjectId("30362");
-    f.setTextFragmentsId("Textfragments..");
-    f.setTextFragmentsPrevId("Textfragments previous..");
+    f.setTextFragmentsId("2953");
+    f.setTextFragmentsPrevId("2954");
+    f.setTextFragments("Textfragments..");
   }
 
   @Test
@@ -98,17 +99,20 @@ public class FacilityTest {
     assertEquals(90.5, f.getUtilizationRatePreviousWeek());
   }
 
-  @Test // TODO: change values to Id
+  @Test
   void testGetTextFragmentsId() {
-    assertEquals("Textfragments Id..", f.getTextFragmentsId());
+    assertEquals("2953", f.getTextFragmentsId());
   }
 
   @Test
   void testGetTextFragmentsPrev() {
-    assertEquals("Textfragments previous Id..", f.getTextFragmentsPrevId());
+    assertEquals("2954", f.getTextFragmentsPrevId());
   }
 
-  // TODO: test get, set für textFragmets
+  @Test
+  void testGetTextFragments() {
+    assertEquals("Textfragments..", f.getTextFragments());
+  }
 
   @Test
   void testGetEinsparzaehlerObjectId() {
@@ -204,17 +208,22 @@ public class FacilityTest {
 
   @Test
   void testSetTextFragmentsId() {
-    f.setTextFragmentsId("Textfragments Id.. new");
-    assertEquals("Textfragments Id.. new", f.getTextFragmentsId());
+    f.setTextFragmentsId("2953 new");
+    assertEquals("2953 new", f.getTextFragmentsId());
   }
 
   @Test
   void testSetTextFragmentsPrevId() {
-    f.setTextFragmentsPrevId("Textfragments previous Id.. new");
-    assertEquals("Textfragments previous Id.. new", f.getTextFragmentsPrevId());
+    f.setTextFragmentsPrevId("2954 new");
+    assertEquals("2954 new", f.getTextFragmentsPrevId());
   }
 
-  // TODO: testSetTextFragments
+  @Test
+  void testSetTextFragments() {
+    f.setTextFragmentsPrevId("Textfragments.. new");
+    assertEquals("Textfragments.. new", f.getTextFragmentsPrevId());
+  }
+
   @Test
   void testSetEinsparzaehlerObjectId() {
     f.setEinsparzaehlerObjectId("27249 new");

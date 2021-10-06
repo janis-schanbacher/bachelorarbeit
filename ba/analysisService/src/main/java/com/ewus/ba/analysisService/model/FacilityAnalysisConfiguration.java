@@ -105,7 +105,7 @@ public class FacilityAnalysisConfiguration {
   @Override
   public String toString() {
     StringBuilder str = new StringBuilder();
-
+    str.append("id: " + id + "\n");
     str.append("facilitySize: " + facilitySize + "\n");
     str.append("utilizationRate: " + utilizationRate + "\n");
     str.append("deltaTemperature: " + deltaTemperature + "\n");
