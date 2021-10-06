@@ -9,7 +9,7 @@ To run the application, start all Spring Boot Services (in separate terminals) a
     ```
 - Run Energielenker Service
     ```
-    cd energielenkerEneffcoService
+    cd facilityService
     ./gradlew bootRun
     ```
 - Run Eneffco Service

@@ -1,11 +1,13 @@
 spring:
   application:
-    name: analysis-service
+    name: facility-service
   datasource:
     url: jdbc:sqlserver://10.178.2.27
+    # TODO: read from dbConfig.properties or ENV
     username: SA
     password: e#R3Dzcf!cLo4MO,
-    # driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    # driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+
   jpa:
     properties:
       hibernate:
@@ -14,7 +16,7 @@ spring:
     hibernate:
       ddl-auto: update
 server:
-  port: 8082
+  port: 8080
 eureka:
   client:
     serviceUrl:

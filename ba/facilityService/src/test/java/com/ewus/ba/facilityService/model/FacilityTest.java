@@ -1,4 +1,4 @@
-package com.ewus.ba.analysisService.model;
+package com.ewus.ba.facilityService.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -98,18 +98,17 @@ public class FacilityTest {
     assertEquals(90.5, f.getUtilizationRatePreviousWeek());
   }
 
-  @Test // TODO: change values to Id
+  @Test
   void testGetTextFragmentsId() {
     assertEquals("Textfragments Id..", f.getTextFragmentsId());
   }
 
   @Test
-  void testGetTextFragmentsPrev() {
+  void testGetTextFragmentsPrevId() {
     assertEquals("Textfragments previous Id..", f.getTextFragmentsPrevId());
   }
 
-  // TODO: test get, set für textFragmets
-
+  // TODO: Test get set textFragments
   @Test
   void testGetEinsparzaehlerObjectId() {
     assertEquals("27249", f.getEinsparzaehlerObjectId());
@@ -209,12 +208,11 @@ public class FacilityTest {
   }
 
   @Test
-  void testSetTextFragmentsPrevId() {
+  void testSetTextFragmentsPrev() {
     f.setTextFragmentsPrevId("Textfragments previous Id.. new");
     assertEquals("Textfragments previous Id.. new", f.getTextFragmentsPrevId());
   }
 
-  // TODO: testSetTextFragments
   @Test
   void testSetEinsparzaehlerObjectId() {
     f.setEinsparzaehlerObjectId("27249 new");

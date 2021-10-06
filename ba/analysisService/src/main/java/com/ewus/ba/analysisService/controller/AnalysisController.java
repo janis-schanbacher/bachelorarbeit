@@ -160,7 +160,7 @@ public class AnalysisController {
       textFragmentsCurrent.removeAll(Arrays.asList("", null));
 
       // Add previous textfragments
-      textFragmentsCurrent.add("prev: " + facility.getTextFragmentsValue());
+      textFragmentsCurrent.add("prev: " + facility.getTextFragments());
 
       textFragments.put(facility.getCode(), textFragmentsCurrent);
       System.out.println("Done Analysing " + facility.getCode());
