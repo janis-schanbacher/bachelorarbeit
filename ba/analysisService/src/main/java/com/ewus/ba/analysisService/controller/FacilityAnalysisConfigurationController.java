@@ -81,7 +81,7 @@ public class FacilityAnalysisConfigurationController {
     // Remove quotation marks and square brackets, transform to lower case, and save results in List
     List<String> codesList =
         Arrays.asList(codes.replaceAll("[\\[\\]\\s\"]*", "").split(",")).stream()
-            .map(String::toLowerCase)
+            .map(String::toUpperCase)
             .collect(Collectors.toList());
 
     List<FacilityAnalysisConfiguration> facilityAnalysisConfigurations =
@@ -103,7 +103,7 @@ public class FacilityAnalysisConfigurationController {
     if (config.getId() == null) {
       return ResponseEntity.badRequest().body("Id field is required");
     }
-    config.setId(config.getId().toLowerCase().strip());
+    config.setId(config.getId().toUpperCase().strip());
     if (!config.getId().matches("[a-z]{3}\\.[0-9]{3}")) {
       return ResponseEntity.badRequest()
           .body("Id field has to be the code of a facility. Format: ABC.123");
@@ -132,8 +132,8 @@ public class FacilityAnalysisConfigurationController {
     if (config.getId() == null) {
       return ResponseEntity.badRequest().body("id field is required");
     }
-    config.setId(config.getId().toLowerCase().strip());
-    id = id.toLowerCase().strip();
+    config.setId(config.getId().toUpperCase().strip());
+    id = id.toUpperCase().strip();
     if (!config.getId().equals(id)) {
       return ResponseEntity.badRequest().body("id field has to be equal to id specified in url");
     }
@@ -164,7 +164,7 @@ public class FacilityAnalysisConfigurationController {
   @DeleteMapping("/{id}")
   public ResponseEntity<String> deleteFacilityAnalysisConfiguration(
       @PathVariable(value = "id") String id) {
-    id = id.toLowerCase().strip();
+    id = id.toUpperCase().strip();
     if (facilityAnalysisConfigurationRepository.findById(id).isEmpty()) {
       return ResponseEntity.notFound().build();
     }

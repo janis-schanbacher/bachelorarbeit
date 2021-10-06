@@ -2,7 +2,7 @@
 //     // - Add Variables for Analysis-Values
 //     // - Add Variables for EL-ids (Felder der Textbausteine)
 
-package com.ewus.ba.analysisService.model;
+package com.ewus.ba.facilityService.model;
 
 public class Facility {
 
