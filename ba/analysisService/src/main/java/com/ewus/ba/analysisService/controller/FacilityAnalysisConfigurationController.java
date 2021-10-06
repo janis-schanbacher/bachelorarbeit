@@ -104,7 +104,7 @@ public class FacilityAnalysisConfigurationController {
       return ResponseEntity.badRequest().body("Id field is required");
     }
     config.setId(config.getId().toUpperCase().strip());
-    if (!config.getId().matches("[a-z]{3}\\.[0-9]{3}")) {
+    if (!config.getId().matches("[a-zA-Z]{3}\\.[0-9]{3}")) {
       return ResponseEntity.badRequest()
           .body("Id field has to be the code of a facility. Format: ABC.123");
     }
@@ -137,7 +137,7 @@ public class FacilityAnalysisConfigurationController {
     if (!config.getId().equals(id)) {
       return ResponseEntity.badRequest().body("id field has to be equal to id specified in url");
     }
-    if (!config.getId().matches("[a-z]{3}\\.[0-9]{3}")) {
+    if (!config.getId().matches("[a-zA-Z]{3}\\.[0-9]{3}")) {
       return ResponseEntity.badRequest()
           .body("Id field has to be the code of a facility. Format: ABC.123");
     }

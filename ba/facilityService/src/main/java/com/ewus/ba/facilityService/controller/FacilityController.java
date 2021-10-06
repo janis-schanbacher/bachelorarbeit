@@ -53,6 +53,7 @@ public class FacilityController {
               i,
               EnergielenkerUtils.fillEnergielenkerFields(
                   facilities.get(i).getEinsparzaehlerObjectId(), facilities.get(i)));
+          // Fill fields of Energielenker Object Liegenschaft
           EnergielenkerUtils.fetchLiegenschaftFieldValues(dbConnection, facilities.get(i));
           facilities.get(i).calcTww();
 
@@ -66,8 +67,7 @@ public class FacilityController {
         } catch (Exception e) {
           Utils.LOGGER.log(
               Level.WARNING,
-              "Error fillFacilities at: " + facilities.get(i).getCode() + "\n",
-              "errors.log");
+              "Error fillFacilities at: " + facilities.get(i).getCode() + "\n");
           Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
       }
@@ -88,25 +88,10 @@ public class FacilityController {
 
   @PostMapping("/text-fragments")
   public ResponseEntity postTextFragments(@RequestBody Map<String, String> body) {
-    System.out.println("postTextFragments(): " + body);
-    System.out.println(facilitiesMap);
     Facility facility = facilitiesMap.get(body.get("id").toUpperCase());
-    System.out.println("From Map: " + facility);
 
-    if (facility == null) { // TODO: check why facility never found yet in map.
-      System.out.println("loading facility");
+    if (facility == null) {
       facility = fillFacilities(body.get("id")).get(0);
-
-      // ArrayList<Facility> facilityAsList = new ArrayList<Facility>();
-      // facilityAsList.add(new Facility(body.get("id").toUpperCase()));
-      // facility = EnergielenkerUtils.fillEnergielenkerObjectIds(dbConnection,
-      // facilityAsList).get(0);
-      // facility =
-      // EnergielenkerUtils.fillEnergielenkerFields(facility.getRegelparameterSollWerteObjectId(),
-      // facility);
-      System.out.println(facility);
-    } else {
-      System.out.println("Reused facility");
     }
     // TODO: , set 960 to body.textfragments, save
     // body to db/log
@@ -115,12 +100,7 @@ public class FacilityController {
       String[] prev =
           EnergielenkerUtils.getStringEnergielenker(
               facility.getRegelparameterSollWerteObjectId(), facility.getTextFragmentsId());
-      // System.out
-      // .println("facility.getRegelparameterSollWerteObjectId()" +
-      // facility.getRegelparameterSollWerteObjectId());
-      // System.out.println(" facility.getTextFragmentsId(): " +
-      // facility.getTextFragmentsId());
-      // System.out.println("prev: " + prev);
+
       if (prev != null && !prev[0].isBlank()) {
         EnergielenkerUtils.postStringEnergielenker(
             facility.getRegelparameterSollWerteObjectId(),
@@ -145,6 +125,7 @@ public class FacilityController {
 
     } catch (Exception e) {
       // TODO Auto-generated catch block
+
       e.printStackTrace();
     } // TODO
     return ResponseEntity.created(null)
