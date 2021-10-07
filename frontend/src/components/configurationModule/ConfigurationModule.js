@@ -14,6 +14,7 @@ const defaultCheckedList = ["Anlagengröße", "Nutzungsgrad", "Temperaturdiffere
 
 const ConfigurationModule = () => {
   const [dataSource, setDataSource] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [value, setValue] = useState([]); // TODO: change default to []
   const [rowSelection, setRowSelection] = useState([]);
   const [treeData, setTreeData] = useState([]);
@@ -101,6 +102,7 @@ const ConfigurationModule = () => {
   ];
 
   const loadConfigs = () => {
+    setLoading(true);
     const codes = value.filter(v => v.value.length > 3).map(v => v.label);
     // Add codes of children from selected prefix (f.i. {value: "0-1", value: "ACO"})
     const keysOfPrefixes = value.filter(v => v.value.length === 3);
@@ -153,9 +155,10 @@ const ConfigurationModule = () => {
         }
 
         setDataSource(configs);
-      // }).catch((err) => {
+        // }).catch((err) => {
         // TODO: Error handling --> Show Alert. Also Success alters and/or load animations to be dane
         // console.log(err);
+        setLoading(false);
       });
   };
 
@@ -231,6 +234,7 @@ const ConfigurationModule = () => {
         bordered
         dataSource={dataSource}
         columns={columnsRender}
+        loading={loading}
       />
       <Button
         onClick={handleConfirmSelection}

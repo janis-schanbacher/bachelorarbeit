@@ -39,11 +39,10 @@ public class AnalysisController {
   @ResponseBody
   public Map<String, List<String>> analyse(@RequestBody String codes) {
     List<Facility> facilities = retrieveFacilities(codes);
-        List<FacilityAnalysisConfiguration> configs = retrieveConfigs(codes);
+    List<FacilityAnalysisConfiguration> configs = retrieveConfigs(codes);
+
     Map<String, List<String>> textFragments = new HashMap<>();
     for (Facility facility : facilities) {
-      System.out.println("Analysing: " + facility.getCode());
-
       // If no config is set, run all analyses by default
       FacilityAnalysisConfiguration config = configs.stream()
           .filter(c -> facility.getCode().toUpperCase().equals(c.getId().toUpperCase())).findFirst()
@@ -52,6 +51,7 @@ public class AnalysisController {
       textFragments.put(facility.getCode(), facility.analayse(config));
     }
 
+    System.out.println("Done Analysing");
     return textFragments;
   }
 

@@ -72,12 +72,6 @@ public class FacilityAnalysisConfigurationController {
   @ResponseBody
   public List<FacilityAnalysisConfiguration> getFacilityAnalysisConfigurations(
       @RequestParam String codes) {
-    // JSONArray codesJsonArray = new JSONArray(codes);
-    // List<String> codesList = new ArrayList<>();
-    // for (int i = 0; i < codesJsonArray.length(); i++) {
-    // codesList.add(codesJsonArray.getString(i));
-    // }
-
     // Remove quotation marks and square brackets, transform to lower case, and save results in List
     List<String> codesList =
         Arrays.asList(codes.replaceAll("[\\[\\]\\s\"]*", "").split(",")).stream()
@@ -87,7 +81,6 @@ public class FacilityAnalysisConfigurationController {
     List<FacilityAnalysisConfiguration> facilityAnalysisConfigurations =
         facilityAnalysisConfigurationRepository.findAllById(codesList);
 
-    System.out.println(facilityAnalysisConfigurations);
     return facilityAnalysisConfigurations;
   }
 
