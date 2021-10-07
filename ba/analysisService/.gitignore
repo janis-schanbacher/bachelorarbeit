@@ -34,7 +34,7 @@ out/
 /.nb-gradle/
 
 ### Credentials ###
-src\main\resources\dbConfig.properties
-src\main\resources\application.yml
+src/main/resources/dbConfig.properties
+src/main/resources/application.yml
 ### VS Code ###
 .vscode/
