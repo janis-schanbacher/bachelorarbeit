@@ -52,7 +52,8 @@ build
 
 # Credentials
 src/main/resources/dbConfig.properties
-src\main\resources\application.yml
+src/main/resources/application.yml
+gradle.yml
 
 # log files
 *.log

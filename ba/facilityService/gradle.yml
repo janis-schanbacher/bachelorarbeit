@@ -1,5 +1,6 @@
+# TODO: use or delete this file
 db:
-  host: 192.168.175.100
+  host: 10.178.2.27
   name: ewus_assets
   username: SA
   password: Svy3FYJeuz7X8wWEW4uV

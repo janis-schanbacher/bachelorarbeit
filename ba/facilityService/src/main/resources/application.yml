@@ -6,12 +6,13 @@ spring:
     # TODO: read from dbConfig.properties or ENV
     username: SA
     password: e#R3Dzcf!cLo4MO,
-    # driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
 
   jpa:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.SQLServer2012Dialect
+        format_sql: true
     show-sql: true
     hibernate:
       ddl-auto: update
@@ -23,3 +24,13 @@ eureka:
       defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
   instance:
     preferIpAddress: true
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE

@@ -251,18 +251,16 @@ public class EnergielenkerUtils {
     try {
       // SMBUS_48AC%/1/Volume%
       Statement statement = dbConnection.createStatement();
-      {
-        // Create and execute a SELECT SQL statement.
-        String selectSql = "SELECT [Code] FROM [ewus_assets].[dbo].[energielenker_sortiert]";
+      // Create and execute a SELECT SQL statement.
+      String selectSql = "SELECT [Code] FROM [ewus_assets].[dbo].[energielenker_sortiert]";
 
-        resultSet = statement.executeQuery(selectSql);
+      resultSet = statement.executeQuery(selectSql);
 
-        // Print results from select statement
-        while (resultSet.next()) {
-          String code = resultSet.getString(1);
-          if (code.contains(".") && code.matches("[a-zA-Z]*\\.[0-9]+")) {
-            facilityCodes.add(resultSet.getString(1));
-          }
+      // Print results from select statement
+      while (resultSet.next()) {
+        String code = resultSet.getString(1);
+        if (code.contains(".") && code.matches("[a-zA-Z]*\\.[0-9]+")) {
+          facilityCodes.add(resultSet.getString(1));
         }
       }
     } catch (SQLException e) {
