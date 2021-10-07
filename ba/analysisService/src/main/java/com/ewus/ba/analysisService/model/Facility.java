@@ -355,7 +355,7 @@ public class Facility {
 
     if (values == null) {
       System.out.println("Could not retrieve Eneffco values for AuslastungKgr");
-      return "";
+      return "Anlagengröße konnte nicht analysisert werden. Bitte zugehörigen Eneffco-Datenpunkt (" + getCode() + ".WEZ.AUS.KGR." + getWmzEneffco() +") überprüfen.";
     }
 
     float avgAuslastungKgr = getAverageValue(values);
@@ -408,14 +408,16 @@ public class Facility {
         getEneffcoValues(getNutzungsgradId(), from, to, TIMEINTERVAL_DAY, false);
 
     if (values == null) {
-      return "";
+      return "Nutzungsgrad konnte nicht analysiert werden. Bitte zugehörigen Eneffco-Datenpunkt (" + getCode() + ".WEZ.ETA." + getWmzEneffco() +") überprüfen";
     }
     float avgUtilizationRate = getAverageValue(values);
+    if (avgUtilizationRate == 0) {
+      return "Nutzungsgrad konnte nicht analysiert werden. Bitte zugehörigen Eneffco-Datenpunkt (" + getCode()
+          + ".WEZ.ETA." + getWmzEneffco() + ") überprüfen";
+    }
 
     String textFragment = "";
 
-    // TODO: Absprache Andreas choose which condition first
-    // werden soll in textbaustein. E.g. Avg Nutzungsgrad vorwoche
     final double LIMIT_UTILIZATION_RATE = getBrennwertkessel() ? 90 : 80;
     if (avgUtilizationRate < LIMIT_UTILIZATION_RATE) {
       textFragment =
@@ -453,7 +455,7 @@ public class Facility {
         getEneffcoValues(getDeltaTemperatureId(), from, to, TIMEINTERVAL_15M, false);
 
     if (values == null) {
-      return "";
+      return "Temperaturdifferenz konnte nicht analysiert werden. Bitte zugehörigen Eneffco-Datenpunkt (" + getCode() + ".WEZ.WMZ.DT." + getWmzEneffco() +") überprüfen.";
     }
     float avgDeltaTemperature = getAverageValue(values);
     System.out.println("Avg. Temperaturdifferenz: " + getAverageValue(values));
@@ -464,14 +466,14 @@ public class Facility {
         textFragment =
             "Die Temperaturspreizung ist mit "
                 + String.format("%.2f", avgDeltaTemperature)
-                + "K zu gering. Maßnahmen: Heizkurve einstellen, Absenkung VL-Temp., Verringerung der Wasserumlaufmenge.";
+                + " K zu gering. Maßnahmen: Heizkurve einstellen, Absenkung VL-Temp., Verringerung der Wasserumlaufmenge.";
       }
     } else {
       if (avgDeltaTemperature < 10) {
         textFragment =
             "Die Temperaturspreizung ist mit "
                 + String.format("%.2f", avgDeltaTemperature)
-                + "K zu gering. Maßnahmen: Heizkurve einstellen, Absenkung VL-Temp., Verringerung der Wasserumlaufmenge.";
+                + " K zu gering. Maßnahmen: Heizkurve einstellen, Absenkung VL-Temp., Verringerung der Wasserumlaufmenge.";
       }
     }
 
@@ -515,7 +517,7 @@ public class Facility {
         getEneffcoValues(getRuecklaufId(), from, to, TIMEINTERVAL_DAY, false);
 
     if (values == null) {
-      return "";
+      return "Rücklauftemperatur konnte nicht analysiert werden. Bitte zugehörigen Eneffco-Datenpunkt (" + getCode() + ".WEZ.WMZ.RL." + getWmzEneffco() +") überprüfen";
     }
     // TODO: fetch grenzwert and TextFragement from db
     final double LIMIT_PORTION_ACCEPTED_MIN = 95.0 / 100;
