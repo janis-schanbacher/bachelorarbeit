@@ -3,7 +3,7 @@
 
 import React, { useContext, useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
-import { Divider, Table, Input, Button, Form, Typography } from "antd";
+import { Divider, Table, Input, Button, Tooltip, Form, Typography, message } from "antd";
 import axios from "axios";
 // import qs from 'qs'
 
@@ -140,8 +140,7 @@ const AnalysisModule = () => {
       })
       .catch((err) => {
         // eslint-disable-next-line no-console
-        // TODO: display Error Alert
-        console.log(err);
+        message.error(`Fehler beim Laden der Analyseergebnisse: ${err.message}`);
         setLoading(false);
       });
   };
@@ -168,27 +167,29 @@ const AnalysisModule = () => {
     for (let i = 0; i < originalDataSource.length; i += 1) {
       if (originalDataSource[i].code === record.key) {
         textFragmentsAnalysisResult = originalDataSource[i].textFragments;
-        // TODO: log
-        console.log(`textFragmentsAnalysisResult: ${textFragmentsAnalysisResult}`);
         break;
       }
     }
 
-    // TODO: test andd write controller
     axios.post(`${apiUrl}:${portEnergielenkerEneffcoService}/text-fragments`, {
       id: record.key,
       textFragments: record.textFragments,
       textFragmentsAnalysisResult,
     })
-    // TODO: render SuccessNotification
-      .then(res => console.log(`Response status for post /text-fragments of id: ${record.key}: ${res.status}`));
+      // TODO: render SuccessNotification
+      .then((res) => {
+        console.log(`Response status for post /text-fragments of id: ${record.key}: ${res.status}`);
+        message.success(`Textbaustetine gespeichert für Anlage: ${record.key}`);
+      }).catch((err) => {
+        message.error(`Fehler beim Speichern der Textbausteine für Anlage: ${record.key}: ${err.message}`);
+      });
   };
 
-  // TODO: weiter hier
   const handleConfirmSelection = () => {
     console.log(rowSelection);
-    rowSelection.forEach(row => handleConfirm(row));
-    // TODO: render SuccessNotification.
+    rowSelection.forEach((row) => {
+      handleConfirm(row);
+    });
   };
 
   // const handleDelete = (key) => {
@@ -226,7 +227,9 @@ const AnalysisModule = () => {
       // <Popconfirm title="Sure to save?" onConfirm={() => handleConfirm(record.key)}>
       //   <a>Speichern</a>
       // </Popconfirm>
-        <Button type="primary" onClick={e => handleConfirm(record)}>Bestätigen</Button>
+        <Tooltip placement="bottom" color="black" title="Textbausteine in Energielenker speichern.">
+          <Button type="primary" onClick={e => handleConfirm(record)}>Bestätigen</Button>
+        </Tooltip>
       ) : null),
     },
   ];
@@ -269,22 +272,45 @@ const AnalysisModule = () => {
   // TODO: move CodeSelection and Analysis Button to parent
   return (
     <div>
+
       <Title level={2}>Analyse Oberfläche</Title>
       <Title level={4} style={{ textAlign: "left" }}>Auswahl zu analysierender Anlagen</Title>
 
       <CodeSelection value={value} setValue={setValue} treeData={treeData} setTreeData={setTreeData} />
-      <Button
-        onClick={handleAnalyse}
-        type="primary"
-        style={{
-          margin: "5px 5px 15px 5px",
-          float: "left",
-        }} // TODO: use StyledComponend
+      <Tooltip
+        placement="bottom"
+        color="black"
+        title="Ausgewählte Anlagen entsprechend der zugehörigen Konfigurationen analysieren."
       >
-        Analysieren
-      </Button>
+        <Button
+          onClick={handleAnalyse}
+          type="primary"
+          style={{
+            margin: "5px 5px 15px 5px",
+            float: "left",
+          }} // TODO: use StyledComponend
+        >
+          Analysieren
+        </Button>
+      </Tooltip>
       <Divider />
       <Title level={4} style={{ textAlign: "left" }}>Analyse-Ergebnisse</Title>
+      <Tooltip
+        placement="bottom"
+        color="black"
+        title="Textbausteine der in der Tabelle markierten Anlagen in Energielenker speichern."
+      >
+        <Button
+          onClick={handleConfirmSelection}
+          type="primary"
+          style={{
+            margin: "5px 5px 15px 5px",
+            float: "left",
+          }}
+
+        >Auswahl bestätigen
+        </Button>
+      </Tooltip>
       <Table
         rowSelection={{
           type: "checkbox",
@@ -297,15 +323,6 @@ const AnalysisModule = () => {
         columns={columnsRender}
         loading={loading}
       />
-      <Button
-        onClick={handleConfirmSelection}
-        type="primary"
-        style={{
-          margin: "5px 5px 15px 5px",
-          float: "left",
-        }}
-      >Auswahl bestätigen
-      </Button>
     </div>
   );
 };
