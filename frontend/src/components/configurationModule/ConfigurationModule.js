@@ -1,5 +1,5 @@
 import React, { useState, useReducer } from "react";
-import { Typography, Table, Button, Checkbox, Divider } from "antd";
+import { Typography, Table, Button, Tooltip, Checkbox, Divider, message } from "antd";
 import axios from "axios";
 import qs from "qs";
 import find from "lodash/find";
@@ -61,6 +61,10 @@ const ConfigurationModule = () => {
       utilizationRate: record.checkedList.includes("Nutzungsgrad"),
       deltaTemperature: record.checkedList.includes("Temperaturdifferenz"),
       returnTemperature: record.checkedList.includes("Rücklauftemperatur"),
+    }).then(() => {
+      message.success(`Konfiguration gespeichert für Anlage: ${record.key.toUpperCase()}`);
+    }).catch((err) => {
+      message.error(`Fehler beim Speichern der Konfiguration der Anlage: ${record.key.toUpperCase()}: ${err.message}`);
     });
   };
 
@@ -96,7 +100,9 @@ const ConfigurationModule = () => {
       title: "Bestätigen",
       dataIndex: "confirm",
       render: (_, record) => (dataSource.length >= 1 ? (
-        <Button type="primary" onClick={e => handleConfirm(record)}>Speichern</Button>
+        <Tooltip placement="bottom" color="black" title="Konfiguration speichern">
+          <Button type="primary" onClick={e => handleConfirm(record)}>Bestätigen</Button>
+        </Tooltip>
       ) : null),
     },
   ];
@@ -159,6 +165,8 @@ const ConfigurationModule = () => {
         // TODO: Error handling --> Show Alert. Also Success alters and/or load animations to be dane
         // console.log(err);
         setLoading(false);
+      }).catch((err) => {
+        message.error(`Fehler beim Laden der Konfigurationen: ${err.message}`);
       });
   };
 
@@ -195,16 +203,18 @@ const ConfigurationModule = () => {
       <Title level={2}>Konfigurations-Oberfläche</Title>
       <Title level={4} style={{ textAlign: "left" }}>Auswahl zu konfigurierender Anlagen</Title>
       <CodeSelection value={value} setValue={setValue} treeData={treeData} setTreeData={setTreeData} />
-      <Button
-        onClick={loadConfigs}
-        type="primary"
-        style={{
-          margin: "10px 0",
-          float: "left",
-        }}
-      >
-        Konfigurationen laden
-      </Button>
+      <Tooltip placement="bottom" color="black" title="Konfigurationen der ausgewählten Anlagen laden.">
+        <Button
+          onClick={loadConfigs}
+          type="primary"
+          style={{
+            margin: "10px 0",
+            float: "left",
+          }}
+        >
+          Konfigurationen laden
+        </Button>
+      </Tooltip>
       <Divider />
       <Title level={4} style={{ textAlign: "left" }}>Markierte Anlagen Konfigurieren</Title>
       <Checkbox.Group
@@ -213,18 +223,40 @@ const ConfigurationModule = () => {
         onChange={handleChangeBulkConfiguration}
         style={{ textAlign: "left", width: "100%", margin: "10px 0" }}
       />
-      <Button
-        onClick={handleApplyBulkConfiguration}
-        type="primary"
-        style={{
-          margin: "10px 0",
-          float: "left",
-        }} // TODO: use StyledComponend
+      <Tooltip
+        placement="bottom"
+        color="black"
+        title="Lokal die Konfigurationen der in der Tabelle markierten Anlagen anpassen.
+           Gespeichert können diese über die entsprechenden Bestätigungs-Buttons werden."
       >
-        Übernehmen
-      </Button>
+        <Button
+          onClick={handleApplyBulkConfiguration}
+          type="primary"
+          style={{
+            margin: "10px 0",
+            float: "left",
+          }} // TODO: use StyledComponend
+        >
+          Übernehmen
+        </Button>
+      </Tooltip>
       <Divider />
       <Title level={4} style={{ textAlign: "left" }}>Konfigurationen</Title>
+      <Tooltip
+        placement="bottom"
+        color="black"
+        title="Konfigurationen der in der Tabelle markierten Anlagen speichern."
+      >
+        <Button
+          onClick={handleConfirmSelection}
+          type="primary"
+          style={{
+            margin: "10px 0",
+            float: "left",
+          }}
+        >Auswahl bestätigen
+        </Button>
+      </Tooltip>
       <Table
         rowSelection={{
           type: "checkbox",
@@ -236,15 +268,6 @@ const ConfigurationModule = () => {
         columns={columnsRender}
         loading={loading}
       />
-      <Button
-        onClick={handleConfirmSelection}
-        type="primary"
-        style={{
-          margin: "10px 0",
-          float: "left",
-        }}
-      >Auswahl bestätigen
-      </Button>
     </div>
   );
 };
