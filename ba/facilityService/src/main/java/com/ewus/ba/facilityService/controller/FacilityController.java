@@ -110,6 +110,10 @@ public class FacilityController {
       // Save new
       String textFragmentsNew = body.get("textFragments");
       if (textFragmentsNew != null) {
+        // Allow saving blank textfragmens
+        if (textFragmentsNew == "") {
+          textFragmentsNew = " ";
+        }
         EnergielenkerUtils.postStringEnergielenker(
             facility.getRegelparameterSollWerteObjectId(),
             facility.getTextFragmentsId(),

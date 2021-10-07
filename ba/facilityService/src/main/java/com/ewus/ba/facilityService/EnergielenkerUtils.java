@@ -178,7 +178,7 @@ public class EnergielenkerUtils {
       }
     } catch (Exception e) {
       Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
-      throw new Exception();
+      throw e;
     }
   }
 
