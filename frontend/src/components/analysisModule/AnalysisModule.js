@@ -89,6 +89,7 @@ const AnalysisModule = () => {
   const [value, setValue] = useState([]); // TODO: change default to []
   const [rowSelection, setRowSelection] = useState([]);
   const [treeData, setTreeData] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const getSelectedCodes = () => {
     const selectedCodes = value.map((v) => {
@@ -102,6 +103,7 @@ const AnalysisModule = () => {
   };
 
   const handleAnalyse = () => {
+    setLoading(true);
     const body = getSelectedCodes();
     axios.post(`${apiUrl}:${portAnalysisService}/analyse`, body)
 
@@ -134,11 +136,13 @@ const AnalysisModule = () => {
       })
       .then(() => {
         setOriginalDataSource(dataSource);
+        setLoading(false);
       })
       .catch((err) => {
         // eslint-disable-next-line no-console
         // TODO: display Error Alert
         console.log(err);
+        setLoading(false);
       });
   };
 
@@ -291,6 +295,7 @@ const AnalysisModule = () => {
         bordered
         dataSource={dataSource}
         columns={columnsRender}
+        loading={loading}
       />
       <Button
         onClick={handleConfirmSelection}
