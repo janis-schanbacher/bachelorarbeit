@@ -4,10 +4,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
-import java.util.logging.Level;
 
 public class Config {
-
   public static Properties readDbProperties() {
     return readProperties(
         "src/main/resources/dbConfig.properties",
@@ -20,7 +18,7 @@ public class Config {
       props = readPropertiesFile(filename);
       return props.getProperty(key);
     } catch (IOException e) {
-      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+      Utils.LOGGER.warn(e.getMessage(), e);
     }
     return null;
   }
@@ -34,7 +32,7 @@ public class Config {
         props.setProperty(key, allProps.getProperty(key));
       }
     } catch (IOException e) {
-      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+      Utils.LOGGER.warn(e.getMessage(), e);
     }
     return props;
   }
@@ -47,9 +45,9 @@ public class Config {
       prop = new Properties();
       prop.load(fis);
     } catch (FileNotFoundException fnfe) {
-      Utils.LOGGER.log(Level.WARNING, fnfe.getMessage(), fnfe);
+      Utils.LOGGER.warn(fnfe.getMessage(), fnfe);
     } catch (IOException ioe) {
-      Utils.LOGGER.log(Level.WARNING, ioe.getMessage(), ioe);
+      Utils.LOGGER.warn(ioe.getMessage(), ioe);
 
     } finally {
       fis.close();

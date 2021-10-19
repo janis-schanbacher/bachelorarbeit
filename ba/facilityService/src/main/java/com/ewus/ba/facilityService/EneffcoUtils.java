@@ -9,7 +9,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -73,9 +72,7 @@ public class EneffcoUtils {
           getEneffcoId(c, facility.getCode() + ".WEZ.WMZ.DT." + facility.getWmzEneffco()));
 
     } catch (Exception e) {
-      // System.err.println("# Error fetchEneffcoIds: " + facility.getCode());
-      Utils.LOGGER.log(
-          Level.WARNING, "Error fetchEneffcoIds: " + facility.getCode() + e.getMessage(), e);
+      Utils.LOGGER.warn("Error fetchEneffcoIds: " + facility.getCode() + e.getMessage(), e);
     }
   }
 
@@ -102,7 +99,7 @@ public class EneffcoUtils {
         }
       }
     } catch (Exception e) {
-      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+      Utils.LOGGER.warn(e.getMessage(), e);
     }
     return "";
   }
@@ -153,7 +150,7 @@ public class EneffcoUtils {
       return values;
 
     } catch (Exception e) {
-      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+      Utils.LOGGER.warn(e.getMessage(), e);
       return null;
     }
   }

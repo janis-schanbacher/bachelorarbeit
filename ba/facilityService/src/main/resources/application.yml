@@ -1,3 +1,5 @@
+server:
+  port: 8080
 spring:
   application:
     name: facility-service
@@ -16,15 +18,9 @@ spring:
     show-sql: false
     hibernate:
       ddl-auto: update
-server:
-  port: 8080
-
+  output:
+    ansi:
+      enabled: ALWAYS # Enable Color-Coded Output
 logging:
-  level:
-    org:
-      hibernate:
-        SQL: DEBUG
-        type:
-          descriptor:
-            sql:
-              BasicBinder: TRACE
+  file:
+    path: ./logs

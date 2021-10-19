@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +29,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @CrossOrigin
 public class FacilityController {
-
   private static Connection dbConnection = new Datenbankverbindung().getConnection();
   private Map<String, Facility> facilitiesMap = new HashMap<>();
 
@@ -74,13 +72,11 @@ public class FacilityController {
 
           EneffcoUtils.fetchEneffcoIds(dbConnection, facilities.get(i));
         } catch (Exception e) {
-          Utils.LOGGER.log(
-              Level.WARNING, "Error fillFacilities at: " + facilities.get(i).getCode() + "\n");
-          Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+          Utils.LOGGER.warn("Error fillFacilities at: " + facilities.get(i).getCode() +e.getMessage(), e);
         }
       }
     } catch (Exception e) {
-      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+      Utils.LOGGER.warn(e.getMessage(), e);
     }
 
     facilitiesMap.putAll(facilities.stream().collect(Collectors.toMap(f -> f.getCode(), f -> f)));
@@ -135,7 +131,7 @@ public class FacilityController {
       logPostTextFragments(
           facility.getCode(), body.get("textFragmentsAnalysisResult"), textFragmentsNew);
     } catch (Exception e) {
-      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+      Utils.LOGGER.warn(e.getMessage(), e);
     }
     return ResponseEntity.created(null)
         .build(); // EnergielenkerUtils.fetchAllFacilityCodes(dbConnection);
@@ -163,7 +159,7 @@ public class FacilityController {
               + "');";
       statement.executeUpdate(selectSql);
     } catch (SQLException e) {
-      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+      Utils.LOGGER.warn(e.getMessage(), e);
     }
   }
 

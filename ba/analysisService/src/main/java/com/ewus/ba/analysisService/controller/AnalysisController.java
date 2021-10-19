@@ -1,8 +1,9 @@
 package com.ewus.ba.analysisService.controller;
 
-import com.ewus.ba.analysisService.Utils;
 import com.ewus.ba.analysisService.model.Facility;
 import com.ewus.ba.analysisService.model.FacilityAnalysisConfiguration;
+import com.ewus.ba.analysisService.Utils;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
@@ -10,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -68,7 +68,7 @@ public class AnalysisController {
       response = client.newCall(request).execute();
 
       if (response.code() == 400 || response.code() == 404 || response.code() == 500) {
-        Utils.LOGGER.log(Level.WARNING, "Response GET /facilities-data-list: " + response);
+        Utils.LOGGER.warn("Response GET /facilities-data-list: " + response);
         return null;
       }
 
@@ -76,7 +76,7 @@ public class AnalysisController {
           objectMapper.readValue(response.body().string(), new TypeReference<List<Facility>>() {});
 
     } catch (Exception e) {
-      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+      Utils.LOGGER.warn(e.getMessage(), e);
       return null;
     }
     return facilities;
@@ -93,7 +93,7 @@ public class AnalysisController {
       response = client.newCall(request).execute();
 
       if (response.code() == 400 || response.code() == 404 || response.code() == 500) {
-        Utils.LOGGER.log(Level.WARNING, "Response GET /codes/get-list: " + response);
+        Utils.LOGGER.warn("Response GET /codes/get-list: " + response);
         return null;
       }
 
@@ -101,7 +101,7 @@ public class AnalysisController {
       configs =
           objectMapper.readValue(body, new TypeReference<List<FacilityAnalysisConfiguration>>() {});
     } catch (Exception e) {
-      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+      Utils.LOGGER.warn(e.getMessage(), e);
     }
     return configs;
   }

@@ -1,3 +1,5 @@
+server:
+  port: 8082
 spring:
   application:
     name: analysis-service
@@ -13,5 +15,9 @@ spring:
     show-sql: false
     hibernate:
       ddl-auto: update
-server:
-  port: 8082
+  output:
+    ansi:
+      enabled: ALWAYS # Enable Color-Coded Output
+logging:
+  file:
+    path: ./logs
