@@ -46,11 +46,8 @@ public class FacilityAnalysisConfigurationIntegrationTest {
             .andExpect(jsonPath("$[0].deltaTemperature").value(true))
             .andExpect(jsonPath("$[0].returnTemperature").value(true));
 
-    // Alternatively assert againstFacilityAnalysisConfiguration
     MvcResult result = resultActions.andReturn();
     String contentAsString = result.getResponse().getContentAsString();
-    // FacilityAnalysisConfiguration response = mapper.readValue(contentAsString,
-    //     FacilityAnalysisConfiguration.class); // if body is a JSONObject
     List<FacilityAnalysisConfiguration> actual =
         mapper.readValue(
             contentAsString, new TypeReference<List<FacilityAnalysisConfiguration>>() {});

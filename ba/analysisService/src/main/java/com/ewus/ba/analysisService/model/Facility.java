@@ -1,11 +1,7 @@
-//     // TODO:
-//     // - Add Variables for Analysis-Values
-//     // - Add Variables for EL-ids (Felder der Textbausteine)
-
 package com.ewus.ba.analysisService.model;
 
 import com.ewus.ba.analysisService.Utils;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -29,11 +25,8 @@ public class Facility {
   private int wmzEneffco; // Einsparzaehlerprotokoll> 190 WMZ Eneffco (letzte Stelle im
   // DP Code)
 
-  // vorlaufId, aussentemperatur, volumenstromId and leistungId are eneffco object
-  // ids
   private String vorlaufId; // Eneffco Datenpunkt Tabelle:
   // [Anlagencode].WEZ.WMZ.VL.[wmzEneffco]
-  // z.b. "4a3a0973-2fc4-47b6-aaf7-1ddd52bc94af"
 
   private String ruecklaufId; // Eneffco Datenpunkt Tabelle:
   // [Anlagencode].WEZ.WMZ.RL.[wmzEneffco]
@@ -58,17 +51,12 @@ public class Facility {
 
   private boolean brennwertkessel; // EL>Anlagentechnik> 011 Brennwertkessel
 
-  // TODO 021 Brennwertkessel berücksichtigen, wahrsch. iabh wmzEneffco
-
   private String versorgungstyp; // EL>Liegenschaft> 030 Versorgungstyp
 
-  private boolean tww; // if(wmzEneffco != 1) false
-  // else if (versorgungstyp.toLowerCase().contains("tww")) true
-  // else false
+  private boolean tww;
 
   private double utilizationRatePreviousWeek; // ESZ > 103 Nutzungsgrad Vorwoche
 
-  // results
   private String textFragmentsId; // Einsparzaehlerprotokoll > Regelparameter_Soll-Werte >
   // 960 AKTUELL
   // Textbausteine Auto Analyse
@@ -283,35 +271,13 @@ public class Facility {
     }
   }
 
-  public String toJson() {
-    // TODO
-    return this.toString();
-  }
-
-  // TODO: update with relevant values
+  @Override
   public String toString() {
-    StringBuilder str = new StringBuilder();
-    str.append("code: " + code + "\n");
-    str.append("wmzEneffco: " + wmzEneffco + "\n");
-    str.append("vorlaufId: " + vorlaufId + "\n");
-    str.append("ruecklaufId: " + ruecklaufId + "\n");
-    str.append("volumenstromId: " + volumenstromId + "\n");
-    str.append("auslastungKgrId: " + auslastungKgrId + "\n");
-    str.append("aussentemperaturCode: " + aussentemperaturCode + "\n");
-    str.append("brennwertkessel: " + brennwertkessel + "\n");
-    str.append("leistungId: " + leistungId + "\n");
-    str.append("versorgungstyp: " + versorgungstyp + "\n");
-    str.append("tww: " + tww + "\n");
-    str.append("textFragmentsId: " + textFragmentsId + "\n");
-    str.append("textFragmentsPrevId: " + textFragmentsPrevId + "\n");
-    str.append("textFragments: " + textFragments + "\n");
-    str.append("einsparzaehlerObjectId: " + einsparzaehlerObjectId + "\n");
-    str.append("wmzEneffco: " + wmzEneffco + "\n");
-    str.append("einsparzaehlerObjectId: " + einsparzaehlerObjectId + "\n");
-    str.append("anlagentechnikObjectId: " + anlagentechnikObjectId + "\n");
-    str.append("liegenschaftObjectId: " + liegenschaftObjectId + "\n");
-    str.append("regelparameterSollWerteObjectId: " + regelparameterSollWerteObjectId + "\n");
-    return str.toString();
+    try {
+      return objectMapper.writeValueAsString(this);
+    } catch (JsonProcessingException e) {
+      return "";
+    }
   }
 
   // Analysis logic
@@ -339,18 +305,10 @@ public class Facility {
     return textFragments;
   }
 
-  // TODO: Bestimmung From, To
-  // TODO: Move analyses to Analysis Class, not to be done in controller
   public String analyseFacilitySize() {
-    System.out.println(
-        "entered analyseFacilitySize. Code: "
-            + getCode()
-            + " AuslastungKgrId: "
-            + getAuslastungKgrId());
     List<EneffcoValue> values =
         getEneffcoValues(
             getAuslastungKgrId(),
-            // TODO: change amount of days
             java.time.Clock.systemUTC()
                 .instant()
                 .truncatedTo(ChronoUnit.MILLIS)
@@ -361,7 +319,10 @@ public class Facility {
             false);
 
     if (values == null) {
-      System.out.println("Could not retrieve Eneffco values for AuslastungKgr");
+      Utils.LOGGER.warn(
+          getCode()
+              + ": Could not retrieve Eneffco values from Eneffco-Datapoint: .WEZ.AUS.MAX."
+              + getWmzEneffco());
       return "Anlagengröße konnte nicht analysisert werden. Bitte zugehörigen Eneffco-Datenpunkt ("
           + getCode()
           + ".WEZ.AUS.MAX."
@@ -370,15 +331,12 @@ public class Facility {
     }
 
     float avgAuslastungKgr = getAverageValue(values);
-    // TODO: fetch grenzwert and TextFragement from db
     String textFragment =
         avgAuslastungKgr > 80
             ? ""
             : "Heizkessel ist überdimensioniert, Durchschnittliche Auslastung "
                 + String.format("%.2f", avgAuslastungKgr)
                 + "%. Mögliche Maßnahmen: Brenner einstellen, andere Düse verbauen (geringere Heizleistung) oder Neubau.";
-    System.out.println("Avg. Nutzungsgrad zw. -10 und -14 Grad: " + getAverageValue(values));
-    System.out.println("finisehd analyseFacilitySize");
     return textFragment;
   }
 
@@ -437,8 +395,6 @@ public class Facility {
     String textFragment = "";
 
     final double LIMIT_UTILIZATION_RATE = getBrennwertkessel() ? 90 : 80;
-    System.out.println("LIMIT_UTILIZATION_RATE: " + LIMIT_UTILIZATION_RATE);
-    System.out.println("Brennwertkessel: " + getBrennwertkessel());
     if (avgUtilizationRate < LIMIT_UTILIZATION_RATE) {
       textFragment =
           "Die Anlage weist einen zu geringen Nutzungsgrad auf (Avg. Nutzungsgrad: "
@@ -452,13 +408,10 @@ public class Facility {
               + "%). Maßnahmen: Prüfen ob WMZ Gesamt gemessen wird, Anlagenanalyse durchführen.";
     }
 
-    // TODO: fetch grenzwert and TextFragement from db
     return textFragment;
   }
 
-  // TODO: Bestimmung From, To analog zu Nutzungsgrad, aber Dez bis Feb.
   public String analyseDeltaTemperature() {
-    System.out.println("Entered analyseDeltaTemperature");
     int currentYear = LocalDate.now().getYear();
     String from =
         LocalDateTime.of(currentYear - 1, Month.DECEMBER, 1, 0, 0, 0)
@@ -482,23 +435,19 @@ public class Facility {
           + ") überprüfen.";
     }
     float avgDeltaTemperature = getAverageValue(values);
-    System.out.println("Avg. Temperaturdifferenz: " + getAverageValue(values));
     String textFragment = "";
-    // TODO: fetch grenzwerte and TextFragements from db
-    if (!getTww()) { // TODO: Check. hat brennwertkessel
+    if (getBrennwertkessel()) {
       if (avgDeltaTemperature < 15) {
         textFragment =
             "Die Temperaturspreizung ist mit "
                 + String.format("%.2f", avgDeltaTemperature)
                 + " K zu gering. Maßnahmen: Heizkurve einstellen, Absenkung VL-Temp., Verringerung der Wasserumlaufmenge.";
       }
-    } else {
-      if (avgDeltaTemperature < 10) {
-        textFragment =
-            "Die Temperaturspreizung ist mit "
-                + String.format("%.2f", avgDeltaTemperature)
-                + " K zu gering. Maßnahmen: Heizkurve einstellen, Absenkung VL-Temp., Verringerung der Wasserumlaufmenge.";
-      }
+    } else if (avgDeltaTemperature < 10) {
+      textFragment =
+          "Die Temperaturspreizung ist mit "
+              + String.format("%.2f", avgDeltaTemperature)
+              + " K zu gering. Maßnahmen: Heizkurve einstellen, Absenkung VL-Temp., Verringerung der Wasserumlaufmenge.";
     }
 
     return textFragment;
@@ -551,7 +500,7 @@ public class Facility {
           + getWmzEneffco()
           + ") überprüfen.";
     }
-    // TODO: fetch grenzwert and TextFragement from db
+
     final double LIMIT_PORTION_ACCEPTED_MIN = 90.0 / 100;
     final double LIMIT_RETURN_TEMPERATURE = 55;
     double portionOfValuesMarginBelowLimit =
@@ -567,11 +516,6 @@ public class Facility {
 
   public List<EneffcoValue> getEneffcoValues(
       String datapointId, String from, String to, int timeInterval, boolean includeNanValues) {
-    // System.out.println("readEneffcoDatapointValues: datapointId: " + datapointId
-    // + ", from: " + from + ", to: " + to
-    // + ", timeInterval: " + timeInterval + ", includeNanValues: " +
-    // includeNanValues);
-
     String baseUrl = "http://localhost:8080/eneffco/datapoint/";
     HttpUrl.Builder httpBuilder = HttpUrl.parse(baseUrl + datapointId + "/values").newBuilder();
     httpBuilder.addQueryParameter("from", from);
@@ -586,9 +530,14 @@ public class Facility {
       response = client.newCall(request).execute();
 
       if (response.code() == 400 || response.code() == 404 || response.code() == 500) {
-        System.out.println(
-            "Response get " + baseUrl + datapointId + "/values : " + response.code());
-        return null;
+        throw new Exception(
+            "Response get "
+                + baseUrl
+                + datapointId
+                + "/values : "
+                + response.code()
+                + ". Error occured while analysing facility: "
+                + getCode());
       }
 
       responseBody = response.body().string();
@@ -602,7 +551,7 @@ public class Facility {
 
     } catch (Exception e) {
       Utils.LOGGER.warn(
-        "Failed to get Eneffco values from datapointId: "
+          "Failed to get Eneffco values from datapointId: "
               + datapointId
               + ", with parameters from: "
               + from

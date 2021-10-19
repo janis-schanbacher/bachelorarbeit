@@ -16,11 +16,6 @@ public class Datenbankverbindung {
   public boolean connect() {
     Properties props = Config.readDbProperties();
 
-    // erstellt Verbindung und legt sie in der Instanzvariablen connection ab.
-
-    // Class.forName("com.mysql.cj.jdbc.Driver").newInstance(); // neue Instanz des
-    // Treibers holen
-
     String connectionCommand =
         "jdbc:sqlserver://"
             + props.getProperty("dbHost")
@@ -38,10 +33,8 @@ public class Datenbankverbindung {
             + "trustServerCertificate=false;"
             + "loginTimeout=30;";
 
-    // System.out.println(connectionCommand);
     try {
       this.connection = DriverManager.getConnection(connectionCommand);
-      System.out.println("Connected to DB: " + this.connection.toString());
     } catch (SQLException e) {
       Utils.LOGGER.warn(e.getMessage(), e);
     }
@@ -53,7 +46,6 @@ public class Datenbankverbindung {
   }
 
   public void setConnection(Connection connection) {
-    System.out.println("Setting connection to: " + connection.toString());
     this.connection = connection;
   }
 }

@@ -1,11 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Menu } from "antd";
 import { EditOutlined, SettingOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom/cjs/react-router-dom.min";
+import PropTypes from "prop-types";
 
-const Navbar = () => {
-  // TODO: effect, when url changed update active item.
-  const [current, setCurrent] = useState("");
+const Navbar = ({ currentUrl }) => {
+  const [current, setCurrent] = useState(currentUrl);
+  // Update highlighted Menu Item, when Url is changed by clicking the logo or changing the URL manually
+  useEffect(() => {
+    if (currentUrl === "/") {
+      setCurrent("analyse");
+    } else if (currentUrl === "/config") {
+      setCurrent("config");
+    }
+  }, [currentUrl]);
 
   const handleClick = (e) => {
     setCurrent(e.key);
@@ -20,6 +28,14 @@ const Navbar = () => {
       </Menu.Item>
     </Menu>
   );
+};
+
+Navbar.propTypes = {
+  currentUrl: PropTypes.string,
+};
+
+Navbar.defaultProps = {
+  currentUrl: "/",
 };
 
 export default Navbar;

@@ -1,5 +1,7 @@
 package com.ewus.ba.facilityService.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.temporal.ChronoUnit;
 import org.apache.commons.lang3.StringUtils;
 
@@ -72,12 +74,11 @@ public class AnalysisLog {
 
   @Override
   public String toString() {
-    StringBuilder str = new StringBuilder();
-    str.append("code: " + code + "\n");
-    str.append("textFragmentsAnalysisResult: " + textFragmentsAnalysisResult + "\n");
-    str.append("textFragments: " + textFragments + "\n");
-    str.append("textFragmentsDiff: " + textFragmentsDiff + "\n");
-    str.append("timestamp: " + timestamp + "\n");
-    return str.toString();
+    ObjectMapper objectMapper = new ObjectMapper();
+    try {
+      return objectMapper.writeValueAsString(this);
+    } catch (JsonProcessingException e) {
+      return "";
+    }
   }
 }

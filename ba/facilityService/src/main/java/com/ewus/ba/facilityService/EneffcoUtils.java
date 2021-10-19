@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import okhttp3.HttpUrl;
@@ -15,13 +16,10 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.json.JSONArray;
 
-// TODO: telete if not necessary. Otherwise rename MS, f.i.. to dataService. wär aber schön wenns
-// ausschließlich energielenker
-
 public class EneffcoUtils {
 
   public static String tokenEneffco =
-      "Basic " + Config.readProperty("src/main/resources/dbConfig.properties", "tokenEneffco");
+      "Basic " + Config.readProperty("src/main/resources/dbConfig.properties", "eneffcoToken");
 
   public static String ENEFFCO_BASE_URL = "https://ewus.eneffco.de/api/v1.0";
 
@@ -34,18 +32,16 @@ public class EneffcoUtils {
           .readTimeout(30, TimeUnit.SECONDS)
           .build();
 
-  // public static void setEneffcoToken() {
-  // tokenEneffco = "Basic " + Config.readProperty("config.properties",
-  // "tokenEneffco");
-  // // Alternatively generate using eneffco credentials
-  // // try {
-  // // tokenEneffco = "Basic " + Base64.getEncoder()
-  // // .encodeToString(("username:password").getBytes("UTF-8"));
-  // // System.out.println(tokenEneffco);
-  // // } catch (Exception e) {
-  // // System.out.println(e);
-  // // }
-  // }
+  public static void printEneffcoToken(String username, String password) {
+    try {
+      tokenEneffco =
+          "Basic "
+              + Base64.getEncoder().encodeToString((username + ":" + password).getBytes("UTF-8"));
+      System.out.println(tokenEneffco);
+    } catch (Exception e) {
+      System.out.println(e);
+    }
+  }
 
   /**
    * Fetches and sets Vorlauf, Ruecklauf, Volumenstrom, Leistung und Aussentemperatur ids for
@@ -81,20 +77,13 @@ public class EneffcoUtils {
     try {
       Statement statement = connection.createStatement();
       {
-        // Create and execute a SELECT SQL statement.
         String selectSql =
             "  SELECT [code], [id] FROM [ewus_assets].[dbo].[eneffco_datapoint] WHERE code = '"
                 + code
                 + "'";
 
         resultSet = statement.executeQuery(selectSql);
-
-        // Print results from select statement
         while (resultSet.next()) {
-          // System.out.println(resultSet.getString(2) + " " +
-          // resultSet.getString(3));
-          System.out.println(resultSet.getString(1) + " | " + resultSet.getString(2) + " | ");
-          // eSZ_Einsparungen.add(resultSet.getString(1));
           return resultSet.getString(2);
         }
       }
@@ -104,14 +93,8 @@ public class EneffcoUtils {
     return "";
   }
 
-  // TODO: use HttpUrl.Builder und .addQueryParameter("from", from)
   public static List<EneffcoValue> readEneffcoDatapointValues(
       String datapointId, String from, String to, int timeInterval, boolean includeNanValues) {
-    // System.out.println("readEneffcoDatapointValues: datapointId: " + datapointId
-    // + ", from: " + from + ", to: " + to
-    // + ", timeInterval: " + timeInterval + ", includeNanValues: " +
-    // includeNanValues);
-
     HttpUrl.Builder httpBuilder =
         HttpUrl.parse(ENEFFCO_BASE_URL + "/datapoint/" + datapointId + "/value").newBuilder();
     httpBuilder.addQueryParameter("from", from);
@@ -129,7 +112,11 @@ public class EneffcoUtils {
       response = client.newCall(request).execute();
 
       if (response.code() == 400 || response.code() == 500) {
-        System.out.println("Response get enfeffco datapoint values: " + response.code());
+        Utils.LOGGER.warn(
+            "The request: "
+                + request
+                + " in readEneffcoDatapointValues failed. Response: "
+                + response);
         return null;
       }
 

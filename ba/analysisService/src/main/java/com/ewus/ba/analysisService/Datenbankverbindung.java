@@ -34,7 +34,6 @@ public class Datenbankverbindung {
 
     try {
       this.connection = DriverManager.getConnection(connectionCommand);
-      System.out.println("Connected to DB: " + this.connection.toString());
     } catch (SQLException e) {
       Utils.LOGGER.warn(e.getMessage(), e);
     }
@@ -46,7 +45,6 @@ public class Datenbankverbindung {
   }
 
   public void setConnection(Connection connection) {
-    System.out.println("Setting connection to: " + connection.toString());
     this.connection = connection;
   }
 }

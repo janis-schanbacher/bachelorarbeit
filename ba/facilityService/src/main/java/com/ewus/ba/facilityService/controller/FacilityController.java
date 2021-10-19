@@ -35,7 +35,6 @@ public class FacilityController {
   @GetMapping("/facilities-data-list")
   @ResponseBody
   public ArrayList<Facility> fillFacilities(@RequestParam String codes) {
-    System.out.println("Fill Facilities: " + codes);
     String[] codesArray = codes.strip().replaceAll("[\\[|\\]|\"|\\s]", "").split(",");
 
     ArrayList<Facility> facilities =
@@ -72,7 +71,8 @@ public class FacilityController {
 
           EneffcoUtils.fetchEneffcoIds(dbConnection, facilities.get(i));
         } catch (Exception e) {
-          Utils.LOGGER.warn("Error fillFacilities at: " + facilities.get(i).getCode() +e.getMessage(), e);
+          Utils.LOGGER.warn(
+              "Error fillFacilities at: " + facilities.get(i).getCode() + e.getMessage(), e);
         }
       }
     } catch (Exception e) {
@@ -80,8 +80,6 @@ public class FacilityController {
     }
 
     facilitiesMap.putAll(facilities.stream().collect(Collectors.toMap(f -> f.getCode(), f -> f)));
-    System.out.println("Done filling Facilities");
-    System.out.println(facilities);
     return facilities;
   }
 
@@ -98,8 +96,7 @@ public class FacilityController {
     if (facility == null) {
       facility = fillFacilities(body.get("id")).get(0);
     }
-    // TODO: , set 960 to body.textfragments, save
-    // body to db/log
+
     try {
       // Save old
       String[] prev =
@@ -122,7 +119,7 @@ public class FacilityController {
         EnergielenkerUtils.postStringEnergielenker(
             facility.getRegelparameterSollWerteObjectId(),
             facility.getTextFragmentsId(),
-            textFragmentsNew.replace("\n", "   ")); // body.get("textFragments"));
+            textFragmentsNew.replace("\n", "   "));
       } else {
         return ResponseEntity.badRequest()
             .body("The field 'textFragments' is required, but not present");
@@ -133,15 +130,12 @@ public class FacilityController {
     } catch (Exception e) {
       Utils.LOGGER.warn(e.getMessage(), e);
     }
-    return ResponseEntity.created(null)
-        .build(); // EnergielenkerUtils.fetchAllFacilityCodes(dbConnection);
+    return ResponseEntity.created(null).build();
   }
 
   private void logPostTextFragments(
       String code, String textFragmentsAnalysisResult, String textFragments) {
     AnalysisLog analysisLog = new AnalysisLog(code, textFragmentsAnalysisResult, textFragments);
-    // TODO: Make JPA work and replace rest code below with the following line.
-    // AnalysisLog analysisLogSaved = analysisLogRepository.save(analysisLog);
     try {
       Statement statement = dbConnection.createStatement();
       String selectSql =

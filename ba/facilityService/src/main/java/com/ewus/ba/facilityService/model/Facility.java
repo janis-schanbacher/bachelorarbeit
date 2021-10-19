@@ -1,8 +1,7 @@
-//     // TODO:
-//     // - Add Variables for Analysis-Values
-//     // - Add Variables for EL-ids (Felder der Textbausteine)
-
 package com.ewus.ba.facilityService.model;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Facility {
 
@@ -11,8 +10,6 @@ public class Facility {
   private int wmzEneffco; // Einsparzaehlerprotokoll> 190 WMZ Eneffco (letzte Stelle im
   // DP Code)
 
-  // vorlaufId, aussentemperatur, volumenstromId and leistungId are eneffco object
-  // ids
   private String vorlaufId; // Eneffco Datenpunkt Tabelle:
   // [Anlagencode].WEZ.WMZ.VL.[wmzEneffco]
   // z.b. "4a3a0973-2fc4-47b6-aaf7-1ddd52bc94af"
@@ -40,17 +37,12 @@ public class Facility {
 
   private boolean brennwertkessel; // EL>Anlagentechnik> 011 Brennwertkessel
 
-  // TODO 021 Brennwertkessel berücksichtigen, wahrsch. iabh wmzEneffco
-
   private String versorgungstyp; // EL>Liegenschaft> 030 Versorgungstyp
 
-  private boolean tww; // if(wmzEneffco != 1) false
-  // else if (versorgungstyp.toLowerCase().contains("tww")) true
-  // else false
+  private boolean tww;
 
   private double utilizationRatePreviousWeek; // ESZ > 103 Nutzungsgrad Vorwoche
 
-  // results
   private String textFragmentsId; // Einsparzaehlerprotokoll > Regelparameter_Soll-Werte >
   // 960 AKTUELL
   // Textbausteine Auto Analyse
@@ -253,33 +245,13 @@ public class Facility {
     }
   }
 
-  public String toJson() {
-    // TODO
-    return this.toString();
-  }
-
-  // TODO: update with relevant values
+  @Override
   public String toString() {
-    StringBuilder str = new StringBuilder();
-    str.append("code: " + code + "\n");
-    str.append("wmzEneffco: " + wmzEneffco + "\n");
-    str.append("vorlaufId: " + vorlaufId + "\n");
-    str.append("ruecklaufId: " + ruecklaufId + "\n");
-    str.append("volumenstromId: " + volumenstromId + "\n");
-    str.append("auslastungKgrId: " + auslastungKgrId + "\n");
-    str.append("aussentemperaturCode: " + aussentemperaturCode + "\n");
-    str.append("leistungId: " + leistungId + "\n");
-    str.append("versorgungstyp: " + versorgungstyp + "\n");
-    str.append("tww: " + tww + "\n");
-    str.append("textFragmentsId: " + textFragmentsId + "\n");
-    str.append("textFragmentsPrevId: " + textFragmentsPrevId + "\n");
-    str.append("textFragments: " + textFragments + "\n");
-    str.append("einsparzaehlerObjectId: " + einsparzaehlerObjectId + "\n");
-    str.append("wmzEneffco: " + wmzEneffco + "\n");
-    str.append("einsparzaehlerObjectId: " + einsparzaehlerObjectId + "\n");
-    str.append("anlagentechnikObjectId: " + anlagentechnikObjectId + "\n");
-    str.append("liegenschaftObjectId: " + liegenschaftObjectId + "\n");
-    str.append("regelparameterSollWerteObjectId: " + regelparameterSollWerteObjectId + "\n");
-    return str.toString();
+    ObjectMapper objectMapper = new ObjectMapper();
+    try {
+      return objectMapper.writeValueAsString(this);
+    } catch (JsonProcessingException e) {
+      return "";
+    }
   }
 }

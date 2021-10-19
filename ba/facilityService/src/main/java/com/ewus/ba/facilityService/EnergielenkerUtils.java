@@ -28,6 +28,7 @@ public class EnergielenkerUtils {
 
   private static String tokenEnergielenker;
 
+  // TODO: use okhttp3
   public static String loginEnergielenker() {
     try {
       Properties credentials =
@@ -55,9 +56,7 @@ public class EnergielenkerUtils {
       // read the response
       InputStream in = new BufferedInputStream(conn.getInputStream());
       String result = IOUtils.toString(in, "UTF-8");
-      // System.out.println(result);
       JSONObject myResponse = new JSONObject(result);
-      // System.out.println("token : " + myResponse.getString("token"));
       tokenEnergielenker = myResponse.getString("token");
       in.close();
       conn.disconnect();
@@ -67,9 +66,15 @@ public class EnergielenkerUtils {
     return tokenEnergielenker;
   }
 
-  public static String[] getStringWithCreationTimeEnergielenker(String objectId, String attributeId) {
+  public static String[] getStringWithCreationTimeEnergielenker(
+      String objectId, String attributeId) {
     if (objectId == null || attributeId == null) {
-      Utils.LOGGER.warn("Entered getStringWithCreationTimeEnergielenker with arguments objectId: " + objectId + ", and attributteId: " + attributeId +". Both arguments have to be present");
+      Utils.LOGGER.warn(
+          "Entered getStringWithCreationTimeEnergielenker with arguments objectId: "
+              + objectId
+              + ", and attributteId: "
+              + attributeId
+              + ". Both arguments have to be present");
       return new String[] {"", ""};
     }
     OkHttpClient client = new OkHttpClient().newBuilder().build();
@@ -89,17 +94,19 @@ public class EnergielenkerUtils {
       if (!response.isSuccessful()) {
         response.close();
         throw new Exception(
-            "Failed to retrieve String from Energielenker. Request: " + request + ", response: " + response);
+            "Failed to retrieve String from Energielenker. Request: "
+                + request
+                + ", response: "
+                + response);
       }
       JSONObject responseBody = new JSONObject(response.body().string());
-      System.out.println(responseBody);
       JSONArray values = responseBody.getJSONArray("values");
       if (values.length() > 0) {
         creationTime = values.getJSONObject(0).getJSONObject("value").getString("creationTime");
 
         if (attributeId.equals("2578")) {
           value = values.getJSONObject(0).getJSONObject("resolvedValue").getString("name");
-        } else { // if (attributeId.equals("2882") || attributeId.equals("2953")) {
+        } else { // e.g. if (attributeId.equals("2882") || attributeId.equals("2953"))
           value = values.getJSONObject(0).getString("resolvedValue");
         }
       }
@@ -121,7 +128,12 @@ public class EnergielenkerUtils {
    */
   public static String getAttributeValue(String objectId, String attributeId) {
     if (objectId == null || attributeId == null) {
-      Utils.LOGGER.warn("Entered getAttributeValue with arguments objectId: " + objectId + ", and attributteId: " + attributeId +". Both arguments have to be present.");
+      Utils.LOGGER.warn(
+          "Entered getAttributeValue with arguments objectId: "
+              + objectId
+              + ", and attributteId: "
+              + attributeId
+              + ". Both arguments have to be present.");
       return "";
     }
     String attributeValue = "";
@@ -139,8 +151,6 @@ public class EnergielenkerUtils {
       conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
       conn.setRequestProperty("Authorization", "Bearer " + tokenEnergielenker);
       conn.setDoOutput(true);
-      // conn.setDoInput(true);
-
       conn.setRequestMethod("GET");
 
       // read the response
@@ -148,7 +158,6 @@ public class EnergielenkerUtils {
       String result = IOUtils.toString(in, "UTF-8");
 
       jobject = new JSONObject(result);
-      // System.out.println(jobject.get("values"));
       JSONArray resultArray = new JSONArray(jobject.get("values").toString());
       JSONObject jobjectValue = null;
       if (resultArray.length() > 0) {
@@ -159,19 +168,17 @@ public class EnergielenkerUtils {
       in.close();
       conn.disconnect();
     } catch (Exception e) {
-      System.err.println("# Exception in getAttributeValue: ");
-      System.err.println(query_url);
-      System.err.println(jobject);
-      Utils.LOGGER.warn("Exception in getAttributeValue:" + query_url + "\n"+ jobject + e.getMessage(), e);
+      Utils.LOGGER.warn(
+          "Exception in getAttributeValue:" + query_url + "\n" + jobject + e.getMessage(), e);
     }
     return attributeValue;
   }
 
-  public static void postStringEnergielenker(String objectId, String attributeId, String pValue)
+  public static void postStringEnergielenker(String objectId, String attributeId, String value)
       throws Exception {
     OkHttpClient client = new OkHttpClient().newBuilder().build();
     MediaType mediaType = MediaType.parse("application/json");
-    RequestBody body = RequestBody.create("{\n    \"value\": \"" + pValue + "\"\n}", mediaType);
+    RequestBody body = RequestBody.create("{\n    \"value\": \"" + value + "\"\n}", mediaType);
     Request request =
         new Request.Builder()
             .url(
@@ -187,9 +194,11 @@ public class EnergielenkerUtils {
     try {
       Response response = client.newCall(request).execute();
       if (response.code() == 400 || response.code() == 500) {
-        System.out.println("Response post to Energielenker (String): " + response.code());
-        System.out.println("{\n    \"value\": " + pValue + "\n}");
-        System.out.println(response);
+        Utils.LOGGER.warn(
+            "The request: "
+                + request
+                + " in postStringEnergielenker failed. Response: "
+                + response);
       }
     } catch (Exception e) {
       Utils.LOGGER.warn(e.getMessage(), e);
@@ -197,11 +206,11 @@ public class EnergielenkerUtils {
     }
   }
 
-  public static void postIntEnergielenker(String objectId, String attributeId, int pValue)
+  public static void postIntEnergielenker(String objectId, String attributeId, int value)
       throws Exception {
     OkHttpClient client = new OkHttpClient().newBuilder().build();
     MediaType mediaType = MediaType.parse("application/json");
-    RequestBody body = RequestBody.create("{\n    \"value\": " + pValue + "\n}", mediaType);
+    RequestBody body = RequestBody.create("{\n    \"value\": " + value + "\n}", mediaType);
     Request request =
         new Request.Builder()
             .url(
@@ -217,9 +226,8 @@ public class EnergielenkerUtils {
     try {
       Response response = client.newCall(request).execute();
       if (response.code() == 400 || response.code() == 500) {
-        System.out.println("Response post to Energielenker (int): " + response.code());
-        System.out.println("{\n    \"value\": " + pValue + "\n}");
-        System.out.println(response);
+        Utils.LOGGER.warn(
+            "The request: " + request + " in postIntEnergielenker failed. Response: " + response);
       }
     } catch (Exception e) {
       Utils.LOGGER.warn(e.getMessage(), e);
@@ -227,11 +235,11 @@ public class EnergielenkerUtils {
     }
   }
 
-  public static void postFloatEnergielenker(String objectId, String attributeId, Float pValue)
+  public static void postFloatEnergielenker(String objectId, String attributeId, Float value)
       throws Exception {
     OkHttpClient client = new OkHttpClient().newBuilder().build();
     MediaType mediaType = MediaType.parse("application/json");
-    RequestBody body = RequestBody.create("{\n    \"value\": " + pValue + "\n}", mediaType);
+    RequestBody body = RequestBody.create("{\n    \"value\": " + value + "\n}", mediaType);
     Request request =
         new Request.Builder()
             .url(
@@ -248,9 +256,8 @@ public class EnergielenkerUtils {
     try {
       response = client.newCall(request).execute();
       if (response.code() == 400 || response.code() == 500) {
-        System.out.println("Response post to Energielenker (float): " + response.code());
-        System.out.println("{\n    \"value\": " + pValue + "\n}");
-        System.out.println(response);
+        Utils.LOGGER.warn(
+            "The request: " + request + " in postFloatEnergielenker failed. Response: " + response);
       }
     } catch (Exception e) {
       Utils.LOGGER.warn(e.getMessage(), e);
@@ -264,14 +271,10 @@ public class EnergielenkerUtils {
     List<String> facilityCodes = new ArrayList<>();
     ResultSet resultSet = null;
     try {
-      // SMBUS_48AC%/1/Volume%
       Statement statement = dbConnection.createStatement();
-      // Create and execute a SELECT SQL statement.
       String selectSql = "SELECT [code] FROM [energielenker_sortiert]";
-
       resultSet = statement.executeQuery(selectSql);
 
-      // Print results from select statement
       while (resultSet.next()) {
         String code = resultSet.getString(1);
         if (code.contains(".") && code.matches("[a-zA-Z]*\\.[0-9]+")) {
@@ -283,7 +286,6 @@ public class EnergielenkerUtils {
     }
 
     facilityCodes = facilityCodes.stream().distinct().sorted().collect(Collectors.toList());
-    // java.util.Collections.sort(facilityCodes);
     return facilityCodes;
   }
 
@@ -313,20 +315,13 @@ public class EnergielenkerUtils {
               + " AND deinstalled = 'false'"
               + " AND [energielenker_objects].[name] in ('Einsparzählerprotokoll', 'Anlagentechnik', 'Regelparameter_Soll-Werte')";
 
-      System.out.println(selectSql);
       resultSet = statement.executeQuery(selectSql);
 
-      // For each result check if the referenced Object is of interest. If yes, save
-      // id in corresponding Facility
       while (resultSet.next()) {
         String code = resultSet.getString(1);
         String name = resultSet.getString(2);
         String id = resultSet.getString(3);
         String parentId = resultSet.getString(4);
-        // System.out.println(resultSet.getString(1) + " " +
-        // resultSet.getString(2) + "
-        // " + resultSet.getString(3) + " "
-        // + resultSet.getString(4));
 
         if (name.equals("Einsparzählerprotokoll")) {
           for (int i = 0; i < facilities.size(); i++) {
@@ -379,7 +374,8 @@ public class EnergielenkerUtils {
    */
   public static Facility fillEnergielenkerFields(String objectId, Facility facility) {
     if (objectId == null || objectId == "") {
-      Utils.LOGGER.warn("Entered fillEnergielenkerFields with missing objectId, objectId is required.");
+      Utils.LOGGER.warn(
+          "Entered fillEnergielenkerFields with missing objectId, objectId is required.");
       return facility;
     }
     String query_url =
@@ -397,18 +393,14 @@ public class EnergielenkerUtils {
       InputStream in = new BufferedInputStream(conn.getInputStream());
       String result = IOUtils.toString(in, "UTF-8");
       JSONArray resultArray = new JSONArray(result);
-      //
 
       for (int i = 0; i < resultArray.length(); i++) {
-
-        // System.out.println(resultArray.get(i));
         String test01 = "" + resultArray.get(i);
         JSONObject jobject = new JSONObject(test01);
 
         if (jobject.get("name").toString().contains("011 Brennwertkessel 1")) {
           facility.setBrennwertkessel(
               Boolean.parseBoolean(getAttributeValue(objectId, jobject.get("id").toString())));
-          System.out.println("011 Brennwertkessel 1: " + facility.getBrennwertkessel());
         }
 
         if (jobject.get("name").toString().contains("103 Nutzungsgrad Vorwoche")) {
@@ -416,8 +408,6 @@ public class EnergielenkerUtils {
         }
 
         if (jobject.get("name").toString().contains("960 AKTUELL Textbausteine Auto Analyse")) {
-          // System.out.println("textFragments: " +
-          // jobject.get("id").toString());
           facility.setTextFragmentsId(jobject.get("id").toString());
           // retrieve last saved textFragments with timestamp of creation
           String[] textFragmentsPrevAndCreationTime =
@@ -427,8 +417,6 @@ public class EnergielenkerUtils {
               textFragmentsPrevAndCreationTime[1] + ": " + textFragmentsPrevAndCreationTime[0]);
         }
         if (jobject.get("name").toString().contains("961 ALT Textbausteine Auto Analyse")) {
-          // System.out.println("textFragmentsPrev: " +
-          // jobject.get("id").toString());
           facility.setTextFragmentsPrevId(jobject.get("id").toString());
         }
 
