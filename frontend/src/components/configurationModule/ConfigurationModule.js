@@ -15,11 +15,11 @@ const defaultCheckedList = ["Anlagengröße", "Nutzungsgrad", "Temperaturdiffere
 const ConfigurationModule = () => {
   const [dataSource, setDataSource] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [value, setValue] = useState([]); // TODO: change default to []
+  const [value, setValue] = useState([]);
   const [rowSelection, setRowSelection] = useState([]);
   const [treeData, setTreeData] = useState([]);
   // eslint-disable-next-line no-unused-vars
-  const [__, forceUpdate] = useReducer(x => x + 1, 0); // TODO: remove
+  const [__, forceUpdate] = useReducer(x => x + 1, 0);
   const [bulkSelection, setBulkSelection] = useState(defaultCheckedList);
 
   const handleChange = (code, list) => {
@@ -27,7 +27,6 @@ const ConfigurationModule = () => {
     const newDataSource = dataSource;
     newDataSource[index].checkedList = list;
     setDataSource(newDataSource);
-    forceUpdate(); // TODO: remove
   };
 
   const handleChangeBulkConfiguration = (list) => {
@@ -48,10 +47,6 @@ const ConfigurationModule = () => {
     }
     setDataSource(newDataSource);
     forceUpdate();
-
-    // forceUpdate();
-    // newDataSource[index].checkedList = list
-    // forceUpdate(); // TODO: remove
   };
 
   const handleConfirm = (record) => {
@@ -69,21 +64,17 @@ const ConfigurationModule = () => {
   };
 
   const handleConfirmSelection = () => {
-    // TODO:"bundle as one request and create api endpoint"
     for (const record of rowSelection) {
       handleConfirm(record);
     }
   };
 
-  // TODO: evt. auch einfach alle anlagen darstellen, und nach coedes gruppieren,
-  // die dann ausklappbar sind. https://ant.design/components/table/#components-table-demo-tree-data
   const columns = [
     { title: "Anlage",
       dataIndex: "code" },
     {
       title: "Aktive Analysen",
       dataIndex: "activeAnalyses",
-      // editable: true,
       render: (val, row) => {
         const index = dataSource.findIndex(item => item.key === row.key);
         return (
@@ -155,15 +146,11 @@ const ConfigurationModule = () => {
         for (let i = 0; i < codes.length; i++) {
           const index = configs.findIndex(c => c.code === codes[i].toUpperCase());
           if (index < 0) {
-            // console.log("Adding default for: " + codes[i]);
             configs.push({ key: codes[i], code: codes[i], checkedList: defaultCheckedList });
           }
         }
 
         setDataSource(configs);
-        // }).catch((err) => {
-        // TODO: Error handling --> Show Alert. Also Success alters and/or load animations to be dane
-        // console.log(err);
         setLoading(false);
       }).catch((err) => {
         message.error(`Fehler beim Laden der Konfigurationen: ${err.message}`);

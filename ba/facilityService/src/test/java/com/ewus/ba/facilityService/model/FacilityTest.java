@@ -280,6 +280,4 @@ public class FacilityTest {
     f.calcTww();
     assertEquals(false, f.getTww());
   }
-
-  // TODO: test toJson, toString
 }

@@ -30,7 +30,6 @@ const CodeSelection = ({ value, setValue, treeData, setTreeData }) => {
       children: [],
     }));
 
-    // TODO: add levels for xxx.x, xxx.xx
     // create 2nd level of treeData by adding codes to the prefixes
     for (const code of codes) {
       for (const element of treeDataBuilt) {

@@ -1,9 +1,8 @@
 package com.ewus.ba.analysisService.controller;
 
+import com.ewus.ba.analysisService.Utils;
 import com.ewus.ba.analysisService.model.Facility;
 import com.ewus.ba.analysisService.model.FacilityAnalysisConfiguration;
-import com.ewus.ba.analysisService.Utils;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-// @RequestMapping(value = "/")
 @CrossOrigin
 public class AnalysisController {
   private static final OkHttpClient client =
@@ -53,7 +51,6 @@ public class AnalysisController {
       textFragments.put(facility.getCode(), facility.analayse(config));
     }
 
-    System.out.println("Done Analysing");
     return textFragments;
   }
 

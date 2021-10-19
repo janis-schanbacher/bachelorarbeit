@@ -60,7 +60,7 @@ module.exports = {
     "lodash/prefer-some": "off",
     "lodash/prefer-startswith": "off",
     "lodash/prefer-times": "off",
-    // "extra-rules/no-commented-out-code": "warn",
+    "extra-rules/no-commented-out-code": "warn",
     "extra-rules/potential-point-free": "warn",
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",

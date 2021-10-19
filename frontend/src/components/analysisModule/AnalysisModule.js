@@ -1,11 +1,10 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */ // TODO: remove
-/* eslint-disable jsx-a11y/click-events-have-key-events */ // TODO: remove
-
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 import React, { useContext, useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import { Divider, Table, Input, Button, Tooltip, Form, Typography, message } from "antd";
 import axios from "axios";
-// import qs from 'qs'
+import noop from "lodash/noop";
 
 import { apiUrl, portAnalysisService, portEnergielenkerEneffcoService } from "../../helper/url";
 import CodeSelection from "../codeSelection/CodeSelection";
@@ -25,8 +24,11 @@ const EditableRow = ({ index, ...props }) => {
 };
 
 EditableRow.propTypes = {
-  // TODO: set required type or maybe remove prop, because its not used
-  index: PropTypes.func.isRequired,
+  index: PropTypes.number,
+};
+
+EditableRow.defaultProps = {
+  index: 0,
 };
 
 const EditableCell = ({
@@ -57,7 +59,6 @@ const EditableCell = ({
   let childNode = children;
 
   if (editable) {
-    // TODO: fix linter errors and remove ignore for whole file (
     childNode = (
       <div
         className="editable-cell-value-wrap"
@@ -75,12 +76,21 @@ const EditableCell = ({
 };
 
 EditableCell.propTypes = {
-  title: PropTypes.string.isRequired,
-  editable: PropTypes.bool.isRequired,
-  children: PropTypes.array.isRequired,
-  dataIndex: PropTypes.string.isRequired,
-  record: PropTypes.object.isRequired,
-  handleConfirm: PropTypes.func.isRequired,
+  title: PropTypes.string,
+  editable: PropTypes.bool,
+  children: PropTypes.array,
+  dataIndex: PropTypes.string,
+  record: PropTypes.object,
+  handleConfirm: PropTypes.func,
+};
+
+EditableCell.defaultProps = {
+  title: "",
+  editable: false,
+  children: [],
+  dataIndex: "",
+  record: null,
+  handleConfirm: noop,
 };
 
 const AnalysisModule = () => {
@@ -106,15 +116,6 @@ const AnalysisModule = () => {
     setLoading(true);
     const body = getSelectedCodes();
     axios.post(`${apiUrl}:${portAnalysisService}/analyse`, body)
-
-    // axios.get(`${apiUrl}/analyse`, {
-    //   params: {
-    //     codes: { ["ACO.001", "ACO.002"]}
-    //   },
-    //   paramsSerializer: params => {
-    //     return qs.stringify(params)
-    //   }
-    // })
       .then((res) => {
         const { data } = res;
         setDataSource(Object.keys(data).map((key) => {
@@ -129,17 +130,12 @@ const AnalysisModule = () => {
           }
           return row;
         }).sort((a, b) => ((a.key < b.key) ? -1 : 1)));
-      // fillDataSource(Object.keys(data).map(key => data[key]));
-      // console.log(data)
-      // TODO: if data.size < codes.size indicate error for the missing ones.
-      //  With hint, probably Energielenker fields missing
       })
       .then(() => {
         setOriginalDataSource(dataSource);
         setLoading(false);
       })
       .catch((err) => {
-        // eslint-disable-next-line no-console
         message.error(`Fehler beim Laden der Analyseergebnisse: ${err.message}`);
         setLoading(false);
       });
@@ -160,8 +156,6 @@ const AnalysisModule = () => {
   };
 
   const handleConfirm = (record) => {
-    console.log(`handleConfirm: ${record.key}`);
-    console.log(`text new: ${record.textFragments}`); // equals value in dataSource
     let textFragmentsAnalysisResult = "";
     // find/log original textFragments
     for (let i = 0; i < originalDataSource.length; i += 1) {
@@ -176,9 +170,7 @@ const AnalysisModule = () => {
       textFragments: record.textFragments,
       textFragmentsAnalysisResult,
     })
-      // TODO: render SuccessNotification
       .then((res) => {
-        console.log(`Response status for post /text-fragments of id: ${record.key}: ${res.status}`);
         message.success(`Textbaustetine gespeichert für Anlage: ${record.key}`);
       }).catch((err) => {
         message.error(`Fehler beim Speichern der Textbausteine für Anlage: ${record.key}: ${err.message}`);
@@ -186,15 +178,10 @@ const AnalysisModule = () => {
   };
 
   const handleConfirmSelection = () => {
-    console.log(rowSelection);
     rowSelection.forEach((row) => {
       handleConfirm(row);
     });
   };
-
-  // const handleDelete = (key) => {
-  //   setDataSource(dataSource.filter((item) => item.key !== key));
-  // };
 
   const columns = [
     { title: "Anlage",
@@ -204,12 +191,8 @@ const AnalysisModule = () => {
       title: "Textbausteine",
       dataIndex: "textFragments",
       width: "45%",
-      // editable: true,
       render: (val, row) => (
         <Input.TextArea
-          // value={val}
-          // rows={2}
-          autosize//= {{ minRows: 2, maxRows: 6 }}
           defaultValue={val}
           onChange={handleChange}
           code={row.key}
@@ -228,9 +211,6 @@ const AnalysisModule = () => {
       dataIndex: "confirm",
       width: 40,
       render: (_, record) => (dataSource.length >= 1 ? (
-      // <Popconfirm title="Sure to save?" onConfirm={() => handleConfirm(record.key)}>
-      //   <a>Speichern</a>
-      // </Popconfirm>
         <Tooltip placement="bottom" color="black" title="Textbausteine in Energielenker speichern.">
           <Button type="primary" onClick={e => handleConfirm(record)}>Bestätigen</Button>
         </Tooltip>
@@ -273,13 +253,10 @@ const AnalysisModule = () => {
     }),
   };
 
-  // TODO: move CodeSelection and Analysis Button to parent
   return (
     <div>
-
       <Title level={2}>Analyse Oberfläche</Title>
       <Title level={4} style={{ textAlign: "left" }}>Auswahl zu analysierender Anlagen</Title>
-
       <CodeSelection value={value} setValue={setValue} treeData={treeData} setTreeData={setTreeData} />
       <Tooltip
         placement="bottom"
