@@ -78,12 +78,11 @@ const ConfigurationModule = () => {
   // TODO: evt. auch einfach alle anlagen darstellen, und nach coedes gruppieren,
   // die dann ausklappbar sind. https://ant.design/components/table/#components-table-demo-tree-data
   const columns = [
-    { title: "Anlagencode",
+    { title: "Anlage",
       dataIndex: "code" },
     {
       title: "Aktive Analysen",
       dataIndex: "activeAnalyses",
-      width: "60%",
       // editable: true,
       render: (val, row) => {
         const index = dataSource.findIndex(item => item.key === row.key);
@@ -99,6 +98,7 @@ const ConfigurationModule = () => {
     {
       title: "Bestätigen",
       dataIndex: "confirm",
+      width: 40,
       render: (_, record) => (dataSource.length >= 1 ? (
         <Tooltip placement="bottom" color="black" title="Konfiguration speichern">
           <Button type="primary" onClick={e => handleConfirm(record)}>Bestätigen</Button>

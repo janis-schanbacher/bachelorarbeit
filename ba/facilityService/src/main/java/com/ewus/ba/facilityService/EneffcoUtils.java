@@ -68,7 +68,7 @@ public class EneffcoUtils {
       facility.setNutzungsgradId(
           getEneffcoId(c, facility.getCode() + ".WEZ.ETA." + facility.getWmzEneffco()));
       facility.setAuslastungKgrId(
-          getEneffcoId(c, facility.getCode() + ".WEZ.AUS.KGR." + facility.getWmzEneffco()));
+          getEneffcoId(c, facility.getCode() + ".WEZ.AUS.MAX." + facility.getWmzEneffco()));
       facility.setDeltaTemperatureId(
           getEneffcoId(c, facility.getCode() + ".WEZ.WMZ.DT." + facility.getWmzEneffco()));
 

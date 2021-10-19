@@ -197,8 +197,9 @@ const AnalysisModule = () => {
   // };
 
   const columns = [
-    { title: "Anlagencode",
-      dataIndex: "code" },
+    { title: "Anlage",
+      dataIndex: "code",
+      width: 35 },
     {
       title: "Textbausteine",
       dataIndex: "textFragments",
@@ -207,7 +208,8 @@ const AnalysisModule = () => {
       render: (val, row) => (
         <Input.TextArea
           // value={val}
-          autosize={{ minRows: 2, maxRows: 6 }}
+          // rows={2}
+          autosize//= {{ minRows: 2, maxRows: 6 }}
           defaultValue={val}
           onChange={handleChange}
           code={row.key}
@@ -218,11 +220,13 @@ const AnalysisModule = () => {
       title: "Vorige Textbausteine",
       dataIndex: "textFragmentsPrev",
       key: "textFragmentsPrev",
-      width: "25%",
+      // width: "25%",
+
     },
     {
       title: "Bestätigen",
       dataIndex: "confirm",
+      width: 40,
       render: (_, record) => (dataSource.length >= 1 ? (
       // <Popconfirm title="Sure to save?" onConfirm={() => handleConfirm(record.key)}>
       //   <a>Speichern</a>

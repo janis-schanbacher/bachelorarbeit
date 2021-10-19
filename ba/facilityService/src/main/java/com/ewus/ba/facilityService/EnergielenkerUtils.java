@@ -68,7 +68,7 @@ public class EnergielenkerUtils {
     return tokenEnergielenker;
   }
 
-  public static String[] getStringEnergielenker(String obId, String attributeId) {
+  public static String[] getStringWithCreationTimeEnergielenker(String obId, String attributeId) {
     OkHttpClient client = new OkHttpClient().newBuilder().build();
     String creationTime = "", value = "";
     Request request =
@@ -252,7 +252,7 @@ public class EnergielenkerUtils {
       // SMBUS_48AC%/1/Volume%
       Statement statement = dbConnection.createStatement();
       // Create and execute a SELECT SQL statement.
-      String selectSql = "SELECT [Code] FROM [ewus_assets].[dbo].[energielenker_sortiert]";
+      String selectSql = "SELECT [code] FROM [energielenker_sortiert]";
 
       resultSet = statement.executeQuery(selectSql);
 
@@ -290,21 +290,23 @@ public class EnergielenkerUtils {
 
       String codesAsSqlList = "('" + String.join("','", codes).replace("\"", "") + "')";
       String selectSql =
-          "SELECT [Code], [energielenker_sortiert].[id], [energielenker_sortiert].[name], [energielenker_objects].[parentId] "
-              + "FROM [ewus_assets].[dbo].[energielenker_sortiert] JOIN [ewus_assets].[dbo].[energielenker_objects] "
-              + "ON [ewus_assets].[dbo].[energielenker_sortiert].[id] = [ewus_assets].[dbo].[energielenker_objects].[id] "
-              + "WHERE [Code] IN "
+          "SELECT [energielenker_sortiert].[code], [energielenker_sortiert].[name], [energielenker_sortiert].[id], [energielenker_objects].[parentId] "
+              + "FROM [energielenker_sortiert] JOIN [energielenker_objects] "
+              + "ON [energielenker_sortiert].[id] = [energielenker_objects].[id] "
+              + "WHERE [code] IN "
               + codesAsSqlList
-              + " AND deinstalled = 'false'";
+              + " AND deinstalled = 'false'"
+              + " AND [energielenker_objects].[name] in ('Einsparzählerprotokoll', 'Regelparameter_Soll-Werte')";
 
+      System.out.println(selectSql);
       resultSet = statement.executeQuery(selectSql);
 
       // For each result check if the referenced Object is of interest. If yes, save
       // id in corresponding Facility
       while (resultSet.next()) {
         String code = resultSet.getString(1);
-        String id = resultSet.getString(2);
-        String name = resultSet.getString(3);
+        String name = resultSet.getString(2);
+        String id = resultSet.getString(3);
         String parentId = resultSet.getString(4);
         // System.out.println(resultSet.getString(1) + " " +
         // resultSet.getString(2) + "
@@ -340,9 +342,11 @@ public class EnergielenkerUtils {
   public static void fetchLiegenschaftFieldValues(Connection dbConnection, Facility facility) {
     // TODO: check if to delte
     facility.setAussentemperaturCode(
-        EnergielenkerUtils.getStringEnergielenker(facility.getLiegenschaftObjectId(), "2882")[0]);
+        EnergielenkerUtils.getStringWithCreationTimeEnergielenker(
+            facility.getLiegenschaftObjectId(), "2882")[0]);
     facility.setVersorgungstyp(
-        EnergielenkerUtils.getStringEnergielenker(facility.getLiegenschaftObjectId(), "2578")[0]);
+        EnergielenkerUtils.getStringWithCreationTimeEnergielenker(
+            facility.getLiegenschaftObjectId(), "2578")[0]);
   }
 
   /**
@@ -388,9 +392,11 @@ public class EnergielenkerUtils {
           // jobject.get("id").toString());
           facility.setTextFragmentsId(jobject.get("id").toString());
           // retrieve last saved textFragments with timestamp of creation
-          String[] textFragmentsPrev =
-              EnergielenkerUtils.getStringEnergielenker(elObjId, jobject.get("id").toString());
-          facility.setTextFragments(textFragmentsPrev[1] + ": " + textFragmentsPrev[0]);
+          String[] textFragmentsPrevAndCreationTime =
+              EnergielenkerUtils.getStringWithCreationTimeEnergielenker(
+                  elObjId, jobject.get("id").toString());
+          facility.setTextFragments(
+              textFragmentsPrevAndCreationTime[1] + ": " + textFragmentsPrevAndCreationTime[0]);
         }
         if (jobject.get("name").toString().contains("961 ALT Textbausteine Auto Analyse")) {
           // System.out.println("textFragmentsPrev: " +
@@ -398,17 +404,10 @@ public class EnergielenkerUtils {
           facility.setTextFragmentsPrevId(jobject.get("id").toString());
         }
 
-        // Values
         if (jobject.get("name").toString().contains("190 WMZ Eneffco (letzte Stelle im DP Code)")) {
           facility.setWmzEneffco(
               Integer.parseInt(
                   EnergielenkerUtils.getAttributeValue(elObjId, jobject.get("id").toString())));
-        }
-
-        if (jobject.get("name").toString().contains("960 AKTUELL Textbausteine Auto Analyse")) {
-          facility.setTextFragments(
-              EnergielenkerUtils.getAttributeValue(elObjId, jobject.get("id").toString()));
-          System.out.println("textFragments:" + facility.getTextFragments());
         }
       }
 
