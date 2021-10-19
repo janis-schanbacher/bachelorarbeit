@@ -14,7 +14,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -27,7 +26,7 @@ import org.json.JSONObject;
 
 public class EnergielenkerUtils {
 
-  public static String tokenEnergielenker;
+  private static String tokenEnergielenker;
 
   public static String loginEnergielenker() {
     try {
@@ -63,28 +62,38 @@ public class EnergielenkerUtils {
       in.close();
       conn.disconnect();
     } catch (Exception e) {
-      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+      Utils.LOGGER.warn(e.getMessage(), e);
     }
     return tokenEnergielenker;
   }
 
-  public static String[] getStringWithCreationTimeEnergielenker(String obId, String attributeId) {
+  public static String[] getStringWithCreationTimeEnergielenker(String objectId, String attributeId) {
+    if (objectId == null || attributeId == null) {
+      Utils.LOGGER.warn("Entered getStringWithCreationTimeEnergielenker with arguments objectId: " + objectId + ", and attributteId: " + attributeId +". Both arguments have to be present");
+      return new String[] {"", ""};
+    }
     OkHttpClient client = new OkHttpClient().newBuilder().build();
     String creationTime = "", value = "";
     Request request =
         new Request.Builder()
             .url(
                 "https://ewus.elmonitor.de/api/v1/basemonitor/objects/"
-                    + obId
+                    + objectId
                     + "/attributes/"
                     + attributeId)
             .addHeader("accept", "application/json")
             .addHeader("Authorization", "Bearer " + tokenEnergielenker)
             .build();
     try {
-      JSONObject response = new JSONObject(client.newCall(request).execute().body().string());
-      System.out.println(response);
-      JSONArray values = response.getJSONArray("values");
+      Response response = client.newCall(request).execute();
+      if (!response.isSuccessful()) {
+        response.close();
+        throw new Exception(
+            "Failed to retrieve String from Energielenker. Request: " + request + ", response: " + response);
+      }
+      JSONObject responseBody = new JSONObject(response.body().string());
+      System.out.println(responseBody);
+      JSONArray values = responseBody.getJSONArray("values");
       if (values.length() > 0) {
         creationTime = values.getJSONObject(0).getJSONObject("value").getString("creationTime");
 
@@ -95,7 +104,9 @@ public class EnergielenkerUtils {
         }
       }
     } catch (IOException e) {
-      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+      Utils.LOGGER.warn(e.getMessage(), e);
+    } catch (Exception e) {
+      Utils.LOGGER.warn(e.getMessage(), e);
     }
 
     return new String[] {value, creationTime};
@@ -109,6 +120,10 @@ public class EnergielenkerUtils {
    * @return Value of the attribute as json
    */
   public static String getAttributeValue(String objectId, String attributeId) {
+    if (objectId == null || attributeId == null) {
+      Utils.LOGGER.warn("Entered getAttributeValue with arguments objectId: " + objectId + ", and attributteId: " + attributeId +". Both arguments have to be present.");
+      return "";
+    }
     String attributeValue = "";
     String query_url =
         "https://ewus.elmonitor.de/api/v1/basemonitor/objects/"
@@ -144,15 +159,15 @@ public class EnergielenkerUtils {
       in.close();
       conn.disconnect();
     } catch (Exception e) {
-      System.err.println("# Error getAttributeValue: ");
+      System.err.println("# Exception in getAttributeValue: ");
       System.err.println(query_url);
       System.err.println(jobject);
-      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+      Utils.LOGGER.warn("Exception in getAttributeValue:" + query_url + "\n"+ jobject + e.getMessage(), e);
     }
     return attributeValue;
   }
 
-  public static void postStringEnergielenker(String obId, String attributeId, String pValue)
+  public static void postStringEnergielenker(String objectId, String attributeId, String pValue)
       throws Exception {
     OkHttpClient client = new OkHttpClient().newBuilder().build();
     MediaType mediaType = MediaType.parse("application/json");
@@ -163,7 +178,7 @@ public class EnergielenkerUtils {
                 "https://ewus.elmonitor.de/api/v1/basemonitor/attributes/"
                     + attributeId
                     + "/values?entityId="
-                    + obId
+                    + objectId
                     + "&sourceId=1")
             .method("PATCH", body)
             .addHeader("Content-Type", "application/json")
@@ -177,12 +192,12 @@ public class EnergielenkerUtils {
         System.out.println(response);
       }
     } catch (Exception e) {
-      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+      Utils.LOGGER.warn(e.getMessage(), e);
       throw e;
     }
   }
 
-  public static void postIntEnergielenker(String obId, String attributeId, int pValue)
+  public static void postIntEnergielenker(String objectId, String attributeId, int pValue)
       throws Exception {
     OkHttpClient client = new OkHttpClient().newBuilder().build();
     MediaType mediaType = MediaType.parse("application/json");
@@ -193,7 +208,7 @@ public class EnergielenkerUtils {
                 "https://ewus.elmonitor.de/api/v1/basemonitor/attributes/"
                     + attributeId
                     + "/values?entityId="
-                    + obId
+                    + objectId
                     + "&sourceId=1")
             .method("PATCH", body)
             .addHeader("Content-Type", "application/json")
@@ -207,12 +222,12 @@ public class EnergielenkerUtils {
         System.out.println(response);
       }
     } catch (Exception e) {
-      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+      Utils.LOGGER.warn(e.getMessage(), e);
       throw new Exception();
     }
   }
 
-  public static void postFloatEnergielenker(String obId, String attributeId, Float pValue)
+  public static void postFloatEnergielenker(String objectId, String attributeId, Float pValue)
       throws Exception {
     OkHttpClient client = new OkHttpClient().newBuilder().build();
     MediaType mediaType = MediaType.parse("application/json");
@@ -223,7 +238,7 @@ public class EnergielenkerUtils {
                 "https://ewus.elmonitor.de/api/v1/basemonitor/attributes/"
                     + attributeId
                     + "/values?entityId="
-                    + obId
+                    + objectId
                     + "&sourceId=1")
             .method("PATCH", body)
             .addHeader("Content-Type", "application/json")
@@ -238,7 +253,7 @@ public class EnergielenkerUtils {
         System.out.println(response);
       }
     } catch (Exception e) {
-      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+      Utils.LOGGER.warn(e.getMessage(), e);
     }
     if (response.code() == 400 || response.code() == 500) {
       throw new Exception();
@@ -264,7 +279,7 @@ public class EnergielenkerUtils {
         }
       }
     } catch (SQLException e) {
-      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+      Utils.LOGGER.warn(e.getMessage(), e);
     }
 
     facilityCodes = facilityCodes.stream().distinct().sorted().collect(Collectors.toList());
@@ -339,7 +354,7 @@ public class EnergielenkerUtils {
         }
       }
     } catch (SQLException e) {
-      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+      Utils.LOGGER.warn(e.getMessage(), e);
     }
     return facilities;
   }
@@ -357,14 +372,18 @@ public class EnergielenkerUtils {
    * Fetches the attributes (such as from an Energielenker Object (such as Einsparzählerprotokoll,
    * or Regelparameter_Soll-Werte).
    *
-   * @param elObjId Id of Energielenker object
+   * @param objectId Id of Energielenker object
    * @param facilities Facilities to be filled
    * @param index
    * @return
    */
-  public static Facility fillEnergielenkerFields(String elObjId, Facility facility) {
+  public static Facility fillEnergielenkerFields(String objectId, Facility facility) {
+    if (objectId == null || objectId == "") {
+      Utils.LOGGER.warn("Entered fillEnergielenkerFields with missing objectId, objectId is required.");
+      return facility;
+    }
     String query_url =
-        "https://ewus.elmonitor.de/api/v1/basemonitor/objects/" + elObjId + "/attributes";
+        "https://ewus.elmonitor.de/api/v1/basemonitor/objects/" + objectId + "/attributes";
     try {
       URL url = new URL(query_url);
       HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -388,7 +407,7 @@ public class EnergielenkerUtils {
 
         if (jobject.get("name").toString().contains("011 Brennwertkessel 1")) {
           facility.setBrennwertkessel(
-              Boolean.parseBoolean(getAttributeValue(elObjId, jobject.get("id").toString())));
+              Boolean.parseBoolean(getAttributeValue(objectId, jobject.get("id").toString())));
           System.out.println("011 Brennwertkessel 1: " + facility.getBrennwertkessel());
         }
 
@@ -403,7 +422,7 @@ public class EnergielenkerUtils {
           // retrieve last saved textFragments with timestamp of creation
           String[] textFragmentsPrevAndCreationTime =
               EnergielenkerUtils.getStringWithCreationTimeEnergielenker(
-                  elObjId, jobject.get("id").toString());
+                  objectId, jobject.get("id").toString());
           facility.setTextFragments(
               textFragmentsPrevAndCreationTime[1] + ": " + textFragmentsPrevAndCreationTime[0]);
         }
@@ -416,14 +435,14 @@ public class EnergielenkerUtils {
         if (jobject.get("name").toString().contains("190 WMZ Eneffco (letzte Stelle im DP Code)")) {
           facility.setWmzEneffco(
               Integer.parseInt(
-                  EnergielenkerUtils.getAttributeValue(elObjId, jobject.get("id").toString())));
+                  EnergielenkerUtils.getAttributeValue(objectId, jobject.get("id").toString())));
         }
       }
 
       in.close();
       conn.disconnect();
     } catch (Exception e) {
-      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+      Utils.LOGGER.warn(e.getMessage(), e);
     }
 
     return facility;

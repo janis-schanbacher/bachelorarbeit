@@ -38,3 +38,7 @@ src/main/resources/dbConfig.properties
 src/main/resources/application.yml
 ### VS Code ###
 .vscode/
+
+# log files
+*.log
+logs

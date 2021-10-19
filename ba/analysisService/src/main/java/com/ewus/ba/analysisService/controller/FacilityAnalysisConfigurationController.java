@@ -1,5 +1,6 @@
 package com.ewus.ba.analysisService.controller;
 
+import com.ewus.ba.analysisService.Utils;
 import com.ewus.ba.analysisService.model.FacilityAnalysisConfiguration;
 import com.ewus.ba.analysisService.repository.IFacilityAnalysisConfigurationRepository;
 import java.net.URI;
@@ -105,6 +106,7 @@ public class FacilityAnalysisConfigurationController {
       config = facilityAnalysisConfigurationRepository.save(config);
       return ResponseEntity.created(new URI("/configs/" + config.getId())).build();
     } catch (Exception e) {
+      Utils.LOGGER.warn(e.getMessage(), e);
       return ResponseEntity.badRequest().build();
     }
   }
@@ -144,6 +146,7 @@ public class FacilityAnalysisConfigurationController {
       headers.add(HttpHeaders.LOCATION, "/configs/" + config.getId());
       return ResponseEntity.noContent().headers(headers).build();
     } catch (Exception e) {
+      Utils.LOGGER.warn(e.getMessage(), e);
       return ResponseEntity.badRequest().build();
     }
   }
@@ -165,6 +168,7 @@ public class FacilityAnalysisConfigurationController {
       facilityAnalysisConfigurationRepository.deleteById(id);
       return ResponseEntity.noContent().build();
     } catch (Exception e) {
+      Utils.LOGGER.warn(e.getMessage(), e);
       return ResponseEntity.badRequest().build();
     }
   }

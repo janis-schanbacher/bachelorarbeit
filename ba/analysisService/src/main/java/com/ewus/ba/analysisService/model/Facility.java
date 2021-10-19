@@ -5,6 +5,7 @@
 package com.ewus.ba.analysisService.model;
 
 import com.ewus.ba.analysisService.Utils;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -601,8 +601,19 @@ public class Facility {
       return values;
 
     } catch (Exception e) {
-      System.out.println("Response getEneffcoValue: " + responseBody);
-      Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
+      Utils.LOGGER.warn(
+        "Failed to get Eneffco values from datapointId: "
+              + datapointId
+              + ", with parameters from: "
+              + from
+              + ", to: "
+              + to
+              + ", timeInterval: "
+              + timeInterval
+              + ",  includeNanValues: "
+              + includeNanValues
+              + ". \n error message: "
+              + e.getMessage());
       return null;
     }
   }
