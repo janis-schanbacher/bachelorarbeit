@@ -73,7 +73,7 @@ jacocoTestReport {
 spotless {
   format 'misc', {
     // define the files to apply `misc` to
-    target '*.gradle', '*.md', '.gitignore', '*.yml'
+    target '*.gradle', '*.md', '.gitignore', '*.yml', '*.java'
 
     // define the steps to apply to those files
     trimTrailingWhitespace()
@@ -90,8 +90,6 @@ spotless {
     // through git history (see "license" section below)
     // licenseHeader '/* (C)$YEAR */'
 
-    // removeUnusedImports()
-    trimTrailingWhitespace()
-    endWithNewline()
+    removeUnusedImports()
   }
 }

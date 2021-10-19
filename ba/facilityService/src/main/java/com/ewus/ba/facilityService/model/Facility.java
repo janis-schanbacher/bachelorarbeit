@@ -30,7 +30,7 @@ public class Facility {
   // [Anlagencode].WEZ.ETA.[wmzEneffco]
 
   private String auslastungKgrId; // Eneffco Datenpunkt Tabelle:
-  // [Anlagencode].WEZ.AUS.KGR.[wmzEneffco]
+  // [Anlagencode].WEZ.AUS.MAX.[wmzEneffco]
 
   private String deltaTemperatureId; // Eneffco Datenpunkt Tabelle:
   // [Anlagencode].WEZ.WMZ.DT.[wmzEneffco]

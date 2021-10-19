@@ -7,11 +7,7 @@ import com.ewus.ba.facilityService.Utils;
 import com.ewus.ba.facilityService.model.AnalysisLog;
 import com.ewus.ba.facilityService.model.EneffcoValue;
 import com.ewus.ba.facilityService.model.Facility;
-import com.ewus.ba.facilityService.repository.IAnalysisLogRepository;
-
-import java.security.Timestamp;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -21,7 +17,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,8 +33,6 @@ public class FacilityController {
 
   private static Connection dbConnection = new Datenbankverbindung().getConnection();
   private Map<String, Facility> facilitiesMap = new HashMap<>();
-
-  @Autowired private IAnalysisLogRepository analysisLogRepository;
 
   @GetMapping("/facilities-data-list")
   @ResponseBody
@@ -86,6 +79,7 @@ public class FacilityController {
 
     facilitiesMap.putAll(facilities.stream().collect(Collectors.toMap(f -> f.getCode(), f -> f)));
     System.out.println("Done filling Facilities");
+    System.out.println(facilities);
     return facilities;
   }
 
@@ -107,7 +101,7 @@ public class FacilityController {
     try {
       // Save old
       String[] prev =
-          EnergielenkerUtils.getStringEnergielenker(
+          EnergielenkerUtils.getStringWithCreationTimeEnergielenker(
               facility.getRegelparameterSollWerteObjectId(), facility.getTextFragmentsId());
 
       if (prev != null && !prev[0].isBlank()) {
@@ -128,27 +122,39 @@ public class FacilityController {
             facility.getTextFragmentsId(),
             textFragmentsNew.replace("\n", "   ")); // body.get("textFragments"));
       } else {
-        return ResponseEntity.badRequest().body("The field 'textFragments'is required, but not present");
+        return ResponseEntity.badRequest()
+            .body("The field 'textFragments' is required, but not present");
       }
 
-      logPostTextFragments(facility.getCode(), body.get("textFragmentsAnalysisResult"), textFragmentsNew);
+      logPostTextFragments(
+          facility.getCode(), body.get("textFragmentsAnalysisResult"), textFragmentsNew);
     } catch (Exception e) {
       Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
     }
-    return ResponseEntity.created(null).build(); // EnergielenkerUtils.fetchAllFacilityCodes(dbConnection);
+    return ResponseEntity.created(null)
+        .build(); // EnergielenkerUtils.fetchAllFacilityCodes(dbConnection);
   }
 
-  private void logPostTextFragments(String code, String textFragmentsAnalysisResult, String textFragments) {
+  private void logPostTextFragments(
+      String code, String textFragmentsAnalysisResult, String textFragments) {
     AnalysisLog analysisLog = new AnalysisLog(code, textFragmentsAnalysisResult, textFragments);
     // TODO: Make JPA work and replace rest code below with the following line.
     // AnalysisLog analysisLogSaved = analysisLogRepository.save(analysisLog);
     try {
       Statement statement = dbConnection.createStatement();
-      String selectSql = "INSERT INTO [ewus_assets].[dbo].[facility_analysis_logs] "
-          + "([anlagencode],[textbausteine_analyseergebnis],[textbausteine_gespeichert],[textbausteine_unterschied],[zeitstempel]) VALUES ('"
-          + analysisLog.getCode() + "','" + analysisLog.getTextFragmentsAnalysisResult() + "','"
-          + analysisLog.getTextFragments() + "','" + analysisLog.getTextFragmentsDiff() + "','"
-          + analysisLog.getTimestamp() + "');";
+      String selectSql =
+          "INSERT INTO [facility_analysis_logs] "
+              + "([anlagencode],[textbausteine_analyseergebnis],[textbausteine_gespeichert],[textbausteine_unterschied],[zeitstempel]) VALUES ('"
+              + analysisLog.getCode()
+              + "','"
+              + analysisLog.getTextFragmentsAnalysisResult()
+              + "','"
+              + analysisLog.getTextFragments()
+              + "','"
+              + analysisLog.getTextFragmentsDiff()
+              + "','"
+              + analysisLog.getTimestamp()
+              + "');";
       statement.executeUpdate(selectSql);
     } catch (SQLException e) {
       Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);

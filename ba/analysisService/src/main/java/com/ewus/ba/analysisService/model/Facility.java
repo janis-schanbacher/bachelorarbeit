@@ -51,7 +51,7 @@ public class Facility {
   // [Anlagencode].WEZ.ETA.[wmzEneffco]
 
   private String auslastungKgrId; // Eneffco Datenpunkt Tabelle:
-  // [Anlagencode].WEZ.AUS.KGR.[wmzEneffco]
+  // [Anlagencode].WEZ.AUS.MAX.[wmzEneffco]
 
   private String deltaTemperatureId; // Eneffco Datenpunkt Tabelle:
   // [Anlagencode].WEZ.WMZ.DT.[wmzEneffco]
@@ -355,7 +355,7 @@ public class Facility {
 
     if (values == null) {
       System.out.println("Could not retrieve Eneffco values for AuslastungKgr");
-      return "Anlagengröße konnte nicht analysisert werden. Bitte zugehörigen Eneffco-Datenpunkt (" + getCode() + ".WEZ.AUS.KGR." + getWmzEneffco() +") überprüfen.";
+      return "Anlagengröße konnte nicht analysisert werden. Bitte zugehörigen Eneffco-Datenpunkt (" + getCode() + ".WEZ.AUS.MAX." + getWmzEneffco() +") überprüfen.";
     }
 
     float avgAuslastungKgr = getAverageValue(values);
@@ -408,12 +408,12 @@ public class Facility {
         getEneffcoValues(getNutzungsgradId(), from, to, TIMEINTERVAL_DAY, false);
 
     if (values == null) {
-      return "Nutzungsgrad konnte nicht analysiert werden. Bitte zugehörigen Eneffco-Datenpunkt (" + getCode() + ".WEZ.ETA." + getWmzEneffco() +") überprüfen";
+      return "Nutzungsgrad konnte nicht analysiert werden. Bitte zugehörigen Eneffco-Datenpunkt (" + getCode() + ".WEZ.ETA." + getWmzEneffco() +") überprüfen.";
     }
     float avgUtilizationRate = getAverageValue(values);
     if (avgUtilizationRate == 0) {
       return "Nutzungsgrad konnte nicht analysiert werden. Bitte zugehörigen Eneffco-Datenpunkt (" + getCode()
-          + ".WEZ.ETA." + getWmzEneffco() + ") überprüfen";
+          + ".WEZ.ETA." + getWmzEneffco() + ") überprüfen.";
     }
 
     String textFragment = "";
@@ -421,15 +421,15 @@ public class Facility {
     final double LIMIT_UTILIZATION_RATE = getBrennwertkessel() ? 90 : 80;
     if (avgUtilizationRate < LIMIT_UTILIZATION_RATE) {
       textFragment =
-          "Die Anlage weist einen geringen Nutzungsgrad auf (Avg. Nutzungsgrad: "
+          "Die Anlage weist einen zu geringen Nutzungsgrad auf (Avg. Nutzungsgrad: "
               + String.format("%.2f", avgUtilizationRate)
               + "%). Maßnahmen: Prüfen ob WMZ Gesamt gemessen wird, Anlagenanalyse durchführen.​";
     } else if (getUtilizationRatePreviousWeek() != 0
         && getUtilizationRatePreviousWeek() < LIMIT_UTILIZATION_RATE) {
       textFragment =
-          "Die Anlage weist einen geringen Nutzungsgrad auf (Nutzungsgrad Vorwoche: "
+          "Die Anlage weist einen zu geringen Nutzungsgrad auf (Nutzungsgrad Vorwoche: "
               + String.format("%.2f", getUtilizationRatePreviousWeek())
-              + "). Maßnahmen: Prüfen ob WMZ Gesamt gemessen wird, Anlagenanalyse durchführen.";
+              + "%). Maßnahmen: Prüfen ob WMZ Gesamt gemessen wird, Anlagenanalyse durchführen.";
     }
 
     // TODO: fetch grenzwert and TextFragement from db
@@ -517,7 +517,7 @@ public class Facility {
         getEneffcoValues(getRuecklaufId(), from, to, TIMEINTERVAL_DAY, false);
 
     if (values == null) {
-      return "Rücklauftemperatur konnte nicht analysiert werden. Bitte zugehörigen Eneffco-Datenpunkt (" + getCode() + ".WEZ.WMZ.RL." + getWmzEneffco() +") überprüfen";
+      return "Rücklauftemperatur konnte nicht analysiert werden. Bitte zugehörigen Eneffco-Datenpunkt (" + getCode() + ".WEZ.WMZ.RL." + getWmzEneffco() +") überprüfen.";
     }
     // TODO: fetch grenzwert and TextFragement from db
     final double LIMIT_PORTION_ACCEPTED_MIN = 95.0 / 100;

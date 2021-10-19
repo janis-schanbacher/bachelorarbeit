@@ -6,7 +6,6 @@ import com.ewus.ba.analysisService.model.FacilityAnalysisConfiguration;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +55,6 @@ public class AnalysisController {
   }
 
   private List<Facility> retrieveFacilities(String codes) {
-    // TODO: use eureka url
     HttpUrl.Builder httpBuilder = HttpUrl.parse("http://localhost:8080/facilities-data-list").newBuilder();
     httpBuilder.addQueryParameter("codes", codes);
     Request request = new Request.Builder().url(httpBuilder.build()).build();
@@ -70,8 +68,7 @@ public class AnalysisController {
         return null;
       }
 
-      facilities = objectMapper.readValue(response.body().string(), new TypeReference<List<Facility>>() {
-      });
+      facilities = objectMapper.readValue(response.body().string(), new TypeReference<List<Facility>>() {});
 
     } catch (Exception e) {
       Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
@@ -81,7 +78,6 @@ public class AnalysisController {
   }
 
   private List<FacilityAnalysisConfiguration> retrieveConfigs(String codes) {
-    // TODO: use eureka url
     HttpUrl.Builder httpBuilder = HttpUrl.parse("http://localhost:8082/configs/get-list").newBuilder();
     httpBuilder.addQueryParameter("codes", codes);
     Request request = new Request.Builder().url(httpBuilder.build()).build();
