@@ -60,6 +60,12 @@ public class FacilityController {
           EnergielenkerUtils.fetchLiegenschaftFieldValues(dbConnection, facilities.get(i));
           facilities.get(i).calcTww();
 
+          // Fill fields of Energielenkerobject Anlagentechnik
+          facilities.set(
+              i,
+              EnergielenkerUtils.fillEnergielenkerFields(
+                  facilities.get(i).getAnlagentechnikObjectId(), facilities.get(i)));
+
           // Fill fields of Energielenker-object Regelparameter_Soll-Werte
           facilities.set(
               i,

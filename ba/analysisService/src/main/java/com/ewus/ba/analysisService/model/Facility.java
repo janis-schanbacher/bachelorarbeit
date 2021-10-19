@@ -4,6 +4,8 @@
 
 package com.ewus.ba.analysisService.model;
 
+import com.ewus.ba.analysisService.Utils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -14,16 +16,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-
-import com.ewus.ba.analysisService.Utils;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.json.JSONArray;
-
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.json.JSONArray;
 
 public class Facility {
 
@@ -90,19 +87,19 @@ public class Facility {
 
   private String regelparameterSollWerteObjectId;
 
+  private String anlagentechnikObjectId;
 
-  final static ObjectMapper objectMapper = new ObjectMapper();
+  static final ObjectMapper objectMapper = new ObjectMapper();
   private static final OkHttpClient client =
-  new OkHttpClient()
-      .newBuilder()
-      .connectTimeout(10, TimeUnit.SECONDS)
-      .readTimeout(60, TimeUnit.SECONDS)
-      .build();
+      new OkHttpClient()
+          .newBuilder()
+          .connectTimeout(10, TimeUnit.SECONDS)
+          .readTimeout(60, TimeUnit.SECONDS)
+          .build();
 
   static final int TIMEINTERVAL_15M = 900;
   static final int TIMEINTERVAL_DAY = 86400;
   static final int TIMEINTERVAL_WEEK = 86407;
-
 
   public Facility(String code) {
     this.code = code;
@@ -270,6 +267,14 @@ public class Facility {
     this.regelparameterSollWerteObjectId = regelparameterSollWerteObjectId;
   }
 
+  public String getAnlagentechnikObjectId() {
+    return anlagentechnikObjectId;
+  }
+
+  public void setAnlagentechnikObjectId(String anlagentechnikObjectId) {
+    this.anlagentechnikObjectId = anlagentechnikObjectId;
+  }
+
   public void calcTww() {
     if (wmzEneffco != 1) {
       this.tww = false;
@@ -293,6 +298,7 @@ public class Facility {
     str.append("volumenstromId: " + volumenstromId + "\n");
     str.append("auslastungKgrId: " + auslastungKgrId + "\n");
     str.append("aussentemperaturCode: " + aussentemperaturCode + "\n");
+    str.append("brennwertkessel: " + brennwertkessel + "\n");
     str.append("leistungId: " + leistungId + "\n");
     str.append("versorgungstyp: " + versorgungstyp + "\n");
     str.append("tww: " + tww + "\n");
@@ -302,6 +308,7 @@ public class Facility {
     str.append("einsparzaehlerObjectId: " + einsparzaehlerObjectId + "\n");
     str.append("wmzEneffco: " + wmzEneffco + "\n");
     str.append("einsparzaehlerObjectId: " + einsparzaehlerObjectId + "\n");
+    str.append("anlagentechnikObjectId: " + anlagentechnikObjectId + "\n");
     str.append("liegenschaftObjectId: " + liegenschaftObjectId + "\n");
     str.append("regelparameterSollWerteObjectId: " + regelparameterSollWerteObjectId + "\n");
     return str.toString();
@@ -311,25 +318,25 @@ public class Facility {
   public List<String> analayse(FacilityAnalysisConfiguration config) {
     List<String> textFragments = new ArrayList<>();
 
-      if (config.getFacilitySize()) {
-        textFragments.add(analyseFacilitySize());
-      }
-      if (config.getUtilizationRate()) {
-        textFragments.add(analyseUtilizationRate());
-      }
-      if (config.getDeltaTemperature()) {
-        textFragments.add(analyseDeltaTemperature());
-      }
-      if (config.getReturnTemperature()) {
-        textFragments.add(analyseReturnTemperature());
-      }
+    if (config.getFacilitySize()) {
+      textFragments.add(analyseFacilitySize());
+    }
+    if (config.getUtilizationRate()) {
+      textFragments.add(analyseUtilizationRate());
+    }
+    if (config.getDeltaTemperature()) {
+      textFragments.add(analyseDeltaTemperature());
+    }
+    if (config.getReturnTemperature()) {
+      textFragments.add(analyseReturnTemperature());
+    }
 
-      textFragments.removeAll(Arrays.asList("", null));
+    textFragments.removeAll(Arrays.asList("", null));
 
-      // Add previous textfragments
-      textFragments.add("prev: " + getTextFragments());
+    // Add previous textfragments
+    textFragments.add("prev: " + getTextFragments());
 
-      return textFragments;
+    return textFragments;
   }
 
   // TODO: Bestimmung From, To
@@ -355,7 +362,11 @@ public class Facility {
 
     if (values == null) {
       System.out.println("Could not retrieve Eneffco values for AuslastungKgr");
-      return "Anlagengröße konnte nicht analysisert werden. Bitte zugehörigen Eneffco-Datenpunkt (" + getCode() + ".WEZ.AUS.MAX." + getWmzEneffco() +") überprüfen.";
+      return "Anlagengröße konnte nicht analysisert werden. Bitte zugehörigen Eneffco-Datenpunkt ("
+          + getCode()
+          + ".WEZ.AUS.MAX."
+          + getWmzEneffco()
+          + ") überprüfen.";
     }
 
     float avgAuslastungKgr = getAverageValue(values);
@@ -408,17 +419,26 @@ public class Facility {
         getEneffcoValues(getNutzungsgradId(), from, to, TIMEINTERVAL_DAY, false);
 
     if (values == null) {
-      return "Nutzungsgrad konnte nicht analysiert werden. Bitte zugehörigen Eneffco-Datenpunkt (" + getCode() + ".WEZ.ETA." + getWmzEneffco() +") überprüfen.";
+      return "Nutzungsgrad konnte nicht analysiert werden. Bitte zugehörigen Eneffco-Datenpunkt ("
+          + getCode()
+          + ".WEZ.ETA."
+          + getWmzEneffco()
+          + ") überprüfen.";
     }
     float avgUtilizationRate = getAverageValue(values);
     if (avgUtilizationRate == 0) {
-      return "Nutzungsgrad konnte nicht analysiert werden. Bitte zugehörigen Eneffco-Datenpunkt (" + getCode()
-          + ".WEZ.ETA." + getWmzEneffco() + ") überprüfen.";
+      return "Nutzungsgrad konnte nicht analysiert werden. Bitte zugehörigen Eneffco-Datenpunkt ("
+          + getCode()
+          + ".WEZ.ETA."
+          + getWmzEneffco()
+          + ") überprüfen.";
     }
 
     String textFragment = "";
 
     final double LIMIT_UTILIZATION_RATE = getBrennwertkessel() ? 90 : 80;
+    System.out.println("LIMIT_UTILIZATION_RATE: " + LIMIT_UTILIZATION_RATE);
+    System.out.println("Brennwertkessel: " + getBrennwertkessel());
     if (avgUtilizationRate < LIMIT_UTILIZATION_RATE) {
       textFragment =
           "Die Anlage weist einen zu geringen Nutzungsgrad auf (Avg. Nutzungsgrad: "
@@ -455,7 +475,11 @@ public class Facility {
         getEneffcoValues(getDeltaTemperatureId(), from, to, TIMEINTERVAL_15M, false);
 
     if (values == null) {
-      return "Temperaturdifferenz konnte nicht analysiert werden. Bitte zugehörigen Eneffco-Datenpunkt (" + getCode() + ".WEZ.WMZ.DT." + getWmzEneffco() +") überprüfen.";
+      return "Temperaturdifferenz konnte nicht analysiert werden. Bitte zugehörigen Eneffco-Datenpunkt ("
+          + getCode()
+          + ".WEZ.WMZ.DT."
+          + getWmzEneffco()
+          + ") überprüfen.";
     }
     float avgDeltaTemperature = getAverageValue(values);
     System.out.println("Avg. Temperaturdifferenz: " + getAverageValue(values));
@@ -481,6 +505,10 @@ public class Facility {
   }
 
   public String analyseReturnTemperature() {
+    // Analysis is ment for facilities with Brennwertkessel
+    if (getBrennwertkessel() == false) {
+      return "";
+    }
     int currentYear = LocalDate.now().getYear();
     int currentMonth = LocalDate.now().getMonthValue();
     int currentDay = LocalDate.now().getDayOfMonth();
@@ -517,26 +545,23 @@ public class Facility {
         getEneffcoValues(getRuecklaufId(), from, to, TIMEINTERVAL_DAY, false);
 
     if (values == null) {
-      return "Rücklauftemperatur konnte nicht analysiert werden. Bitte zugehörigen Eneffco-Datenpunkt (" + getCode() + ".WEZ.WMZ.RL." + getWmzEneffco() +") überprüfen.";
+      return "Rücklauftemperatur konnte nicht analysiert werden. Bitte zugehörigen Eneffco-Datenpunkt ("
+          + getCode()
+          + ".WEZ.WMZ.RL."
+          + getWmzEneffco()
+          + ") überprüfen.";
     }
     // TODO: fetch grenzwert and TextFragement from db
-    final double LIMIT_PORTION_ACCEPTED_MIN = 95.0 / 100;
+    final double LIMIT_PORTION_ACCEPTED_MIN = 90.0 / 100;
     final double LIMIT_RETURN_TEMPERATURE = 55;
     double portionOfValuesMarginBelowLimit =
         getPortionOfValuesMargin(values, LIMIT_RETURN_TEMPERATURE);
 
     String textFragment = "";
-    // TODO: check 90% vs 95%/. Absichern, dass gut: alle werte von .RL.WMZ
-    // betrachten, zählen wenn unter 55, prozentsatz bilden.Wenn Kein
-    // Brennwertkessel kein Textbaustein
     if (portionOfValuesMarginBelowLimit < LIMIT_PORTION_ACCEPTED_MIN) {
       textFragment =
           "Brennwerteffekt wird nicht ausreichend genutzt. Maßnahmen: Heizkurve einstellen, Absenkung VL-Temp., Verringerung der Wasserumlaufmenge.";
     }
-
-    System.out.println(
-        "portionOfValuesMarginBelowLimit Eneffco: " + portionOfValuesMarginBelowLimit);
-    // System.out.println(textFragment);
     return textFragment;
   }
 

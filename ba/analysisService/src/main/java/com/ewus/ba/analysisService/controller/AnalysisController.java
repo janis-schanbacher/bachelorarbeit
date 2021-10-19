@@ -43,9 +43,12 @@ public class AnalysisController {
     Map<String, List<String>> textFragments = new HashMap<>();
     for (Facility facility : facilities) {
       // If no config is set, run all analyses by default
-      FacilityAnalysisConfiguration config = configs.stream()
-          .filter(c -> facility.getCode().toUpperCase().equals(c.getId().toUpperCase())).findFirst()
-          .orElse(new FacilityAnalysisConfiguration(facility.getCode(), true, true, true, true));
+      FacilityAnalysisConfiguration config =
+          configs.stream()
+              .filter(c -> facility.getCode().toUpperCase().equals(c.getId().toUpperCase()))
+              .findFirst()
+              .orElse(
+                  new FacilityAnalysisConfiguration(facility.getCode(), true, true, true, true));
 
       textFragments.put(facility.getCode(), facility.analayse(config));
     }
@@ -55,7 +58,8 @@ public class AnalysisController {
   }
 
   private List<Facility> retrieveFacilities(String codes) {
-    HttpUrl.Builder httpBuilder = HttpUrl.parse("http://localhost:8080/facilities-data-list").newBuilder();
+    HttpUrl.Builder httpBuilder =
+        HttpUrl.parse("http://localhost:8080/facilities-data-list").newBuilder();
     httpBuilder.addQueryParameter("codes", codes);
     Request request = new Request.Builder().url(httpBuilder.build()).build();
     Response response = null;
@@ -68,7 +72,8 @@ public class AnalysisController {
         return null;
       }
 
-      facilities = objectMapper.readValue(response.body().string(), new TypeReference<List<Facility>>() {});
+      facilities =
+          objectMapper.readValue(response.body().string(), new TypeReference<List<Facility>>() {});
 
     } catch (Exception e) {
       Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
@@ -78,7 +83,8 @@ public class AnalysisController {
   }
 
   private List<FacilityAnalysisConfiguration> retrieveConfigs(String codes) {
-    HttpUrl.Builder httpBuilder = HttpUrl.parse("http://localhost:8082/configs/get-list").newBuilder();
+    HttpUrl.Builder httpBuilder =
+        HttpUrl.parse("http://localhost:8082/configs/get-list").newBuilder();
     httpBuilder.addQueryParameter("codes", codes);
     Request request = new Request.Builder().url(httpBuilder.build()).build();
     Response response = null;
@@ -92,7 +98,8 @@ public class AnalysisController {
       }
 
       String body = response.body().string();
-      configs = objectMapper.readValue(body, new TypeReference<List<FacilityAnalysisConfiguration>>() {});
+      configs =
+          objectMapper.readValue(body, new TypeReference<List<FacilityAnalysisConfiguration>>() {});
     } catch (Exception e) {
       Utils.LOGGER.log(Level.WARNING, e.getMessage(), e);
     }

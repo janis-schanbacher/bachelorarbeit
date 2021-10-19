@@ -13,7 +13,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.SQLServer2012Dialect
         format_sql: true
-    show-sql: true
+    show-sql: false
     hibernate:
       ddl-auto: update
 server:
