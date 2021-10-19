@@ -69,6 +69,8 @@ public class Facility {
 
   private String regelparameterSollWerteObjectId;
 
+  private String anlagentechnikObjectId;
+
   public Facility(String code) {
     this.code = code;
   }
@@ -235,6 +237,14 @@ public class Facility {
     this.regelparameterSollWerteObjectId = regelparameterSollWerteObjectId;
   }
 
+  public String getAnlagentechnikObjectId() {
+    return anlagentechnikObjectId;
+  }
+
+  public void setAnlagentechnikObjectId(String anlagentechnikObjectId) {
+    this.anlagentechnikObjectId = anlagentechnikObjectId;
+  }
+
   public void calcTww() {
     if (wmzEneffco != 1) {
       this.tww = false;
@@ -267,6 +277,7 @@ public class Facility {
     str.append("einsparzaehlerObjectId: " + einsparzaehlerObjectId + "\n");
     str.append("wmzEneffco: " + wmzEneffco + "\n");
     str.append("einsparzaehlerObjectId: " + einsparzaehlerObjectId + "\n");
+    str.append("anlagentechnikObjectId: " + anlagentechnikObjectId + "\n");
     str.append("liegenschaftObjectId: " + liegenschaftObjectId + "\n");
     str.append("regelparameterSollWerteObjectId: " + regelparameterSollWerteObjectId + "\n");
     return str.toString();

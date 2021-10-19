@@ -296,7 +296,7 @@ public class EnergielenkerUtils {
               + "WHERE [code] IN "
               + codesAsSqlList
               + " AND deinstalled = 'false'"
-              + " AND [energielenker_objects].[name] in ('Einsparzählerprotokoll', 'Regelparameter_Soll-Werte')";
+              + " AND [energielenker_objects].[name] in ('Einsparzählerprotokoll', 'Anlagentechnik', 'Regelparameter_Soll-Werte')";
 
       System.out.println(selectSql);
       resultSet = statement.executeQuery(selectSql);
@@ -317,10 +317,15 @@ public class EnergielenkerUtils {
           for (int i = 0; i < facilities.size(); i++) {
             if (facilities.get(i).getCode().equalsIgnoreCase(code)) {
               facilities.get(i).setEinsparzaehlerObjectId(id);
-              // Liegenschaft is parent of Anlagentechnik,
-              // Einsparzählerprotokoll,
-              // ESZ_Einsparungen, Messtechnik
+              // Liegenschaft is parent of
               facilities.get(i).setLiegenschaftObjectId(parentId);
+              break;
+            }
+          }
+        } else if (name.equals("Anlagentechnik")) {
+          for (int i = 0; i < facilities.size(); i++) {
+            if (facilities.get(i).getCode().equalsIgnoreCase(code)) {
+              facilities.get(i).setAnlagentechnikObjectId(id);
               break;
             }
           }
@@ -340,7 +345,6 @@ public class EnergielenkerUtils {
   }
 
   public static void fetchLiegenschaftFieldValues(Connection dbConnection, Facility facility) {
-    // TODO: check if to delte
     facility.setAussentemperaturCode(
         EnergielenkerUtils.getStringWithCreationTimeEnergielenker(
             facility.getLiegenschaftObjectId(), "2882")[0]);
@@ -382,11 +386,16 @@ public class EnergielenkerUtils {
         String test01 = "" + resultArray.get(i);
         JSONObject jobject = new JSONObject(test01);
 
-        // System.out.println(jobject);
+        if (jobject.get("name").toString().contains("011 Brennwertkessel 1")) {
+          facility.setBrennwertkessel(
+              Boolean.parseBoolean(getAttributeValue(elObjId, jobject.get("id").toString())));
+          System.out.println("011 Brennwertkessel 1: " + facility.getBrennwertkessel());
+        }
 
         if (jobject.get("name").toString().contains("103 Nutzungsgrad Vorwoche")) {
           facility.setUtilizationRatePreviousWeek(Double.parseDouble(jobject.get("id").toString()));
         }
+
         if (jobject.get("name").toString().contains("960 AKTUELL Textbausteine Auto Analyse")) {
           // System.out.println("textFragments: " +
           // jobject.get("id").toString());

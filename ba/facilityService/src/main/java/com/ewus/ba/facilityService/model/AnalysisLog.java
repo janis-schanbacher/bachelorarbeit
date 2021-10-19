@@ -1,7 +1,7 @@
 package com.ewus.ba.facilityService.model;
 
 import java.time.temporal.ChronoUnit;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class AnalysisLog {
   private String code;
