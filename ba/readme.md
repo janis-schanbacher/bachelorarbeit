@@ -1,20 +1,10 @@
-# Webanwendung zur automatisierten Ermittlung von Optimierungs-Möglichkeiten in Hei-zungsanlagen
+# Webanwendung zur automatisierten Ermittlung von Optimierungs-Möglichkeiten in Heizungsanlagen (Backend)
 
 ## Run the application:
 To run the application, start all Spring Boot Services (in separate terminals) and the React application
-- Run discovery Server
+- Run facility-service
     ```
-    cd discoveryServer
-    ./gradlew bootRun
-    ```
-- Run Energielenker Service
-    ```
-    cd energielenkerEneffcoService
-    ./gradlew bootRun
-    ```
-- Run Eneffco Service
-    ```
-    cd eneffcoService
+    cd facilityService
     ./gradlew bootRun
     ```
 - Run Analysis Service
@@ -22,6 +12,3 @@ To run the application, start all Spring Boot Services (in separate terminals) a
     cd analysisService
     ./gradlew bootRun
     ```
-
-## Analysis Service
-- '/analysis'
