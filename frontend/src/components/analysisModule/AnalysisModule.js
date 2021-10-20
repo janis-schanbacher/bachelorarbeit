@@ -1,13 +1,12 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */ // TODO: remove
-/* eslint-disable jsx-a11y/click-events-have-key-events */ // TODO: remove
-
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 import React, { useContext, useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
-import { Divider, Table, Input, Button, Form, Typography } from "antd";
+import { Divider, Table, Input, Button, Tooltip, Form, Typography, message } from "antd";
 import axios from "axios";
-// import qs from 'qs'
+import noop from "lodash/noop";
 
-import { apiUrl } from "../../helper/url";
+import { apiUrl, portAnalysisService, portEnergielenkerEneffcoService } from "../../helper/url";
 import CodeSelection from "../codeSelection/CodeSelection";
 
 const { Title } = Typography;
@@ -25,8 +24,11 @@ const EditableRow = ({ index, ...props }) => {
 };
 
 EditableRow.propTypes = {
-  // TODO: set required type or maybe remove prop, because its not used
-  index: PropTypes.func.isRequired,
+  index: PropTypes.number,
+};
+
+EditableRow.defaultProps = {
+  index: 0,
 };
 
 const EditableCell = ({
@@ -57,7 +59,6 @@ const EditableCell = ({
   let childNode = children;
 
   if (editable) {
-    // TODO: fix linter errors and remove ignore for whole file (
     childNode = (
       <div
         className="editable-cell-value-wrap"
@@ -75,49 +76,68 @@ const EditableCell = ({
 };
 
 EditableCell.propTypes = {
-  title: PropTypes.string.isRequired,
-  editable: PropTypes.bool.isRequired,
-  children: PropTypes.array.isRequired,
-  dataIndex: PropTypes.string.isRequired,
-  record: PropTypes.object.isRequired,
-  handleConfirm: PropTypes.func.isRequired,
+  title: PropTypes.string,
+  editable: PropTypes.bool,
+  children: PropTypes.array,
+  dataIndex: PropTypes.string,
+  record: PropTypes.object,
+  handleConfirm: PropTypes.func,
+};
+
+EditableCell.defaultProps = {
+  title: "",
+  editable: false,
+  children: [],
+  dataIndex: "",
+  record: null,
+  handleConfirm: noop,
 };
 
 const AnalysisModule = () => {
   const [dataSource, setDataSource] = useState([]);
   const [originalDataSource, setOriginalDataSource] = useState([]);
-  const [value, setValue] = useState(["0-0-0", "0-0-1"]); // TODO: change default to []
+  const [value, setValue] = useState([]); // TODO: change default to []
   const [rowSelection, setRowSelection] = useState([]);
   const [treeData, setTreeData] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const getSelectedCodes = () => {
+    const selectedCodes = value.map((v) => {
+      const { label } = v;
+      if (label.length < 7) {
+        return treeData.find(node => node.title.includes(`${label}`)).children.map(n => n.title);
+      }
+      return label;
+    }).flat();
+    return selectedCodes;
+  };
 
   const handleAnalyse = () => {
-    // TODO: get codes dynamically, maybe through values, or else through params of CodeSelction
-    const body = ["ACO.001", "ACO.002"];
-    axios.post(`${apiUrl}/analyse`, body)
-
-    // axios.get(`${apiUrl}/analyse`, {
-    //   params: {
-    //     codes: { ["ACO.001", "ACO.002"]}
-    //   },
-    //   paramsSerializer: params => {
-    //     return qs.stringify(params)
-    //   }
-    // })
+    setLoading(true);
+    const body = getSelectedCodes();
+    axios.post(`${apiUrl}:${portAnalysisService}/analyse`, body)
       .then((res) => {
         const { data } = res;
-        setDataSource(Object.keys(data).map(key => ({ key,
-          code: key,
-          textFragments: data[key].join("\n") })));
-      // fillDataSource(Object.keys(data).map(key => data[key]));
-      // console.log(data)
+        setDataSource(Object.keys(data).map((key) => {
+          const row = {
+            key,
+            code: key,
+            textFragments: data[key].filter(tf => !tf.includes("prev: ")).join("\n"),
+            textFragmentsPrev: data[key].find(tf => tf.includes("prev: ")).substring(6),
+          };
+          if (row.textFragmentsPrev === "null") {
+            row.textFragmentsPrev = "";
+          }
+          return row;
+        }).sort((a, b) => ((a.key < b.key) ? -1 : 1)));
       })
       .then(() => {
         setOriginalDataSource(dataSource);
+        setLoading(false);
       })
       .catch((err) => {
-        // eslint-disable-next-line no-console
-        // TODO: display Error Alert
-        console.log(err);
+        message.error(`Fehler beim Laden der Analyseergebnisse: ${err.message}`);
+        setLoading(false);
       });
   };
 
@@ -136,52 +156,43 @@ const AnalysisModule = () => {
   };
 
   const handleConfirm = (record) => {
-    console.log(`handleConfirm: ${record.key}`);
-    console.log(`text new: ${record.textFragments}`); // equals value in dataSource
-    let textFragmentsResult = "";
+    let textFragmentsAnalysisResult = "";
     // find/log original textFragments
     for (let i = 0; i < originalDataSource.length; i += 1) {
       if (originalDataSource[i].code === record.key) {
-        textFragmentsResult = originalDataSource[i].textFragments;
-        // TODO: log
-        console.log(`textFragmentsResult: ${textFragmentsResult}`);
+        textFragmentsAnalysisResult = originalDataSource[i].textFragments;
         break;
       }
     }
 
-    // TODO: test andd write controller
-    axios.post(`${apiUrl}/text-fragments`, {
-      code: record.key,
+    axios.post(`${apiUrl}:${portEnergielenkerEneffcoService}/text-fragments`, {
+      id: record.key,
       textFragments: record.textFragments,
-      textFragmentsResult,
+      textFragmentsAnalysisResult,
     })
-    // TODO: render SuccessNotification
-      .then(res => console.log(`Response status for post /text-fragments of code: ${record.key}: ${res.status}`));
+      .then((res) => {
+        message.success(`Textbaustetine gespeichert für Anlage: ${record.key}`);
+      }).catch((err) => {
+        message.error(`Fehler beim Speichern der Textbausteine für Anlage: ${record.key}: ${err.message}`);
+      });
   };
 
-  // TODO: weiter hier
   const handleConfirmSelection = () => {
-    console.log(rowSelection);
-    rowSelection.forEach(row => handleConfirm(row));
-    // TODO: render SuccessNotification.
+    rowSelection.forEach((row) => {
+      handleConfirm(row);
+    });
   };
-
-  // const handleDelete = (key) => {
-  //   setDataSource(dataSource.filter((item) => item.key !== key));
-  // };
 
   const columns = [
-    { title: "Anlagencode",
-      dataIndex: "code" },
+    { title: "Anlage",
+      dataIndex: "code",
+      width: 35 },
     {
       title: "Textbausteine",
       dataIndex: "textFragments",
-      width: "60%",
-      // editable: true,
+      width: "45%",
       render: (val, row) => (
         <Input.TextArea
-          // value={val}
-          autosize={{ minRows: 2, maxRows: 6 }}
           defaultValue={val}
           onChange={handleChange}
           code={row.key}
@@ -189,13 +200,20 @@ const AnalysisModule = () => {
       ),
     },
     {
+      title: "Vorige Textbausteine",
+      dataIndex: "textFragmentsPrev",
+      key: "textFragmentsPrev",
+      // width: "25%",
+
+    },
+    {
       title: "Bestätigen",
       dataIndex: "confirm",
+      width: 40,
       render: (_, record) => (dataSource.length >= 1 ? (
-      // <Popconfirm title="Sure to save?" onConfirm={() => handleConfirm(record.key)}>
-      //   <a>Speichern</a>
-      // </Popconfirm>
-        <Button type="primary" onClick={e => handleConfirm(record)}>Speichern</Button>
+        <Tooltip placement="bottom" color="black" title="Textbausteine in Energielenker speichern.">
+          <Button type="primary" onClick={e => handleConfirm(record)}>Bestätigen</Button>
+        </Tooltip>
       ) : null),
     },
   ];
@@ -235,25 +253,45 @@ const AnalysisModule = () => {
     }),
   };
 
-  // TODO: move CodeSelection and Analysis Button to parent
   return (
     <div>
       <Title level={2}>Analyse Oberfläche</Title>
       <Title level={4} style={{ textAlign: "left" }}>Auswahl zu analysierender Anlagen</Title>
-
       <CodeSelection value={value} setValue={setValue} treeData={treeData} setTreeData={setTreeData} />
-      <Button
-        onClick={handleAnalyse}
-        type="primary"
-        style={{
-          margin: "5px 5px 15px 5px",
-          float: "left",
-        }} // TODO: use StyledComponend
+      <Tooltip
+        placement="bottom"
+        color="black"
+        title="Ausgewählte Anlagen entsprechend der zugehörigen Konfigurationen analysieren."
       >
-        Analysieren
-      </Button>
+        <Button
+          onClick={handleAnalyse}
+          type="primary"
+          style={{
+            margin: "5px 5px 15px 5px",
+            float: "left",
+          }} // TODO: use StyledComponend
+        >
+          Analysieren
+        </Button>
+      </Tooltip>
       <Divider />
       <Title level={4} style={{ textAlign: "left" }}>Analyse-Ergebnisse</Title>
+      <Tooltip
+        placement="bottom"
+        color="black"
+        title="Textbausteine der in der Tabelle markierten Anlagen in Energielenker speichern."
+      >
+        <Button
+          onClick={handleConfirmSelection}
+          type="primary"
+          style={{
+            margin: "5px 5px 15px 5px",
+            float: "left",
+          }}
+
+        >Auswahl bestätigen
+        </Button>
+      </Tooltip>
       <Table
         rowSelection={{
           type: "checkbox",
@@ -264,16 +302,8 @@ const AnalysisModule = () => {
         bordered
         dataSource={dataSource}
         columns={columnsRender}
+        loading={loading}
       />
-      <Button
-        onClick={handleConfirmSelection}
-        type="primary"
-        style={{
-          margin: "5px 5px 15px 5px",
-          float: "left",
-        }}
-      >Auswahl bestätigen
-      </Button>
     </div>
   );
 };

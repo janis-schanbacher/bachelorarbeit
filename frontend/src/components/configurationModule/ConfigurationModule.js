@@ -1,10 +1,10 @@
 import React, { useState, useReducer } from "react";
-import { Typography, Table, Button, Checkbox, Divider } from "antd";
+import { Typography, Table, Button, Tooltip, Checkbox, Divider, message } from "antd";
 import axios from "axios";
 import qs from "qs";
 import find from "lodash/find";
 
-import { apiUrl } from "../../helper/url";
+import { apiUrl, portAnalysisService } from "../../helper/url";
 import CodeSelection from "../codeSelection/CodeSelection";
 
 const { Title } = Typography;
@@ -14,11 +14,12 @@ const defaultCheckedList = ["Anlagengröße", "Nutzungsgrad", "Temperaturdiffere
 
 const ConfigurationModule = () => {
   const [dataSource, setDataSource] = useState([]);
-  const [value, setValue] = useState([]); // TODO: change default to []
+  const [loading, setLoading] = useState(false);
+  const [value, setValue] = useState([]);
   const [rowSelection, setRowSelection] = useState([]);
   const [treeData, setTreeData] = useState([]);
   // eslint-disable-next-line no-unused-vars
-  const [__, forceUpdate] = useReducer(x => x + 1, 0); // TODO: remove
+  const [__, forceUpdate] = useReducer(x => x + 1, 0);
   const [bulkSelection, setBulkSelection] = useState(defaultCheckedList);
 
   const handleChange = (code, list) => {
@@ -26,7 +27,6 @@ const ConfigurationModule = () => {
     const newDataSource = dataSource;
     newDataSource[index].checkedList = list;
     setDataSource(newDataSource);
-    forceUpdate(); // TODO: remove
   };
 
   const handleChangeBulkConfiguration = (list) => {
@@ -47,39 +47,34 @@ const ConfigurationModule = () => {
     }
     setDataSource(newDataSource);
     forceUpdate();
-
-    // forceUpdate();
-    // newDataSource[index].checkedList = list
-    // forceUpdate(); // TODO: remove
   };
 
   const handleConfirm = (record) => {
-    axios.post(`${apiUrl}/configs`, {
+    axios.post(`${apiUrl}:${portAnalysisService}/configs`, {
       id: record.key,
       facilitySize: record.checkedList.includes("Anlagengröße"),
       utilizationRate: record.checkedList.includes("Nutzungsgrad"),
       deltaTemperature: record.checkedList.includes("Temperaturdifferenz"),
       returnTemperature: record.checkedList.includes("Rücklauftemperatur"),
+    }).then(() => {
+      message.success(`Konfiguration gespeichert für Anlage: ${record.key.toUpperCase()}`);
+    }).catch((err) => {
+      message.error(`Fehler beim Speichern der Konfiguration der Anlage: ${record.key.toUpperCase()}: ${err.message}`);
     });
   };
 
   const handleConfirmSelection = () => {
-    // TODO:"bundle as one request and create api endpoint"
     for (const record of rowSelection) {
       handleConfirm(record);
     }
   };
 
-  // TODO: evt. auch einfach alle anlagen darstellen, und nach coedes gruppieren,
-  // die dann ausklappbar sind. https://ant.design/components/table/#components-table-demo-tree-data
   const columns = [
-    { title: "Anlagencode",
+    { title: "Anlage",
       dataIndex: "code" },
     {
       title: "Aktive Analysen",
       dataIndex: "activeAnalyses",
-      width: "60%",
-      // editable: true,
       render: (val, row) => {
         const index = dataSource.findIndex(item => item.key === row.key);
         return (
@@ -94,13 +89,17 @@ const ConfigurationModule = () => {
     {
       title: "Bestätigen",
       dataIndex: "confirm",
+      width: 40,
       render: (_, record) => (dataSource.length >= 1 ? (
-        <Button type="primary" onClick={e => handleConfirm(record)}>Anwenden</Button>
+        <Tooltip placement="bottom" color="black" title="Konfiguration speichern">
+          <Button type="primary" onClick={e => handleConfirm(record)}>Bestätigen</Button>
+        </Tooltip>
       ) : null),
     },
   ];
 
   const loadConfigs = () => {
+    setLoading(true);
     const codes = value.filter(v => v.value.length > 3).map(v => v.label);
     // Add codes of children from selected prefix (f.i. {value: "0-1", value: "ACO"})
     const keysOfPrefixes = value.filter(v => v.value.length === 3);
@@ -114,7 +113,7 @@ const ConfigurationModule = () => {
     }
 
     // retrieve configs from backend
-    axios.get(`${apiUrl}/configs/get-list`, {
+    axios.get(`${apiUrl}:${portAnalysisService}/configs/get-list`, {
       params: {
         codes,
       },
@@ -147,15 +146,14 @@ const ConfigurationModule = () => {
         for (let i = 0; i < codes.length; i++) {
           const index = configs.findIndex(c => c.code === codes[i].toUpperCase());
           if (index < 0) {
-            // console.log("Adding default for: " + codes[i]);
             configs.push({ key: codes[i], code: codes[i], checkedList: defaultCheckedList });
           }
         }
 
         setDataSource(configs);
-      // }).catch((err) => {
-        // TODO: Error handling --> Show Alert. Also Success alters and/or load animations to be dane
-        // console.log(err);
+        setLoading(false);
+      }).catch((err) => {
+        message.error(`Fehler beim Laden der Konfigurationen: ${err.message}`);
       });
   };
 
@@ -192,16 +190,18 @@ const ConfigurationModule = () => {
       <Title level={2}>Konfigurations-Oberfläche</Title>
       <Title level={4} style={{ textAlign: "left" }}>Auswahl zu konfigurierender Anlagen</Title>
       <CodeSelection value={value} setValue={setValue} treeData={treeData} setTreeData={setTreeData} />
-      <Button
-        onClick={loadConfigs}
-        type="primary"
-        style={{
-          margin: "10px 0",
-          float: "left",
-        }}
-      >
-        Konfigurationen laden
-      </Button>
+      <Tooltip placement="bottom" color="black" title="Konfigurationen der ausgewählten Anlagen laden.">
+        <Button
+          onClick={loadConfigs}
+          type="primary"
+          style={{
+            margin: "10px 0",
+            float: "left",
+          }}
+        >
+          Konfigurationen laden
+        </Button>
+      </Tooltip>
       <Divider />
       <Title level={4} style={{ textAlign: "left" }}>Markierte Anlagen Konfigurieren</Title>
       <Checkbox.Group
@@ -210,27 +210,40 @@ const ConfigurationModule = () => {
         onChange={handleChangeBulkConfiguration}
         style={{ textAlign: "left", width: "100%", margin: "10px 0" }}
       />
-      <Button
-        onClick={handleApplyBulkConfiguration}
-        type="primary"
-        style={{
-          margin: "10px 0",
-          float: "left",
-        }} // TODO: use StyledComponend
+      <Tooltip
+        placement="bottom"
+        color="black"
+        title="Lokal die Konfigurationen der in der Tabelle markierten Anlagen anpassen.
+           Gespeichert können diese über die entsprechenden Bestätigungs-Buttons werden."
       >
-        Übernehmen
-      </Button>
+        <Button
+          onClick={handleApplyBulkConfiguration}
+          type="primary"
+          style={{
+            margin: "10px 0",
+            float: "left",
+          }} // TODO: use StyledComponend
+        >
+          Übernehmen
+        </Button>
+      </Tooltip>
       <Divider />
       <Title level={4} style={{ textAlign: "left" }}>Konfigurationen</Title>
-      <Button
-        onClick={handleConfirmSelection}
-        type="primary"
-        style={{
-          margin: "10px 0",
-          float: "left",
-        }}
-      >Auswahl anwenden
-      </Button>
+      <Tooltip
+        placement="bottom"
+        color="black"
+        title="Konfigurationen der in der Tabelle markierten Anlagen speichern."
+      >
+        <Button
+          onClick={handleConfirmSelection}
+          type="primary"
+          style={{
+            margin: "10px 0",
+            float: "left",
+          }}
+        >Auswahl bestätigen
+        </Button>
+      </Tooltip>
       <Table
         rowSelection={{
           type: "checkbox",
@@ -240,6 +253,7 @@ const ConfigurationModule = () => {
         bordered
         dataSource={dataSource}
         columns={columnsRender}
+        loading={loading}
       />
     </div>
   );
