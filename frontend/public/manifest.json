@@ -1,0 +1,21 @@
+{
+  "short_name": "Anlagenanalyse App",
+  "name": "Anlagenanalyse App",
+  "icons": [
+
+    {
+      "src": "ewus_logo.png",
+      "type": "image/png",
+      "sizes": "200x102"
+    },
+    {
+      "src": "ewus_logo_non_transparent.png",
+      "sizes": "265x275",
+      "type": "image/png"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
