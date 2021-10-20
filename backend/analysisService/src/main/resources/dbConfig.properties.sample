@@ -2,6 +2,4 @@ dbHost=127.0.0.1
 dbName=db_name
 dbUsername=username
 dbPassword=password
-functionAccessCode=abc
-energielenkerUsername=username
-energielenkerPassword=password
+eneffcoToken=abc
