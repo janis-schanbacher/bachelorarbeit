@@ -1,12 +1,8 @@
 package com.ewus.ba.facilityService;
 
 import com.ewus.ba.facilityService.model.Facility;
-import java.io.BufferedInputStream;
+
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,23 +10,26 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class EnergielenkerUtils {
 
   private static String tokenEnergielenker;
+  private static final OkHttpClient client = new OkHttpClient()
+    .newBuilder()
+    .connectTimeout(10, TimeUnit.SECONDS)
+    .readTimeout(60, TimeUnit.SECONDS)
+    .build();
 
-  // TODO: use okhttp3
   public static String loginEnergielenker() {
-    try {
       Properties credentials =
           Config.readProperties(
               "src/main/resources/dbConfig.properties",
@@ -42,27 +41,26 @@ public class EnergielenkerUtils {
               + "\" , \"password\" : \""
               + credentials.getProperty("energielenkerPassword")
               + "\" }";
-      URL url = new URL(query_url);
-      HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-      conn.setConnectTimeout(5000);
-      conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-      conn.setDoOutput(true);
-      conn.setDoInput(true);
 
-      conn.setRequestMethod("POST");
-      OutputStream os = conn.getOutputStream();
-      os.write(json.getBytes("UTF-8"));
-      os.close();
-      // read the response
-      InputStream in = new BufferedInputStream(conn.getInputStream());
-      String result = IOUtils.toString(in, "UTF-8");
-      JSONObject myResponse = new JSONObject(result);
-      tokenEnergielenker = myResponse.getString("token");
-      in.close();
-      conn.disconnect();
-    } catch (Exception e) {
-      Utils.LOGGER.warn(e.getMessage(), e);
-    }
+      MediaType mediaType = MediaType.parse("application/json");
+      RequestBody body = RequestBody.create(json, mediaType);
+      Request request =
+          new Request.Builder()
+              .url(query_url)
+              .method("POST", body)
+              .addHeader("Content-Type", "application/json")
+              .build();
+      try {
+        Response response = client.newCall(request).execute();
+        if (response.code() == 401) {
+          Utils.LOGGER.warn("Energielenker login failed: wrong credentials.");
+        } else if (response.code() == 200) {
+          tokenEnergielenker = new JSONObject(response.body().string()).getString("token");
+        }
+      } catch (Exception e) {
+        Utils.LOGGER.warn(e.getMessage(), e);
+      }
+
     return tokenEnergielenker;
   }
 
@@ -77,7 +75,6 @@ public class EnergielenkerUtils {
               + ". Both arguments have to be present");
       return new String[] {"", ""};
     }
-    OkHttpClient client = new OkHttpClient().newBuilder().build();
     String creationTime = "", value = "";
     Request request =
         new Request.Builder()
@@ -143,33 +140,26 @@ public class EnergielenkerUtils {
             + "/attributes/"
             + attributeId;
 
-    JSONObject jobject = null;
+    Request request = new Request.Builder()
+        .url(query_url)
+        .addHeader("accept", "application/json")
+        .addHeader("Authorization", "Bearer " + tokenEnergielenker)
+        .build();
     try {
-      URL url = new URL(query_url);
-      HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-      conn.setConnectTimeout(5000);
-      conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-      conn.setRequestProperty("Authorization", "Bearer " + tokenEnergielenker);
-      conn.setDoOutput(true);
-      conn.setRequestMethod("GET");
-
-      // read the response
-      InputStream in = new BufferedInputStream(conn.getInputStream());
-      String result = IOUtils.toString(in, "UTF-8");
-
-      jobject = new JSONObject(result);
-      JSONArray resultArray = new JSONArray(jobject.get("values").toString());
-      JSONObject jobjectValue = null;
-      if (resultArray.length() > 0) {
-        jobjectValue = new JSONObject(resultArray.get(0).toString());
-        attributeValue = jobjectValue.get("resolvedValue").toString();
+      Response response = client.newCall(request).execute();
+      if (!response.isSuccessful()) {
+        response.close();
+        throw new Exception(
+            "Failed to get Value from Energielenker. Request: " + request + ", response: " + response);
       }
 
-      in.close();
-      conn.disconnect();
+      JSONObject responseBody = new JSONObject(response.body().string());
+      JSONArray valuesJsonArray = new JSONArray(responseBody.get("values").toString());
+      if (valuesJsonArray.length() > 0) {
+        attributeValue = valuesJsonArray.getJSONObject(0).get("resolvedValue").toString();
+      }
     } catch (Exception e) {
-      Utils.LOGGER.warn(
-          "Exception in getAttributeValue:" + query_url + "\n" + jobject + e.getMessage(), e);
+      Utils.LOGGER.warn(e.getMessage(), e);
     }
     return attributeValue;
   }
@@ -380,59 +370,57 @@ public class EnergielenkerUtils {
     }
     String query_url =
         "https://ewus.elmonitor.de/api/v1/basemonitor/objects/" + objectId + "/attributes";
+
+    Request request =
+    new Request.Builder()
+        .url(query_url)
+        .addHeader("accept", "application/json")
+        .addHeader("Authorization", "Bearer " + tokenEnergielenker)
+        .build();
     try {
-      URL url = new URL(query_url);
-      HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-      conn.setConnectTimeout(5000);
-      conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-      conn.setRequestProperty("Authorization", "Bearer " + tokenEnergielenker);
-      conn.setDoOutput(true);
-      conn.setRequestMethod("GET");
+      Response response = client.newCall(request).execute();
+      if (!response.isSuccessful()) {
+        response.close();
+        throw new Exception(
+            "Failed to retrieve Attributes from Energielenker. Request: " + request + ", response: " + response);
+      }
 
       // read the response
-      InputStream in = new BufferedInputStream(conn.getInputStream());
-      String result = IOUtils.toString(in, "UTF-8");
-      JSONArray resultArray = new JSONArray(result);
+      JSONArray responseBody = new JSONArray(response.body().string());
+      for (int i = 0; i < responseBody.length(); i++) {
+        JSONObject attribute = responseBody.getJSONObject(i);
 
-      for (int i = 0; i < resultArray.length(); i++) {
-        String test01 = "" + resultArray.get(i);
-        JSONObject jobject = new JSONObject(test01);
-
-        if (jobject.get("name").toString().contains("011 Brennwertkessel 1")) {
+        if (attribute.getString("name").contains("011 Brennwertkessel 1")) {
           facility.setBrennwertkessel(
-              Boolean.parseBoolean(getAttributeValue(objectId, jobject.get("id").toString())));
+              Boolean.parseBoolean(getAttributeValue(objectId, attribute.get("id").toString())));
         }
 
-        if (jobject.get("name").toString().contains("103 Nutzungsgrad Vorwoche")) {
-          facility.setUtilizationRatePreviousWeek(Double.parseDouble(jobject.get("id").toString()));
+        if (attribute.getString("name").contains("103 Nutzungsgrad Vorwoche")) {
+          facility.setUtilizationRatePreviousWeek(Double.parseDouble(attribute.get("id").toString()));
         }
 
-        if (jobject.get("name").toString().contains("960 AKTUELL Textbausteine Auto Analyse")) {
-          facility.setTextFragmentsId(jobject.get("id").toString());
+        if (attribute.getString("name").contains("960 AKTUELL Textbausteine Auto Analyse")) {
+          facility.setTextFragmentsId(attribute.get("id").toString());
           // retrieve last saved textFragments with timestamp of creation
           String[] textFragmentsPrevAndCreationTime =
               EnergielenkerUtils.getStringWithCreationTimeEnergielenker(
-                  objectId, jobject.get("id").toString());
+                  objectId, attribute.get("id").toString());
           facility.setTextFragments(
               textFragmentsPrevAndCreationTime[1] + ": " + textFragmentsPrevAndCreationTime[0]);
         }
-        if (jobject.get("name").toString().contains("961 ALT Textbausteine Auto Analyse")) {
-          facility.setTextFragmentsPrevId(jobject.get("id").toString());
+        if (attribute.getString("name").contains("961 ALT Textbausteine Auto Analyse")) {
+          facility.setTextFragmentsPrevId(attribute.get("id").toString());
         }
 
-        if (jobject.get("name").toString().contains("190 WMZ Eneffco (letzte Stelle im DP Code)")) {
+        if (attribute.getString("name").contains("190 WMZ Eneffco (letzte Stelle im DP Code)")) {
           facility.setWmzEneffco(
               Integer.parseInt(
-                  EnergielenkerUtils.getAttributeValue(objectId, jobject.get("id").toString())));
+                  EnergielenkerUtils.getAttributeValue(objectId, attribute.get("id").toString())));
         }
       }
-
-      in.close();
-      conn.disconnect();
     } catch (Exception e) {
       Utils.LOGGER.warn(e.getMessage(), e);
     }
-
     return facility;
   }
 }
