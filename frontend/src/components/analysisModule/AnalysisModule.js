@@ -8,6 +8,7 @@ import noop from "lodash/noop";
 
 import { apiUrl, portAnalysisService, portEnergielenkerEneffcoService } from "../../helper/url";
 import CodeSelection from "../codeSelection/CodeSelection";
+import { StyledButton, StyledTitle } from "./AnalysisModule.styles";
 
 const { Title } = Typography;
 const EditableContext = React.createContext(null);
@@ -60,13 +61,7 @@ const EditableCell = ({
 
   if (editable) {
     childNode = (
-      <div
-        className="editable-cell-value-wrap"
-        style={{
-          paddingRight: 24,
-        }}
-        onClick={toggleEdit}
-      >
+      <div onClick={toggleEdit}>
         { children }
       </div>
     );
@@ -96,7 +91,7 @@ EditableCell.defaultProps = {
 const AnalysisModule = () => {
   const [dataSource, setDataSource] = useState([]);
   const [originalDataSource, setOriginalDataSource] = useState([]);
-  const [value, setValue] = useState([]); // TODO: change default to []
+  const [value, setValue] = useState([]);
   const [rowSelection, setRowSelection] = useState([]);
   const [treeData, setTreeData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -171,7 +166,7 @@ const AnalysisModule = () => {
       textFragmentsAnalysisResult,
     })
       .then((res) => {
-        message.success(`Textbaustetine gespeichert für Anlage: ${record.key}`);
+        message.success(`Textbausteine gespeichert für Anlage: ${record.key}`);
       }).catch((err) => {
         message.error(`Fehler beim Speichern der Textbausteine für Anlage: ${record.key}: ${err.message}`);
       });
@@ -255,42 +250,34 @@ const AnalysisModule = () => {
 
   return (
     <div>
-      <Title level={2}>Analyse Oberfläche</Title>
-      <Title level={4} style={{ textAlign: "left" }}>Auswahl zu analysierender Anlagen</Title>
+      <Title level={2}>Analyse</Title>
+      <StyledTitle level={4}>Auswahl zu analysierender Anlagen</StyledTitle>
       <CodeSelection value={value} setValue={setValue} treeData={treeData} setTreeData={setTreeData} />
       <Tooltip
         placement="bottom"
         color="black"
         title="Ausgewählte Anlagen entsprechend der zugehörigen Konfigurationen analysieren."
       >
-        <Button
+        <StyledButton
           onClick={handleAnalyse}
           type="primary"
-          style={{
-            margin: "5px 5px 15px 5px",
-            float: "left",
-          }} // TODO: use StyledComponend
         >
           Analysieren
-        </Button>
+        </StyledButton>
       </Tooltip>
       <Divider />
-      <Title level={4} style={{ textAlign: "left" }}>Analyse-Ergebnisse</Title>
+      <StyledTitle level={4}>Analyse-Ergebnisse</StyledTitle>
       <Tooltip
         placement="bottom"
         color="black"
         title="Textbausteine der in der Tabelle markierten Anlagen in Energielenker speichern."
       >
-        <Button
+        <StyledButton
           onClick={handleConfirmSelection}
           type="primary"
-          style={{
-            margin: "5px 5px 15px 5px",
-            float: "left",
-          }}
-
-        >Auswahl bestätigen
-        </Button>
+        >
+          Auswahl bestätigen
+        </StyledButton>
       </Tooltip>
       <Table
         rowSelection={{

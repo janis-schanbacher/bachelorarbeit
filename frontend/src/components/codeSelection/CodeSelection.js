@@ -4,6 +4,7 @@ import axios from "axios";
 import PropTypes from "prop-types";
 
 import { apiUrl, portEnergielenkerEneffcoService } from "../../helper/url";
+import { StyledTreeSelect } from "./CodeSelection.styles";
 
 const { SHOW_PARENT } = TreeSelect;
 
@@ -68,12 +69,9 @@ const CodeSelection = ({ value, setValue, treeData, setTreeData }) => {
     treeCheckable: true,
     showCheckedStrategy: SHOW_PARENT,
     placeholder: "Bitte Anlagen auswählen",
-    style: {
-      width: "100%",
-    },
     allowClear: true,
   };
-  return <TreeSelect {...tProps} />;
+  return <StyledTreeSelect {...tProps} />;
 };
 
 CodeSelection.propTypes = {

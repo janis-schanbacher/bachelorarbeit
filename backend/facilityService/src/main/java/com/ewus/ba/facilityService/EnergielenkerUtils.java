@@ -297,7 +297,7 @@ public class EnergielenkerUtils {
 
       String codesAsSqlList = "('" + String.join("','", codes).replace("\"", "") + "')";
       String selectSql =
-          "SELECT [energielenker_sortiert].[code], [energielenker_sortiert].[name], [energielenker_sortiert].[id], [energielenker_objects].[parentId] "
+          "SELECT [energielenker_sortiert].[code], [energielenker_objects].[name], [energielenker_sortiert].[id], [energielenker_objects].[parentId] "
               + "FROM [energielenker_sortiert] JOIN [energielenker_objects] "
               + "ON [energielenker_sortiert].[id] = [energielenker_objects].[id] "
               + "WHERE [code] IN "

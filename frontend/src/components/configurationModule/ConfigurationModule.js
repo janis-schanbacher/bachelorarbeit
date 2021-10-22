@@ -6,6 +6,7 @@ import find from "lodash/find";
 
 import { apiUrl, portAnalysisService } from "../../helper/url";
 import CodeSelection from "../codeSelection/CodeSelection";
+import { StyledButton, StyledCheckboxGroup, StyledTitle } from "./ConfigurationModule.styles";
 
 const { Title } = Typography;
 
@@ -27,6 +28,7 @@ const ConfigurationModule = () => {
     const newDataSource = dataSource;
     newDataSource[index].checkedList = list;
     setDataSource(newDataSource);
+    forceUpdate();
   };
 
   const handleChangeBulkConfiguration = (list) => {
@@ -187,28 +189,23 @@ const ConfigurationModule = () => {
 
   return (
     <div>
-      <Title level={2}>Konfigurations-Oberfläche</Title>
-      <Title level={4} style={{ textAlign: "left" }}>Auswahl zu konfigurierender Anlagen</Title>
+      <Title level={2}>Konfiguration</Title>
+      <StyledTitle level={4}>Auswahl zu konfigurierender Anlagen</StyledTitle>
       <CodeSelection value={value} setValue={setValue} treeData={treeData} setTreeData={setTreeData} />
       <Tooltip placement="bottom" color="black" title="Konfigurationen der ausgewählten Anlagen laden.">
-        <Button
+        <StyledButton
           onClick={loadConfigs}
           type="primary"
-          style={{
-            margin: "10px 0",
-            float: "left",
-          }}
         >
           Konfigurationen laden
-        </Button>
+        </StyledButton>
       </Tooltip>
       <Divider />
-      <Title level={4} style={{ textAlign: "left" }}>Markierte Anlagen Konfigurieren</Title>
-      <Checkbox.Group
+      <StyledTitle level={4}>Markierte Anlagen Konfigurieren</StyledTitle>
+      <StyledCheckboxGroup
         options={plainOptions}
         defaultValue={defaultCheckedList}
         onChange={handleChangeBulkConfiguration}
-        style={{ textAlign: "left", width: "100%", margin: "10px 0" }}
       />
       <Tooltip
         placement="bottom"
@@ -216,33 +213,25 @@ const ConfigurationModule = () => {
         title="Lokal die Konfigurationen der in der Tabelle markierten Anlagen anpassen.
            Gespeichert können diese über die entsprechenden Bestätigungs-Buttons werden."
       >
-        <Button
+        <StyledButton
           onClick={handleApplyBulkConfiguration}
           type="primary"
-          style={{
-            margin: "10px 0",
-            float: "left",
-          }} // TODO: use StyledComponend
         >
           Übernehmen
-        </Button>
+        </StyledButton>
       </Tooltip>
       <Divider />
-      <Title level={4} style={{ textAlign: "left" }}>Konfigurationen</Title>
+      <StyledTitle level={4}>Konfigurationen</StyledTitle>
       <Tooltip
         placement="bottom"
         color="black"
         title="Konfigurationen der in der Tabelle markierten Anlagen speichern."
       >
-        <Button
+        <StyledButton
           onClick={handleConfirmSelection}
           type="primary"
-          style={{
-            margin: "10px 0",
-            float: "left",
-          }}
         >Auswahl bestätigen
-        </Button>
+        </StyledButton>
       </Tooltip>
       <Table
         rowSelection={{

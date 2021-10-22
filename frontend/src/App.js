@@ -3,34 +3,31 @@ import "./App.css";
 import {
   Switch,
   Route,
-  Link,
   useLocation,
 } from "react-router-dom";
-import { Layout } from "antd";
-import Navbar from "./components/navbar/Navbar";
 
+import Navbar from "./components/navbar/Navbar";
 import AnalysisModule from "./components/analysisModule/AnalysisModule";
 import ConfigurationModule from "./components/configurationModule/ConfigurationModule";
-
-const { Header, Content } = Layout;
+import { AppWrapper, StyledContent, StyledHeader, StyledLink } from "./App.styles";
 
 const App = () => {
   const location = useLocation();
 
   return (
-    <div className="App">
-      <Header style={{ background: "white", borderBottom: "1px solid #f0f0f0" }}>
-        <Link to="" style={{ float: "left" }}><img src="/ewus_logo.png" alt="Logo EWUS Berlin" width="100" /></Link>
+    <AppWrapper>
+      <StyledHeader>
+        <StyledLink to=""><img src="/ewus_logo.png" alt="Logo EWUS Berlin" width="100" /></StyledLink>
         <Navbar currentUrl={location.pathname} />
-      </Header>
-      <Content style={{ padding: "0 50px" }}>
+      </StyledHeader>
+      <StyledContent>
         <Switch>
           <Route path="/" component={AnalysisModule} exact />
           <Route path="/config" component={ConfigurationModule} />
           <Route component={Error} />
         </Switch>
-      </Content>
-    </div>
+      </StyledContent>
+    </AppWrapper>
   );
 };
 
