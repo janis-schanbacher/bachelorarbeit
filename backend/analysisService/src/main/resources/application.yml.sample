@@ -1,0 +1,23 @@
+server:
+  port: 8082
+spring:
+  application:
+    name: analysis-service
+  datasource:
+    url: jdbc:sqlserver://xx.xx.xx.xx
+    username: user123
+    password: password123
+    # driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.SQLServer2012Dialect
+    show-sql: false
+    hibernate:
+      ddl-auto: update
+  output:
+    ansi:
+      enabled: ALWAYS # Enable Color-Coded Output
+logging:
+  file:
+    path: ./logs

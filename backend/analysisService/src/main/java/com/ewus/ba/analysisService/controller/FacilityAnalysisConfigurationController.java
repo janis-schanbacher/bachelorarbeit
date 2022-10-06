@@ -97,7 +97,7 @@ public class FacilityAnalysisConfigurationController {
     if (config.getId() == null) {
       return ResponseEntity.badRequest().body("Id field is required");
     }
-    config.setId(config.getId().toUpperCase().strip());
+    config.setId(config.getId().toUpperCase().trim());
     if (!config.getId().matches("[a-zA-Z]{3}\\.[0-9]{3}")) {
       return ResponseEntity.badRequest()
           .body("Id field has to be the code of a facility. Format: ABC.123");
@@ -127,8 +127,8 @@ public class FacilityAnalysisConfigurationController {
     if (config.getId() == null) {
       return ResponseEntity.badRequest().body("id field is required");
     }
-    config.setId(config.getId().toUpperCase().strip());
-    id = id.toUpperCase().strip();
+    config.setId(config.getId().toUpperCase().trim());
+    id = id.toUpperCase().trim();
     if (!config.getId().equals(id)) {
       return ResponseEntity.badRequest().body("id field has to be equal to id specified in url");
     }
@@ -136,7 +136,7 @@ public class FacilityAnalysisConfigurationController {
       return ResponseEntity.badRequest()
           .body("Id field has to be the code of a facility. Format: ABC.123");
     }
-    if (facilityAnalysisConfigurationRepository.findById(id).isEmpty()) {
+    if (!facilityAnalysisConfigurationRepository.findById(id).isPresent()) {
       return ResponseEntity.notFound().build();
     }
 
@@ -160,8 +160,8 @@ public class FacilityAnalysisConfigurationController {
   @DeleteMapping("/{id}")
   public ResponseEntity<String> deleteFacilityAnalysisConfiguration(
       @PathVariable(value = "id") String id) {
-    id = id.toUpperCase().strip();
-    if (facilityAnalysisConfigurationRepository.findById(id).isEmpty()) {
+    id = id.toUpperCase().trim();
+    if (!facilityAnalysisConfigurationRepository.findById(id).isPresent()) {
       return ResponseEntity.notFound().build();
     }
     try {

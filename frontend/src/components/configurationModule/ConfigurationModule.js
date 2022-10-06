@@ -103,7 +103,7 @@ const ConfigurationModule = () => {
   const loadConfigs = () => {
     setLoading(true);
     const codes = value.filter(v => v.value.length > 3).map(v => v.label);
-    // Add codes of children from selected prefix (f.i. {value: "0-1", value: "ACO"})
+    // Add codes of children from selected prefix (f.i. {value: "0-1", value: "TST"})
     const keysOfPrefixes = value.filter(v => v.value.length === 3);
     for (let i = 0; i < keysOfPrefixes.length; i++) {
       const treeElement = find(treeData, ["value", keysOfPrefixes[i].value]);

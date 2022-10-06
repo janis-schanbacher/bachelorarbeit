@@ -35,7 +35,13 @@ public class FacilityController {
   @GetMapping("/facilities-data-list")
   @ResponseBody
   public ArrayList<Facility> fillFacilities(@RequestParam String codes) {
-    String[] codesArray = codes.strip().replaceAll("[\\[|\\]|\"|\\s]", "").split(",");
+    String[] codesArray;
+
+    if (codes == null) {
+      codesArray = getFacilityCodes().stream().toArray(String[]::new);
+    } else {
+      codesArray = codes.trim().replaceAll("[\\[|\\]|\"|\\s]", "").split(",");
+    }
 
     ArrayList<Facility> facilities =
         Stream.of(codesArray)
@@ -103,7 +109,7 @@ public class FacilityController {
           EnergielenkerUtils.getStringWithCreationTimeEnergielenker(
               facility.getRegelparameterSollWerteObjectId(), facility.getTextFragmentsId());
 
-      if (prev != null && !prev[0].isBlank()) {
+      if (prev != null && !prev[0].isEmpty()) {
         EnergielenkerUtils.postStringEnergielenker(
             facility.getRegelparameterSollWerteObjectId(),
             facility.getTextFragmentsPrevId(),

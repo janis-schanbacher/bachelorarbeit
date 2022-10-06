@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Facility {
 
-  private String code; // Code der Anlage, z.b. STO_001
+  private String code; // Code der Anlage, z.b. TST_001
 
   private int wmzEneffco; // Einsparzaehlerprotokoll> 190 WMZ Eneffco (letzte Stelle im
   // DP Code)
